@@ -1,0 +1,6 @@
+* Search and download utility for Sentinel 3 data
+
+This utility, developed by Maxim Lamare, downloads Sentinel 3 data
+
+* Notes
++ https://scihub.copernicus.eu/userguide/5APIsAndBatchScripting
