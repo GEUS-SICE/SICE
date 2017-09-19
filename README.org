@@ -1,0 +1,10 @@
+* S3Snow Private Repository
+
+This code repository is for the S3Snow project
+
+** TODO:
+
++ [ ] Git Intro for Jason and Maxim
++ [ ] Improve search utility to avoid corners
++ [ ] Get jpy bug fixed
++ [ ] Figure out CollocateWith target Grids & generate GPT graph for it
