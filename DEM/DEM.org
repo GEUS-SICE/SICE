@@ -142,7 +142,7 @@ gpt Merge -SmasterProduct=gimpdem0_0_v1.1.tif -SsourceProducts=gimpdem0_1_v1.1.t
 #+RESULTS:
 
 *** Mosaic
-#+BEGIN_SRC sh :results verbatim :eval no-export
+#+BEGIN_SRC sh :results verbatim :eval no-export :exports code
 gpt Mosaic -h
 #+END_SRC
 #+RESULTS:
@@ -228,7 +228,7 @@ Graph XML Format:
   </graph>
 #+end_example
 
-#+BEGIN_SRC sh :results verbatim :eval no-export
+#+BEGIN_SRC sh :results verbatim :eval no-export :exports code
 cd ~/data/Greenland/GIMP/
 # gpt -e Mosaic $(ls *.tif) -t out.nc
 gpt -e Mosaic gimpdem0_0_v1.1.tif gimpdem0_1_v1.1.tif gimpdem0_2_v1.1.tif -t test.nc
