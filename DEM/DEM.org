@@ -2,10 +2,6 @@
 
 This file generates a single NetCDF file from the GIMP DEM
 
-
-Generate a single NetCDF file from the GIMP GeoTIFF Mosaic
-
-
 ** Download GIMP
 + Description: https://nsidc.org/data/docs/measures/nsidc-0645/
 + Data: ftp://sidads.colorado.edu/pub/DATASETS/nsidc0645_MEASURES_gimp_dem_v1/30m/
@@ -40,44 +36,8 @@ cp GIMP_DEM.zip ~/Dropbox/shared/S3Snow/20170918-Colloc/ # Marco has access to t
 open "mailto:someone@examplecom?subject=GIMP%20DEM&"
 #+END_SRC
 #+RESULTS:
-
-** FAIL GRASS
-*** Import GIMP DEM
-#+BEGIN_SRC sh :results verbatim :eval no-export
-SRC=/Users/kdm/data/Greenland/GIMP
-grass -c ${SRC}/gimpdem0_0_v1.1.tif ./grass
-SRC=/Users/kdm/data/Greenland/GIMP
-
-for file in $(ls ${SRC}/*.tif); do
-  r.external input=$file output=$(basename $file .tif)
-done
-#+END_SRC
-#+RESULTS:
-
-*** Patch
-+ Adjust the region from the 1 GeoTIFF used to create the GRASS location to all of the imported files
-+ Then, patch them to one large DEM
-#+BEGIN_SRC sh :results verbatim :eval no-export
-g.region raster=$(g.list type=raster pattern=gimpdem* separator=,)
-r.patch input=$(g.list type=raster pattern=gimpdem* separator=,) output=DEM --o
-#+END_SRC
-#+RESULTS:
-
-*** Export
-+ TODO: Use nco tools to pretty up the NetCDF internally
-+ ERROR: NetCDF writing error :(.
-#+BEGIN_SRC sh :results verbatim :eval no-export
-r.out.gdal input=DEM output=DEM.nc format=netCDF type=Int32 --o
-#+END_SRC
-#+RESULTS:
-
-*** Cleanup
-#+BEGIN_SRC sh :results verbatim :eval no-export
-rm -fR grass
-#+END_SRC
-#+RESULTS:
-
 ** FAIL SNAP (GPT)
+See: http://forum.step.esa.int/t/raster-mosaic/7147
 *** Merge
 #+BEGIN_SRC sh :results verbatim :eval no-export
 gpt Merge -h
@@ -235,3 +195,38 @@ gpt -e Mosaic gimpdem0_0_v1.1.tif gimpdem0_1_v1.1.tif gimpdem0_2_v1.1.tif -t tes
 #+END_SRC
 #+RESULTS:
 
+** FAIL GRASS
+*** Import GIMP DEM
+#+BEGIN_SRC sh :results verbatim :eval no-export
+SRC=/Users/kdm/data/Greenland/GIMP
+grass -c ${SRC}/gimpdem0_0_v1.1.tif ./grass
+SRC=/Users/kdm/data/Greenland/GIMP
+
+for file in $(ls ${SRC}/*.tif); do
+  r.external input=$file output=$(basename $file .tif)
+done
+#+END_SRC
+#+RESULTS:
+
+*** Patch
++ Adjust the region from the 1 GeoTIFF used to create the GRASS location to all of the imported files
++ Then, patch them to one large DEM
+#+BEGIN_SRC sh :results verbatim :eval no-export
+g.region raster=$(g.list type=raster pattern=gimpdem* separator=,)
+r.patch input=$(g.list type=raster pattern=gimpdem* separator=,) output=DEM --o
+#+END_SRC
+#+RESULTS:
+
+*** Export
++ TODO: Use nco tools to pretty up the NetCDF internally
++ ERROR: NetCDF writing error :(.
+#+BEGIN_SRC sh :results verbatim :eval no-export
+r.out.gdal input=DEM output=DEM.nc format=netCDF type=Int32 --o
+#+END_SRC
+#+RESULTS:
+
+*** Cleanup
+#+BEGIN_SRC sh :results verbatim :eval no-export
+rm -fR grass
+#+END_SRC
+#+RESULTS:
