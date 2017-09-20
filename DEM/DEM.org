@@ -70,11 +70,13 @@ r.patch input=$(g.list type=raster pattern=gimpdem* separator=,) output=DEM --o
 r.out.gdal input=DEM output=DEM.nc format=netCDF type=Int32 --o
 #+END_SRC
 #+RESULTS:
+
 *** Cleanup
 #+BEGIN_SRC sh :results verbatim :eval no-export
 rm -fR grass
 #+END_SRC
 #+RESULTS:
+
 ** FAIL SNAP (GPT)
 *** Merge
 #+BEGIN_SRC sh :results verbatim :eval no-export
