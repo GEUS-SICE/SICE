@@ -1,0 +1,235 @@
+* DEM for Topographic Correction
+
+This file generates a single NetCDF file from the GIMP DEM
+
+
+Generate a single NetCDF file from the GIMP GeoTIFF Mosaic
+
+
+** Download GIMP
++ Description: https://nsidc.org/data/docs/measures/nsidc-0645/
++ Data: ftp://sidads.colorado.edu/pub/DATASETS/nsidc0645_MEASURES_gimp_dem_v1/30m/
+#+BEGIN_SRC sh :results verbatim :eval no-export
+mkdir -p ~/data/Greenland/GIMP
+cd ~/data/Greenland/GIMP
+
+wget --reject-regex=".*hillshade.*" ftp://sidads.colorado.edu/pub/DATASETS/nsidc0645_MEASURES_gimp_dem_v1/30m/gimpdem?_?_v1.1.tif
+#+END_SRC
+#+RESULTS:
+
+
+** SUCCESS GDAL
+*** Merge
+#+BEGIN_SRC sh :results verbatim :eval no-export
+cd ~/data/Greenland/GIMP
+gdal_merge.py *.tif -o ~/tmp/GIMP_DEM.tif
+#+END_SRC
+#+RESULTS:
+
+*** Convert
+#+BEGIN_SRC sh :results verbatim :eval no-export
+cd ~/tmp/
+gdal_translate -of netCDF GIMP_DEM.tif GIMP_DEM.nc
+#+END_SRC
+#+RESULTS:
+
+*** Zip and Mail
+#+BEGIN_SRC sh :results verbatim :eval no-export
+zip GIMP_DEM.zip GIMP_DEM.nc
+cp GIMP_DEM.zip ~/Dropbox/shared/S3Snow/20170918-Colloc/ # Marco has access to this
+open "mailto:someone@examplecom?subject=GIMP%20DEM&"
+#+END_SRC
+#+RESULTS:
+
+** FAIL GRASS
+*** Import GIMP DEM
+#+BEGIN_SRC sh :results verbatim :eval no-export
+SRC=/Users/kdm/data/Greenland/GIMP
+grass -c ${SRC}/gimpdem0_0_v1.1.tif ./grass
+SRC=/Users/kdm/data/Greenland/GIMP
+
+for file in $(ls ${SRC}/*.tif); do
+  r.external input=$file output=$(basename $file .tif)
+done
+#+END_SRC
+#+RESULTS:
+
+*** Patch
++ Adjust the region from the 1 GeoTIFF used to create the GRASS location to all of the imported files
++ Then, patch them to one large DEM
+#+BEGIN_SRC sh :results verbatim :eval no-export
+g.region raster=$(g.list type=raster pattern=gimpdem* separator=,)
+r.patch input=$(g.list type=raster pattern=gimpdem* separator=,) output=DEM --o
+#+END_SRC
+#+RESULTS:
+
+*** Export
++ TODO: Use nco tools to pretty up the NetCDF internally
++ ERROR: NetCDF writing error :(.
+#+BEGIN_SRC sh :results verbatim :eval no-export
+r.out.gdal input=DEM output=DEM.nc format=netCDF type=Int32 --o
+#+END_SRC
+#+RESULTS:
+*** Cleanup
+#+BEGIN_SRC sh :results verbatim :eval no-export
+rm -fR grass
+#+END_SRC
+#+RESULTS:
+** FAIL SNAP (GPT)
+*** Merge
+#+BEGIN_SRC sh :results verbatim :eval no-export
+gpt Merge -h
+#+END_SRC
+#+RESULTS:
+#+begin_example
+Usage:
+  gpt Merge [options] 
+
+Description:
+  Allows merging of several source products by using specified 'master' as reference product.
+
+
+Source Options:
+  -SmasterProduct=<file>    The master, which serves as the reference, e.g. providing the geo-information.
+                            This is a mandatory source.
+
+Parameter Options:
+  -PgeographicError=<float>    Defines the maximum lat/lon error in degree between the products. If set to NaN no check for compatible geographic boundary is performed
+                               Default value is '1.0E-5f'.
+
+Graph XML Format:
+  <graph id="someGraphId">
+    <version>1.0</version>
+    <node id="someNodeId">
+      <operator>Merge</operator>
+      <sources>
+        <masterProduct>${masterProduct}</masterProduct>
+        <sourceProducts>${sourceProducts}</sourceProducts>
+      </sources>
+      <parameters>
+        <includes>
+          <include>
+            <productId>string</productId>
+            <name>string</name>
+            <newName>string</newName>
+            <namePattern>string</namePattern>
+            <exclRegex>string</exclRegex>
+          </include>
+          <.../>
+        </includes>
+        <excludes>
+          <exclude>
+            <productId>string</productId>
+            <name>string</name>
+            <newName>string</newName>
+            <namePattern>string</namePattern>
+            <exclRegex>string</exclRegex>
+          </exclude>
+          <.../>
+        </excludes>
+        <geographicError>float</geographicError>
+      </parameters>
+    </node>
+  </graph>
+#+end_example
+
+#+BEGIN_SRC sh :results verbatim :eval no-export
+cd ~/data/Greenland/GIMP/
+gpt Merge -SmasterProduct=gimpdem0_0_v1.1.tif -SsourceProducts=gimpdem0_1_v1.1.tif -SsourceProducts=gimpdem0_2_v1.1.tif  -t test.nc
+#+END_SRC
+#+RESULTS:
+
+*** Mosaic
+#+BEGIN_SRC sh :results verbatim :eval no-export
+gpt Mosaic -h
+#+END_SRC
+#+RESULTS:
+#+begin_example
+Usage:
+  gpt Mosaic [options] <source-file-1> <source-file-2> ...
+
+Description:
+  Creates a mosaic out of a set of source products.
+
+
+Source Options:
+  -SupdateProduct=<file>    A product to be updated.
+                            This is an optional source.
+
+Parameter Options:
+  -Pcombine=<string>               Specifies the way how conditions are combined.
+                                   Value must be one of 'OR', 'AND'.
+                                   Default value is 'OR'.
+  -Pcrs=<string>                   The CRS of the target product, represented as WKT or authority code.
+                                   Default value is 'EPSG:4326'.
+  -PeastBound=<double>             The eastern longitude.
+                                   Valid interval is [-180,180].
+                                   Default value is '30.0'.
+  -PelevationModelName=<string>    The name of the elevation model for the orthorectification.
+  -PnorthBound=<double>            The northern latitude.
+                                   Valid interval is [-90,90].
+                                   Default value is '75.0'.
+  -Porthorectify=<boolean>         Whether the source product should be orthorectified.
+                                   Default value is 'false'.
+  -PpixelSizeX=<double>            Size of a pixel in X-direction in map units.
+                                   Default value is '0.05'.
+  -PpixelSizeY=<double>            Size of a pixel in Y-direction in map units.
+                                   Default value is '0.05'.
+  -Presampling=<string>            The method used for resampling.
+                                   Value must be one of 'Nearest', 'Bilinear', 'Bicubic'.
+                                   Default value is 'Nearest'.
+  -PsouthBound=<double>            The southern latitude.
+                                   Valid interval is [-90,90].
+                                   Default value is '35.0'.
+  -PwestBound=<double>             The western longitude.
+                                   Valid interval is [-180,180].
+                                   Default value is '-15.0'.
+
+Graph XML Format:
+  <graph id="someGraphId">
+    <version>1.0</version>
+    <node id="someNodeId">
+      <operator>Mosaic</operator>
+      <sources>
+        <updateProduct>${updateProduct}</updateProduct>
+        <sourceProducts>${sourceProducts}</sourceProducts>
+      </sources>
+      <parameters>
+        <variables>
+          <variable>
+            <name>string</name>
+            <expression>string</expression>
+          </variable>
+          <.../>
+        </variables>
+        <conditions>
+          <condition>
+            <name>string</name>
+            <expression>string</expression>
+            <output>boolean</output>
+          </condition>
+          <.../>
+        </conditions>
+        <combine>string</combine>
+        <crs>string</crs>
+        <orthorectify>boolean</orthorectify>
+        <elevationModelName>string</elevationModelName>
+        <resampling>string</resampling>
+        <westBound>double</westBound>
+        <northBound>double</northBound>
+        <eastBound>double</eastBound>
+        <southBound>double</southBound>
+        <pixelSizeX>double</pixelSizeX>
+        <pixelSizeY>double</pixelSizeY>
+      </parameters>
+    </node>
+  </graph>
+#+end_example
+
+#+BEGIN_SRC sh :results verbatim :eval no-export
+cd ~/data/Greenland/GIMP/
+# gpt -e Mosaic $(ls *.tif) -t out.nc
+gpt -e Mosaic gimpdem0_0_v1.1.tif gimpdem0_1_v1.1.tif gimpdem0_2_v1.1.tif -t test.nc
+#+END_SRC
+#+RESULTS:
+
