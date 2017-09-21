@@ -6,5 +6,6 @@ This code repository is for the S3Snow project
 
 + [ ] Git Intro for Jason and Maxim
 + [ ] Improve search utility to avoid corners
-+ [ ] Get jpy bug fixed
++ [ ] Get jpy bug fixed - see https://github.com/bcdev/jpy/issues/108
 + [ ] Figure out CollocateWith target Grids & generate GPT graph for it
++ [X] Generate GIMP NetCDF DEM - See [[./DEM/DEM.org]]
