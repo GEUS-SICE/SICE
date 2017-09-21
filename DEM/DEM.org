@@ -36,8 +36,10 @@ cp GIMP_DEM.zip ~/Dropbox/shared/S3Snow/20170918-Colloc/ # Marco has access to t
 open "mailto:someone@examplecom?subject=GIMP%20DEM&"
 #+END_SRC
 #+RESULTS:
+
 ** FAIL SNAP (GPT)
 See: http://forum.step.esa.int/t/raster-mosaic/7147
+
 *** Merge
 #+BEGIN_SRC sh :results verbatim :eval no-export
 gpt Merge -h
