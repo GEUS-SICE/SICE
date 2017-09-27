@@ -18,5 +18,5 @@ for file in $(ls $1); do
   PRODUCT_NAME=$(grep -o "file name.*" ${2}/${id}.xml |cut -d\" -f2)
   DATAURL="https://scihub.copernicus.eu/s3/odata/v1/Products('${id}')/\$value"
   rm ${2}/${id}.xml
-  wget "${DATAURL}" --user=s3guest --password=s3guest -nc -c -nd -O ${2}/${PRODUCT_NAME}
+  wget "${DATAURL}" --user=s3guest --password=s3guest --continue -nd -O ${2}/${PRODUCT_NAME}
 done
