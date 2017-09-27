@@ -218,16 +218,16 @@ export QUERY="$BASE$MISSION$OLCITYPE$INST_STR$DATE_STR$FOOTPRINT_STR"
 
 
 # Remove query file if existing
-[ -e query_results.txt ] && rm query_results.txt
+[ -e query_results.xml ] && rm query_results.xml
 
 # Search API
-wget --no-check-certificate --user="$USERN" --password="$PASSWD" --output-document=query_results.txt "$QUERY"
+wget --no-check-certificate --user="$USERN" --password="$PASSWD" --output-document=query_results.xml "$QUERY"
 
 # Print human readable results to screen and save the list of images and their id to a file in the script directory
-grep -n "<subtitle>" query_results.txt | cut -f2 -d'>' | cut -f1 -d'<' 
+grep -n "<subtitle>" query_results.xml | cut -f2 -d'>' | cut -f1 -d'<' 
 echo ""
-grep -n "<title>" query_results.txt | tail -n +2 | cut -f2 -d'>' | cut -f1 -d'<' > fln.txt
-grep -n "<id>" query_results.txt | tail -n +2 | cut -f2 -d'>'| cut -f1 -d'<' > idn.txt
+grep -n "<title>" query_results.xml | tail -n +2 | cut -f2 -d'>' | cut -f1 -d'<' > fln.txt
+grep -n "<id>" query_results.xml | tail -n +2 | cut -f2 -d'>'| cut -f1 -d'<' > idn.txt
 paste fln.txt idn.txt > names.txt
 rm fln.txt idn.txt
 echo ""
@@ -236,7 +236,7 @@ cat names.txt
 echo ""
 
 # Check the number of query results
-number=$(grep -n "<subtitle>" query_results.txt | cut -c2- | rev | cut -c25- | rev| tr -dc '0-9')
+number=$(grep -n "<subtitle>" query_results.xml | cut -c2- | rev | cut -c25- | rev| tr -dc '0-9')
 if [ "$number" -gt 100 ];then
 	echo "More than 100 results. Only first 100 will be downloaded. Consider restricting your research parameters!"
 	echo ""
