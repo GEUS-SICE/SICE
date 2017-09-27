@@ -219,6 +219,7 @@ export QUERY="$BASE$MISSION$OLCITYPE$INST_STR$DATE_STR$FOOTPRINT_STR"
 
 # Remove query file if existing
 [ -e query_results.xml ] && rm query_results.xml
+[ -e pdoruct_IDs.txt ] && rm product_IDs.txt
 
 # Search API
 wget --no-check-certificate --user="$USERN" --password="$PASSWD" --output-document=query_results.xml "$QUERY"
@@ -228,11 +229,11 @@ grep -n "<subtitle>" query_results.xml | cut -f2 -d'>' | cut -f1 -d'<'
 echo ""
 grep -n "<title>" query_results.xml | tail -n +2 | cut -f2 -d'>' | cut -f1 -d'<' > fln.txt
 grep -n "<id>" query_results.xml | tail -n +2 | cut -f2 -d'>'| cut -f1 -d'<' > idn.txt
-paste fln.txt idn.txt > names.txt
+paste fln.txt idn.txt > product_IDs.txt
 rm fln.txt idn.txt
 echo ""
 echo "File name / file ID:"
-cat names.txt
+cat product_IDs.txt
 echo ""
 
 # Check the number of query results
@@ -263,5 +264,3 @@ if [ ! -z $DOWN ]; then
 		-U Mozilla --continue --password="$PASSWD" "https://scihub.copernicus.eu/s3/odata/v1/Products('${arr[1]}')/\$value"
 	done
 fi
-
-rm names.txt
