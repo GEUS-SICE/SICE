@@ -5,7 +5,8 @@ This code repository is for the S3Snow project
 ** TODO:
 
 + [ ] Git Intro for Jason and Maxim
-+ [ ] Improve search utility to avoid corners
++ [X] Improve search utility to avoid corners
+  + DONE by searching for scenes that cover a POINT near the center of the ROI
 + [ ] Get jpy bug fixed - see https://github.com/bcdev/jpy/issues/108
 + [ ] Figure out CollocateWith target Grids & generate GPT graph for it
 + [X] Generate GIMP NetCDF DEM - See [[./DEM/DEM.org]]
