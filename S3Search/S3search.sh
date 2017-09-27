@@ -38,9 +38,7 @@ function print_help
  	echo ""
 	echo "   -e <end date>		: Search for products with sensing date ${bold}smaller than${normal} the date and time specified by <end date>. The date format is YYYY-MM-DD"
  	echo ""
-	echo "   -f <lat_min:lon_min:lat_max:lon_max>	: Area of Interest. The images intersecting the bounding box defined by the minimum and maximum longitude and latitude"
-	echo "				will be queried. Coordinates are in decimal degrees, with the follwing syntax: lat_min:lon_min:lat_max:lon_max. I.e. 45.153:5.682:45.218:5.778 is a region"
-	echo "				covering Grenoble."
+	echo "   -f <lat_min:lon_min[:lat_max:lon_max]>	: Area of Interest. The images intersecting the point (if one lat:lon pair provided) or bounding box (if two pair) defined by the minimum and maximum longitude and latitude will be queried. Coordinates are in decimal degrees, with the follwing syntax: lat_min:lon_min[:lat_max:lon_max]. I.e. 66:45 is a point in Greenland, and 45.153:5.682:45.218:5.778 is a region covering Grenoble."
 	echo ""
 	echo "  ${bold}DOWNLOAD OPTIONS:${normal}"
  	echo " "
@@ -202,6 +200,13 @@ else
 		export FOOTPRINT_STR=$(printf " AND footprint:\"Intersects(POLYGON((%s %s,%s %s,%s %s,%s %s,%s %s)))\"" $x1 $x2 $x3 $x2 $x3 $x4 $x1 $x4 $x1 $x2)			
 		echo "Search is performed on an AOI defined as a bounding box delimited by: Lat_min: $x1, Lon_min: $x2, Lat_max: $x3, Lon_max: $x4 "
         	echo ""
+	elif [[ $FOOTPRINT =~ ^[-+]?[0-9]*\.?[0-9]+:([-+]?[0-9]*\.?[0-9]+)$ ]]; then
+		arr=(${FOOTPRINT//:/ })
+		x1=${arr[0]}
+		x2=${arr[1]}
+		export FOOTPRINT_STR=$(printf " AND footprint:\"Intersects(%s, %s)\"" $x1 $x2)			
+		echo "Search is performed on an AOI defined as a point defined by: Lat: $x1, Lon: $x2"
+	    
 	else
 		echo "Wrong footprint format! Please type 'lat_min:lon_min:lat_max:lon_max' in decimal degrees."
 		exit 1
