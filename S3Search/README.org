@@ -9,12 +9,17 @@ The webpage above provides two example scripts:
 
 * Odata.sh
 
+Seems to time out when playing with it on the CLI
+
+
 #+BEGIN_SRC sh :results verbatim :eval no-export
 ./odata.sh --help
 #+END_SRC
 #+RESULTS:
 
 * dhusget.sh
+
+Spends lots of time appearing to download things, printing stuff to terminal, etc. Does not appear to download anything.
 
 ** Help
 
@@ -161,6 +166,68 @@ Bounding box overlap - Select two "points" (small box) near the center of the ic
 #+BEGIN_SRC sh :results verbatim :eval no-export
 ./dhusget.sh -u s3guest -p s3guest -d https://scihub.copernicus.eu/s3 -m Sentinel-3 -i OLCI -c -45,66:-44.99,66.01 -C product_list.csv -F "orbitnumber:8353"
 
-./dhusget.sh -u s3guest -p s3guest -d https://scihub.copernicus.eu/s3 -m Sentinel-3 -i OLCI -c -45,66:-44.99,66.01 -C product_list.csv -F "orbitnumber:8353" -o all
+./dhusget.sh -u s3guest -p s3guest -d https://scihub.copernicus.eu/s3 -m Sentinel-3 -i OLCI -c -45,66:-44.99,66.01 -C product_list.csv -F "orbitnumber:8353" -o all -l 1 -L ./lockfolder
 #+END_SRC
 #+RESULTS:
+* Custom script
+
+#+BEGIN_SRC sh :results verbatim :eval no-export
+#!/usr/bin/env bash
+
+# intersect
+https://scihub.copernicus.eu/dhus/search?q=footprint:"Intersects(41.9000, 12.5000)"
+
+# every product in last day
+https://scihub.copernicus.eu/dhus/search?q=ingestiondate:[NOW-1DAY TO NOW]
+
+# everything SLC:
+https://scihub.copernicus.eu/dhus/search?q=SLC
+
+platformname:Sentinel-3
+
+producttype:OLCI
+
+wget --no-check-certificate --user={USERNAME} --password={PASSWORD} --output-document={FILE} <URI_QUERY>
+
+#+END_SRC
+#+RESULTS:
+
+#+BEGIN_SRC sh :results verbatim :eval no-export :tangle s3.sh :shebang "#!/usr/bin/env bash"
+
+URL="https://scihub.copernicus.eu/s3/search?q=SLC AND ingestiondate:[NOW-1DAY TO NOW] AND footprint:Intersects(41.9000, 12.5000)"
+
+wget --no-check-certificate --user=s3guest --password=s3guest --output-document=outfile ${URL}
+#+END_SRC
+#+RESULTS:
+* S3Search from Maxim
+
+#+BEGIN_SRC sh :results verbatim :eval no-export
+./S3search.sh -i OLCI -s 2017-06-01  -e 2017-07-01 -f 66:-45
+
+for QL_URL in $(grep -i quick query_results.txt  | cut -d\" -f4); do
+  id=$(echo $QL_URL | cut -d\' -f2)
+  wget "${QL_URL}" --user=s3guest --password=s3guest -nc -c -nd -P ./quicklook -O ./quicklook/${id}.jpg
+done
+
+for file in $(ls quicklook); do
+  id=$(basename $file jpg)
+  URL=https://scihub.copernicus.eu/s3/odata/v1/Products('${id}')/$value
+  wget "${URL}" --user=s3guest --password=s3guest -nc -c -nd -P ./product
+done
+
+
+# extract the identifiers and ignore the *last* 48 characters (reverse, ignore first 48, reverse again)
+grep \"identifier query_results.txt | cut -d">" -f2 | cut -d"<" -f1 | sort | rev | uniq -s 48 | rev 
+
+grep \"identifier query_results.txt | cut -d">" -f2 | cut -d"<" -f1 | sort | rev | uniq -s 48 | rev > query_results2.txt
+
+# cat query_results.txt | source-highlight -s xml -f esc
+#+END_SRC
+#+RESULTS:
+
+# download quicklook:
+
+https://scihub.copernicus.eu/dhus/odata/v1/Products('16902fd3-f323-4014-a950-853ac602e22f')/Nodes('S1A_IW_SLC__1SDV_20141101T165548_20141101T165616_003091_0038AA_558F.SAFE') /Nodes('preview')/Nodes('quick-look.png')/$value=
+
+https://scihub.copernicus.eu/dhus/odata/v1/Products('16902fd3-f323-4014-a950-853ac602e22f')/Nodes('S1A_IW_SLC__1SDV_20141101T165548_20141101T165616_003091_0038AA_558F.SAFE') /Nodes('preview')/Nodes('quick-look.png')/$value=
+
