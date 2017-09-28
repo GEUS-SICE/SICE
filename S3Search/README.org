@@ -34,3 +34,26 @@ To fetch the full data for all quicklook files in a folder:
 ./fetch_scene_from_ql.sh <quicklook_folder> <target_folder>
 #+END_SRC
 #+RESULTS:
+
+To fetch every product ID:
+
+#+BEGIN_SRC sh :results verbatim :eval no-export
+rm tmp.txt # reset
+for year in $(seq 2016 2017); do
+  for day0 in $(seq 1 15 366); do # 15 day increments
+    day1=$((day0+15))
+    date0=$(gdate --date="${year}-01-01 +${day0} days" --iso-8601)
+    date1=$(gdate --date="${year}-01-01 +${day1} days" --iso-8601)
+
+    ./S3search.sh -i OLCI -s $date0  -e $date1 -f 66:-45
+    cat product_IDs.txt >> tmp.txt # append
+
+    ./S3search.sh -i OLCI -s $date0  -e $date1 -f 76:-42
+    cat product_IDs.txt >> tmp.txt
+
+  done
+done
+mv tmp.txt product_IDs.txt
+#+END_SRC
+#+RESULTS:
+
