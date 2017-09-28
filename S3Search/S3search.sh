@@ -237,7 +237,7 @@ cat product_IDs.txt
 echo ""
 
 # Check the number of query results
-number=$(grep -n "<subtitle>" query_results.xml | cut -c2- | rev | cut -c25- | rev| tr -dc '0-9')
+number=$(wc -l product_IDs.txt | tr -dc '0-9')
 if [ "$number" -gt 100 ];then
 	echo "More than 100 results. Only first 100 will be downloaded. Consider restricting your research parameters!"
 	echo ""
