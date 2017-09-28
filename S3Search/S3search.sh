@@ -112,7 +112,7 @@ else
 
 		# OLCI EFR only
 		if [ $INSTRUMENT = "OLCI" ];then
-			export OLCITYPE=" AND filename:*FR*"
+			export OLCITYPE=" AND filename:*EFR*"
 		else
 			export OLCITYPE=""
 		fi
