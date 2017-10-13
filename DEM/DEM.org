@@ -13,12 +13,20 @@ wget --reject-regex=".*hillshade.*" ftp://sidads.colorado.edu/pub/DATASETS/nsidc
 #+END_SRC
 #+RESULTS:
 
+*** Improve Projection
++ https://bpcrc.osu.edu/gdg/data/gimpdem
++ The OSU website says EPSG:3413 but it is not embedded in the metadata. Add it:
+#+BEGIN_SRC sh :results verbatim :eval no-export
+for f in $(ls *.tif); do gdal_edit.py27 -a_srs "EPSG:3413" $f; done
+#+END_SRC
+#+RESULTS:
+
 
 ** SUCCESS GDAL
 *** Merge
 #+BEGIN_SRC sh :results verbatim :eval no-export
 cd ~/data/Greenland/GIMP
-gdal_merge.py *.tif -o ~/tmp/GIMP_DEM.tif -co COMPRESS=LZW -co BIGTIFF=YES -co PREDICTOR=2 -co TILED=YES
+gdal_merge.py *.tif -o ~/tmp/GIMP_DEM.tif -co COMPRESS=LZW -co BIGTIFF=YES -co PREDICTOR=2 -co TILED=YES -ot Byte
 say done
 #+END_SRC
 #+RESULTS:
