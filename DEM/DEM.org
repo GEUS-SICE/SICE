@@ -26,7 +26,7 @@ for f in $(ls *.tif); do gdal_edit.py27 -a_srs "EPSG:3413" $f; done
 *** Merge
 #+BEGIN_SRC sh :results verbatim :eval no-export
 cd ~/data/Greenland/GIMP
-gdal_merge.py *.tif -o ~/tmp/GIMP_DEM.tif -co COMPRESS=LZW -co BIGTIFF=YES -co PREDICTOR=2 -co TILED=YES -ot Byte
+gdal_merge.py *.tif -o ~/tmp/GIMP_DEM.tif -co COMPRESS=LZW -co BIGTIFF=YES -co PREDICTOR=2 -co TILED=YES
 say done
 #+END_SRC
 #+RESULTS:
