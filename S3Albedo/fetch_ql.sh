@@ -55,6 +55,8 @@ MISC="orbitdirection:descending"
 # Check search dates
 if [ -z $STARTDATE ] || [ -z $STOPDATE ];then
     echo "--start or --stop date option not set"
+    echo " "
+    $0 -h
     exit 1
 else
     DATESTR="beginposition:[${STARTDATE}T00:00:00.000Z TO ${STOPDATE}T00:00:00.000Z]"
@@ -62,6 +64,8 @@ fi
 
 if [ -z $FOOTPRINT ]; then
     echo "--footprint not set"
+    echo " "
+    $0 -h
     exit 1
 elif [[ $FOOTPRINT =~ ^[-+]?[0-9]*\.?[0-9]+,([-+]?[0-9]*\.?[0-9]+)$ ]]; then
     arr=(${FOOTPRINT//,/ })
@@ -70,6 +74,8 @@ elif [[ $FOOTPRINT =~ ^[-+]?[0-9]*\.?[0-9]+,([-+]?[0-9]*\.?[0-9]+)$ ]]; then
     FOOTPRINT=$(printf "footprint:\"Intersects(%s, %s)\"" $x1 $x2)			
 else
     echo "Wrong footprint format! Please type 'lat_min:lon_min:lat_max:lon_max' in decimal degrees."
+    echo " "
+    $0 -h
     exit 1
 fi
 
