@@ -1,6 +1,6 @@
 * DEM for Topographic Correction
 
-This file generates a single NetCDF file from the GIMP DEM
+This file generates a single NetCDF file from the GIMP DEM.
 
 ** Download GIMP
 + Description: https://nsidc.org/data/docs/measures/nsidc-0645/
@@ -18,11 +18,13 @@ wget --reject-regex=".*hillshade.*" ftp://sidads.colorado.edu/pub/DATASETS/nsidc
 *** Merge
 #+BEGIN_SRC sh :results verbatim :eval no-export
 cd ~/data/Greenland/GIMP
-gdal_merge.py *.tif -o ~/tmp/GIMP_DEM.tif
+gdal_merge.py *.tif -o ~/tmp/GIMP_DEM.tif -co COMPRESS=LZW -co BIGTIFF=YES -co PREDICTOR=2 -co TILED=YES
+say done
 #+END_SRC
 #+RESULTS:
 
-*** Convert
+*** NOTDONE Convert
++ NOTDONE according to http://forum.step.esa.int/t/raster-mosaic/7147 they can't work with NetCDF as easily as with GeoTIFF
 #+BEGIN_SRC sh :results verbatim :eval no-export
 cd ~/tmp/
 gdal_translate -of netCDF GIMP_DEM.tif GIMP_DEM.nc
@@ -39,8 +41,7 @@ open "mailto:someone@examplecom?subject=GIMP%20DEM&"
 
 ** FAIL SNAP (GPT)
 See: http://forum.step.esa.int/t/raster-mosaic/7147
-
-*** Merge
+*** NOTDONE Merge
 #+BEGIN_SRC sh :results verbatim :eval no-export
 gpt Merge -h
 #+END_SRC
@@ -104,6 +105,7 @@ gpt Merge -SmasterProduct=gimpdem0_0_v1.1.tif -SsourceProducts=gimpdem0_1_v1.1.t
 #+RESULTS:
 
 *** Mosaic
+**** Help
 #+BEGIN_SRC sh :results verbatim :eval no-export :exports code
 gpt Mosaic -h
 #+END_SRC
@@ -190,10 +192,55 @@ Graph XML Format:
   </graph>
 #+end_example
 
+**** XML
+#+BEGIN_SRC nxml :tangle GIMP_DEM_mosaic.xml
+<graph id="GIMP_DEM_mosaic">
+  <version>1.0</version>
+  <node id="MyMosaic">
+    <operator>Mosaic</operator>
+    <sources>
+      <!-- <updateProduct>${updateProduct}</updateProduct> -->
+      <sourceProducts>${sourceProducts}</sourceProducts>
+    </sources>
+    <parameters>
+      <variables>
+        <variable>
+          <name>band_1</name>
+          <expression>band_1</expression>
+        </variable>
+        <!-- <.../> -->
+      </variables>
+      <!-- <conditions> -->
+      <!--   <condition> -->
+      <!--     <name>string</name> -->
+      <!--     <expression>string</expression> -->
+      <!--     <output>boolean</output> -->
+      <!--   </condition> -->
+      <!--   <.../> -->
+      <!-- </conditions> -->
+      <!-- <combine>string</combine> -->
+      <crs>EPSG:3413</crs>
+      <!-- <orthorectify>boolean</orthorectify> -->
+      <!-- <elevationModelName>string</elevationModelName> -->
+      <!-- <resampling>string</resampling> -->
+      <!-- get these from the gdalinfo on the GDAL-mosaiced DEM. Could
+           also get from min/max of all other DEMS... -->
+      <westBound>90</westBound>
+      <eastBound>55</eastBound>
+      <northBound>82</northBound>
+      <southBound>59</southBound>
+      <pixelSizeX>30</pixelSizeX>
+      <pixelSizeY>30</pixelSizeY>
+    </parameters>
+  </node>
+</graph>
+#+END_SRC
+**** GPT
+
+Takes >> longer than GDAL...
 #+BEGIN_SRC sh :results verbatim :eval no-export :exports code
 cd ~/data/Greenland/GIMP/
-# gpt -e Mosaic $(ls *.tif) -t out.nc
-gpt -e Mosaic gimpdem0_0_v1.1.tif gimpdem0_1_v1.1.tif gimpdem0_2_v1.1.tif -t test.nc
+gpt ~/projects/S3Snow/DEM/GIMP_DEM_mosaic.xml gimpdem0_0_v1.1.tif gimpdem0_1_v1.1.tif gimpdem0_2_v1.1.tif -t ~/tmp/GIMP_gpt.tif
 #+END_SRC
 #+RESULTS:
 
@@ -219,7 +266,7 @@ r.patch input=$(g.list type=raster pattern=gimpdem* separator=,) output=DEM --o
 #+END_SRC
 #+RESULTS:
 
-*** Export
+*** Export NetCDF
 + TODO: Use nco tools to pretty up the NetCDF internally
 + ERROR: NetCDF writing error :(.
 #+BEGIN_SRC sh :results verbatim :eval no-export
