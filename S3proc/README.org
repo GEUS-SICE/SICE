@@ -1,0 +1,40 @@
+
+* Sentinel-3 (S3) Albedo Processing Pipeline
+
+1. Fetch S3 quicklook products
+2. Process with SNAP
+   1. Radiance to reflectance
+   2. Export as folders of GeoTIFFs
+3. Mosaic all scenes in a day to produce one Greenland-wide product
+
+** Fetch S3 OLCI products
+
+1. Fetch quicklook files for a given time period with [[./fetch_ql.sh]].
+2. Manually view and filter the quicklook files
+3. Download OLCI EFR products with [[./fetch_scene_from_ql.sh]].
+
+** Process with SNAP
+
+This step is a combination of [[./S3_proc.sh]] and [[./S3_proc.xml]].
+
+* Notes
+** Misc Code Snippest
+
+*** Fetch all QL scenes
++ June 1 to sep 1 = DOY 152 to 245
++ Fetch scenes in 10 day increments because =./fetch_ql.sh= (actually, Copernicus) only delivers 100 products at a time
+#+BEGIN_SRC sh :results verbatim :eval no-export
+for day0 in $(seq 152 10 245); do # 15 day increments
+    day1=$((day0+15))
+    date0=$(gdate --date="2017-01-01 +${day0} days" --iso-8601)
+    date1=$(gdate --date="2017-01-01 +${day1} days" --iso-8601)
+    
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
+done
+#+END_SRC

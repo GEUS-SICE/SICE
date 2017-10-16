@@ -1,0 +1,231 @@
+<graph id="S3_proc">
+  <version>1.0</version>
+  
+  <node id="Rad2Refl">
+    <operator>Rad2Refl</operator>
+    <sources>
+      <source>${source}</source>
+    </sources>
+    <parameters>
+      <sensor>OLCI</sensor>
+      <copyTiePointGrids>true</copyTiePointGrids>
+      <copyFlagBandsAndMasks>true</copyFlagBandsAndMasks>
+      <copyNonSpectralBands>true</copyNonSpectralBands>
+    </parameters>
+  </node>
+
+  <node id="Reproject">
+    <operator>Reproject</operator>
+    <sources>
+      <source>Rad2Refl</source>
+    </sources>
+    <parameters>
+      <!-- EASE grid; DEPRECATED, but 6931 not yet supported in QGIS, SpatialReference.org, etc. -->
+      <crs>EPSG:3973</crs>
+      
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+      <!--
+      <wktFile>file</wktFile>
+      <crs>string</crs>
+      <resampling>string</resampling>
+      <referencePixelX>double</referencePixelX>
+      <referencePixelY>double</referencePixelY>
+      <easting>double</easting>
+      <northing>double</northing>
+      <orientation>double</orientation>
+      <pixelSizeX>double</pixelSizeX>
+      <pixelSizeY>double</pixelSizeY>
+      <width>integer</width>
+      <height>integer</height>
+      <tileSizeX>integer</tileSizeX>
+      <tileSizeY>integer</tileSizeY>
+      <orthorectify>boolean</orthorectify>
+      <elevationModelName>string</elevationModelName>
+      <addDeltaBands>boolean</addDeltaBands>
+      -->
+    </parameters>
+  </node>
+
+  <node id="BandSelect_01">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Rad2Refl</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa01_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_01">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_01</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa01_reflectance.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_04">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa04_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_04">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_04</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa04_reflectance.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_06">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa06_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_06">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_06</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa06_reflectance.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_08">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa08_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_08">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_08</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa08_reflectance.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_13">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa13_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_13">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_13</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa13_reflectance.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_14">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa14_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_14">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_14</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa14_reflectance.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_17">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa17_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_17">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_17</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa17_reflectance.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_21">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa21_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_21">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_21</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa21_reflectance.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_SZA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>SZA</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_SZA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_SZA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/SZA.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+</graph>
