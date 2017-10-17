@@ -38,3 +38,170 @@ for day0 in $(seq 152 10 245); do # 15 day increments
     ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
 done
 #+END_SRC
+** Projection 
+*** EPSG:3413
+#+BEGIN_SRC sh :results verbatim :eval no-export
+grass72 -e -c EPSG:3413 ./G3413
+grass72 ./G3413/PERMANENT
+
+r.in.gdal input=~/data/Greenland/GIMP/gimpdem0_0_v1.1.tif output=tmp0
+r.in.gdal input=~/data/Greenland/GIMP/gimpdem5_5_v1.1.tif output=tmp1
+g.region raster=tmp0,tmp1 -p
+g.region res=500 -a -p
+v.import extent=region input=~/data/GIS/NaturalEarth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp  output=countries
+d.mon start=wx0
+d.vect countries
+
+exit
+rm -fR G3413
+#+END_SRC
+#+RESULTS:
+
+** SZA
+*** Overlay all
+#+BEGIN_SRC sh :results verbatim :eval no-export
+grass72 -e -c EPSG:3413 ./G
+grass72 ./G/PERMANENT
+
+for item in $(ls tmp); do
+    echo $item
+    r.in.gdal input=tmp/${item}/SZA.tif output=${item}_SZA --o
+done
+
+g.region raster=$(g.list type=raster pattern=*_SZA separator=,)
+g.region res=500 -a -p
+
+#v.proj input=countries location=NaturalEarth mapset=10M dbase=~/data/grass --o
+v.import extent=region input=~/data/GIS/NaturalEarth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp  output=countries
+
+r.colors map=$(g.list type=raster pattern=*_SZA separator=,) color=viridis
+
+d.mon start=png output="./fig/sza_all.png" --overwrite
+for raster in $(g.list type=raster pattern=*_SZA); do d.rast $raster; done
+d.legend raster=20170801T131738_SZA
+
+d.vect countries where="NAME='Greenland'" fill_color=none
+d.mon stop=png
+open ./fig/sza_all.png
+#+END_SRC
+#+RESULTS:
+
+Resulting figure:
+#+NAME: fig:SZA_all
+#+ATTR_LATEX: :width \textwidth
+# #+ATTR_LATEX: :float wrap :placement [23]{l}{0.4\textwidth} :width 0.4\textwidth
+#+CAPTION: SZA from multiple scenes overlaid
+[[./fig/sza_all.png]]
+
+*** Minimum SZA
+#+BEGIN_SRC sh :results verbatim :eval no-export
+grass72 ./G/PERMANENT
+
+img_arr=($(g.list type=raster pattern=*_SZA))
+imgs=$(g.list type=raster pattern=*_SZA separator=,)
+
+n_imgs=${#img_arr[*]}
+
+# find the array index with the minimum SZA
+r.series input=${imgs} method=min_raster output=SZA_lut
+
+r.mapcalc --o <<EOF
+eval(SZA0 = if(SZA_lut == 0, ${img_arr[0]}), \
+     SZA1 = if(SZA_lut == 1, ${img_arr[1]}), \
+     SZA2 = if(SZA_lut == 2, ${img_arr[2]}), \
+     SZA3 = if(SZA_lut == 3, ${img_arr[3]}), \
+     SZA4 = if(SZA_lut == 4, ${img_arr[4]}), \
+     SZA5 = if(SZA_lut == 5, ${img_arr[5]}))
+SZA_min = SZA0+SZA1+SZA2+SZA3+SZA4+SZA5
+EOF
+
+d.mon start=png output="./fig/sza_lut.png" --overwrite
+d.rast SZA_lut
+d.vect countries where="NAME='Greenland'" fill_color=none
+d.mon stop=png
+
+d.mon start=wx0
+d.mon start=png output="./fig/sza_min.png" --overwrite
+d.erase
+d.rast SZA_min
+d.legend SZA_min
+d.vect countries where="NAME='Greenland'" fill_color=none
+d.mon stop=png
+open ./fig/sza_min.png
+#+END_SRC
+#+RESULTS:
+
+Resulting figures:
+#+NAME: fig:SZA_lut
+#+ATTR_LATEX: :width \textwidth
+#+CAPTION: Location and scene with minimum SZA
+[[./fig/sza_lut.png]]
+
+
+#+NAME: fig:SZA_min
+#+ATTR_LATEX: :width \textwidth
+#+CAPTION: Minimum SZA from multiple scenes
+[[./fig/sza_min.png]]
+
+
+*** Mosaic RGB based on Minimum SZA
++ OLCI 468 = BGR
+#+BEGIN_SRC sh :results verbatim :eval no-export
+grass72 ./G/PERMANENT
+
+# load data
+for item in $(ls tmp); do
+    echo $item
+    r.in.gdal input=tmp/${item}/Oa04_reflectance.tif output=${item}_Oa04_reflectance --o
+    r.in.gdal input=tmp/${item}/Oa06_reflectance.tif output=${item}_Oa06_reflectance --o
+    r.in.gdal input=tmp/${item}/Oa08_reflectance.tif output=${item}_Oa08_reflectance --o
+done
+
+img_arr_Oa04=($(g.list type=raster pattern=*Oa04_reflectance))
+img_arr_Oa06=($(g.list type=raster pattern=*Oa06_reflectance))
+img_arr_Oa08=($(g.list type=raster pattern=*Oa08_reflectance))
+
+r.mapcalc --o <<EOF
+eval(Oa04_0 = if(SZA_lut == 0, ${img_arr_Oa04[0]}), \
+     Oa04_1 = if(SZA_lut == 1, ${img_arr_Oa04[1]}), \
+     Oa04_2 = if(SZA_lut == 2, ${img_arr_Oa04[2]}), \
+     Oa04_3 = if(SZA_lut == 3, ${img_arr_Oa04[3]}), \
+     Oa04_4 = if(SZA_lut == 4, ${img_arr_Oa04[4]}), \
+     Oa04_5 = if(SZA_lut == 5, ${img_arr_Oa04[5]}), \
+     Oa06_0 = if(SZA_lut == 0, ${img_arr_Oa06[0]}), \
+     Oa06_1 = if(SZA_lut == 1, ${img_arr_Oa06[1]}), \
+     Oa06_2 = if(SZA_lut == 2, ${img_arr_Oa06[2]}), \
+     Oa06_3 = if(SZA_lut == 3, ${img_arr_Oa06[3]}), \
+     Oa06_4 = if(SZA_lut == 4, ${img_arr_Oa06[4]}), \
+     Oa06_5 = if(SZA_lut == 5, ${img_arr_Oa06[5]}), \
+     Oa08_0 = if(SZA_lut == 0, ${img_arr_Oa08[0]}), \
+     Oa08_1 = if(SZA_lut == 1, ${img_arr_Oa08[1]}), \
+     Oa08_2 = if(SZA_lut == 2, ${img_arr_Oa08[2]}), \
+     Oa08_3 = if(SZA_lut == 3, ${img_arr_Oa08[3]}), \
+     Oa08_4 = if(SZA_lut == 4, ${img_arr_Oa08[4]}), \
+     Oa08_5 = if(SZA_lut == 5, ${img_arr_Oa08[5]}))
+Oa04_mosaic = Oa04_0 + Oa04_1 + Oa04_2 + Oa04_3 + Oa04_4 + Oa04_5
+Oa06_mosaic = Oa06_0 + Oa06_1 + Oa06_2 + Oa06_3 + Oa06_4 + Oa06_5
+Oa08_mosaic = Oa08_0 + Oa08_1 + Oa08_2 + Oa08_3 + Oa08_4 + Oa08_5
+EOF
+
+r.colors map=Oa04_mosaic,Oa06_mosaic,Oa08_mosaic color=grey
+
+d.mon start=wx0
+d.mon start=png output="./fig/RGB_mosaic.png" --overwrite resolution=3
+d.erase
+d.rgb blue=Oa04_mosaic green=Oa06_mosaic red=Oa08_mosaic
+
+d.vect countries where="NAME='Greenland'" fill_color=none color=black width=3
+d.vect countries where="NAME='Greenland'" fill_color=none color=white width=1
+d.mon stop=png
+open ./fig/RGB_mosaic.png
+#+END_SRC
+#+RESULTS:
+
+Resulting figure:
+#+NAME: fig:SZA_min
+#+ATTR_LATEX: :width \textwidth
+#+CAPTION: RGB mosaic based on minimum SZA
+[[./fig/RGB_mosaic.png]]
+
