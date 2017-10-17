@@ -20,8 +20,7 @@
       <source>Rad2Refl</source>
     </sources>
     <parameters>
-      <!-- EASE grid; DEPRECATED, but 6931 not yet supported in QGIS, SpatialReference.org, etc. -->
-      <crs>EPSG:3973</crs>
+      <crs>EPSG:3413</crs>
       
       <resampling>Nearest</resampling>
       <noDataValue>NaN</noDataValue>
