@@ -9,7 +9,7 @@ do
     
     case $key in
 	-h|--help)
-	    echo "./fetch_ql --start YYYY-MM-DD --stop YYYY-MM-DD -f lon,lat -q /path/to/ql_folder"
+	    echo "./fetch_ql --start YYYY-MM-DD --stop YYYY-MM-DD -f lat,lon -q /path/to/ql_folder"
 	    exit 1
 	    ;;
 	--start)
@@ -73,7 +73,7 @@ elif [[ $FOOTPRINT =~ ^[-+]?[0-9]*\.?[0-9]+,([-+]?[0-9]*\.?[0-9]+)$ ]]; then
     x2=${arr[1]}
     FOOTPRINT=$(printf "footprint:\"Intersects(%s, %s)\"" $x1 $x2)			
 else
-    echo "Wrong footprint format! Please type 'lat_min:lon_min:lat_max:lon_max' in decimal degrees."
+    echo "Wrong footprint format!"
     echo " "
     $0 -h
     exit 1
