@@ -50,7 +50,7 @@
   <node id="BandSelect_01">
     <operator>BandSelect</operator>
     <sources>
-      <source>Rad2Refl</source>
+      <source>Reproject</source>
     </sources>
     <parameters>
       <sourceBands>Oa01_reflectance</sourceBands>
