@@ -14,6 +14,25 @@
     </parameters>
   </node>
 
+  <!-- Convert SZA to Band -->
+  <!--
+  <node id="SZA2Band">
+    <operator>BandMaths</operator>
+    <sources>
+      <sourceProducts>${source}</sourceProducts>
+    </sources>
+    <parameters>
+      <targetBands>
+        <targetBand>
+          <name>sun_zenith</name>
+          <type>float32</type>
+          <expression>SZA</expression>
+          </targetBand>
+        </targetBands>
+      </parameters>
+    </node>
+  -->
+  
   <node id="Reproject">
     <operator>Reproject</operator>
     <sources>
