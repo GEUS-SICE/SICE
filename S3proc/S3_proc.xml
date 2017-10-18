@@ -1,6 +1,6 @@
 <graph id="S3_proc">
   <version>1.0</version>
-  
+
   <node id="Rad2Refl">
     <operator>Rad2Refl</operator>
     <sources>
@@ -14,25 +14,6 @@
     </parameters>
   </node>
 
-  <!-- Convert SZA to Band -->
-  <!--
-  <node id="SZA2Band">
-    <operator>BandMaths</operator>
-    <sources>
-      <sourceProducts>${source}</sourceProducts>
-    </sources>
-    <parameters>
-      <targetBands>
-        <targetBand>
-          <name>sun_zenith</name>
-          <type>float32</type>
-          <expression>SZA</expression>
-          </targetBand>
-        </targetBands>
-      </parameters>
-    </node>
-  -->
-  
   <node id="Reproject">
     <operator>Reproject</operator>
     <sources>
@@ -225,14 +206,35 @@
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
+  
+  <!--
+      Radiance bands have NoData stripes.
+      SZA does not.
+      Make SZA data invald where there is no Radiance data
+  -->
+  <node id="SZA_invalid">
+    <operator>BandMaths</operator>
+    <sources>
+      <sourceProducts>Reproject</sourceProducts>
+    </sources>
+    <parameters>
+      <targetBands>
+        <targetBand>
+          <name>sun_zenith</name>
+          <type>float32</type>
+          <expression>quality_flags.invalid ? NaN : SZA</expression>
+        </targetBand>
+      </targetBands>
+    </parameters>
+  </node>
 
   <node id="BandSelect_SZA">
     <operator>BandSelect</operator>
     <sources>
-      <source>Reproject</source>
+      <source>SZA_invalid</source>
     </sources>
     <parameters>
-      <sourceBands>SZA</sourceBands>
+      <sourceBands>sun_zenith</sourceBands>
     </parameters>
   </node>
   <node id="Write_SZA">
