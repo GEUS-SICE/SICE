@@ -19,7 +19,6 @@ This step is a combination of [[./S3_proc.sh]] and [[./S3_proc.xml]].
 
 * Notes
 ** Misc Code Snippest
-
 *** Fetch all QL scenes
 + June 1 to sep 1 = DOY 152 to 245
 + Fetch scenes in 10 day increments because =./fetch_ql.sh= (actually, Copernicus) only delivers 100 products at a time
@@ -28,7 +27,7 @@ for day0 in $(seq 152 10 245); do # 15 day increments
     day1=$((day0+15))
     date0=$(gdate --date="2017-01-01 +${day0} days" --iso-8601)
     date1=$(gdate --date="2017-01-01 +${day1} days" --iso-8601)
-    
+
     ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
     ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
     ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
@@ -38,6 +37,111 @@ for day0 in $(seq 152 10 245); do # 15 day increments
     ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
 done
 #+END_SRC
+*** Fetch some
+#+BEGIN_SRC sh :results verbatim :eval no-export
+date0=2017-06-01 
+date1=2017-06-02
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
+
+date0=2017-06-15
+date1=2017-06-16
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
+
+date0=2017-07-01 
+date1=2017-07-02
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
+
+date0=2017-07-15
+date1=2017-07-16
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
+
+date0=2017-08-01
+date1=2017-08-02
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
+
+date0=2017-08-15
+date1=2017-08-16
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
+
+date0=2017-09-01
+date1=2017-09-02
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
+
+date0=2017-09-15
+date1=2017-09-16
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
+
+date0=2017-10-01
+date1=2017-10-02
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
+
+date0=2017-10-15
+date1=2017-10-16
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
+    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
+
+#+END_SRC
+#+RESULTS:
+
 ** Projection 
 *** EPSG:3413
 #+BEGIN_SRC sh :results verbatim :eval no-export
