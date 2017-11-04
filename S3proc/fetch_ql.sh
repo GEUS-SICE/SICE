@@ -9,7 +9,9 @@ do
     
     case $key in
 	-h|--help)
-	    echo "./fetch_ql --start YYYY-MM-DD --stop YYYY-MM-DD -f lat,lon -q /path/to/ql_folder"
+	    echo "./fetch_ql --start YYYY-MM-DD --stop YYYY-MM-DD [-f lat,lon] [-q /path/to/ql_folder]"
+	    echo "  [-f default: Greenland]"
+	    echo "  [-q default: ./quicklook]"
 	    exit 1
 	    ;;
 	--start)
@@ -64,9 +66,8 @@ fi
 
 if [ -z $FOOTPRINT ]; then
     echo "--footprint not set"
-    echo " "
-    $0 -h
-    exit 1
+    echo "SEARCHING ALL OF GREENLAND"
+    FOOTPRINT="footprint:\"Intersects(POLYGON((-34.51 84.29,-74.49 78.23,-69.47 75.76,-59.76 75.46,-53.76 65.40,-48.64 60.25,-42.62 59.36,-41.47,62.37,-21.22 69.77,-8.74 81.43,-34.51 84.29)))\""
 elif [[ $FOOTPRINT =~ ^[-+]?[0-9]*\.?[0-9]+,([-+]?[0-9]*\.?[0-9]+)$ ]]; then
     arr=(${FOOTPRINT//,/ })
     x1=${arr[0]}
