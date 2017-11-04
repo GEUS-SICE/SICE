@@ -1,6 +1,24 @@
 <graph id="S3_proc">
   <version>1.0</version>
 
+  <!-- convert raw S3 EFR to Albedo -->
+  <node id="OLCI.SnowAlbedo">
+    <operator>OLCI.SnowAlbedo</operator>
+    <sources>
+      <sourceProduct>${source}</sourceProduct>
+    </sources>
+    <parameters>
+      <!-- <spectralAlbedoComputationMode>spectralAlbedoMode</spectralAlbedoComputationMode> -->
+      <copyReflectanceBands>false</copyReflectanceBands>
+      <!-- <olciGains>double,double,double,...</olciGains> -->
+    </parameters>
+  </node>
+  
+  <!--
+      same as above, but to Reflectance. We don't use the
+      "copyReflectanceBands feature above because it didn't seem to
+      produce all of them.
+  -->
   <node id="Rad2Refl">
     <operator>Rad2Refl</operator>
     <sources>
@@ -14,6 +32,20 @@
     </parameters>
   </node>
 
+  <!-- reproject BOTH Albedo and Reflectance -->
+  <node id="ReprojectAlbedo">
+    <operator>Reproject</operator>
+    <sources>
+      <source>OLCI.SnowAlbedo</source>
+    </sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>false</includeTiePointGrids>
+      <!-- we'll access TiePointGrids from the Rad2Refl reprojected product -->
+    </parameters>
+  </node>
   <node id="Reproject">
     <operator>Reproject</operator>
     <sources>
@@ -21,32 +53,261 @@
     </sources>
     <parameters>
       <crs>EPSG:3413</crs>
-      
       <resampling>Nearest</resampling>
       <noDataValue>NaN</noDataValue>
       <includeTiePointGrids>true</includeTiePointGrids>
-      <!--
-      <wktFile>file</wktFile>
-      <crs>string</crs>
-      <resampling>string</resampling>
-      <referencePixelX>double</referencePixelX>
-      <referencePixelY>double</referencePixelY>
-      <easting>double</easting>
-      <northing>double</northing>
-      <orientation>double</orientation>
-      <pixelSizeX>double</pixelSizeX>
-      <pixelSizeY>double</pixelSizeY>
-      <width>integer</width>
-      <height>integer</height>
-      <tileSizeX>integer</tileSizeX>
-      <tileSizeY>integer</tileSizeY>
-      <orthorectify>boolean</orthorectify>
-      <elevationModelName>string</elevationModelName>
-      <addDeltaBands>boolean</addDeltaBands>
-      -->
     </parameters>
   </node>
 
+  <!--
+      from here down, pairs:
+      1) Select a band (from albedo or reflectance) and
+      2) write to disk
+  -->
+  <node id="BandSelect_albedo_spherical_400">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_spectral_spherical_400</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_spherical_400">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_spherical_400</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_spectral_spherical_0400.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_albedo_spherical_560">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_spectral_spherical_560</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_albedo_spherical_560">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_spherical_560</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_spectral_spherical_0560.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_albedo_spherical_665">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_spectral_spherical_665</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_albedo_spherical_665">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_spherical_665</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_spectral_spherical_0665.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_albedo_spherical_865">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_spectral_spherical_865</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_albedo_spherical_865">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_spherical_865</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_spectral_spherical_0865.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_albedo_spherical_1020">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_spectral_spherical_1020</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_albedo_spherical_1020">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_spherical_1020</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_spectral_spherical_1020.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_albedo_broadband_spherical">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_broadband_spherical</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_albedo_broadband_spherical">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_broadband_spherical</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_broadband_spherical.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+
+  <!-- planar -->
+  <node id="BandSelect_albedo_planar_400">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_spectral_planar_400</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_planar_400">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_planar_400</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_spectral_planar_0400.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_albedo_planar_560">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_spectral_planar_560</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_albedo_planar_560">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_planar_560</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_spectral_planar_0560.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_albedo_planar_665">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_spectral_planar_665</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_albedo_planar_665">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_planar_665</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_spectral_planar_0665.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_albedo_planar_865">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_spectral_planar_865</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_albedo_planar_865">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_planar_865</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_spectral_planar_0865.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_albedo_planar_1020">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_spectral_planar_1020</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_albedo_planar_1020">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_planar_1020</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_spectral_planar_1020.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_albedo_broadband_planar">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_broadband_planar</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_albedo_broadband_planar">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_broadband_planar</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_broadband_planar.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+
+  <!-- reflectance -->
   <node id="BandSelect_01">
     <operator>BandSelect</operator>
     <sources>
@@ -86,7 +347,7 @@
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
-
+  
   <node id="BandSelect_06">
     <operator>BandSelect</operator>
     <sources>
@@ -206,7 +467,8 @@
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
-  
+
+  <!-- orbital parameters -->
   <!--
       Radiance bands have NoData stripes.
       SZA does not.
