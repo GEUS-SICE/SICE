@@ -9,18 +9,13 @@ do
     
     case $key in
 	-h|--help)
-	    echo "./fetch_ql --start YYYY-MM-DD --stop YYYY-MM-DD [-f lat,lon] [-q /path/to/ql_folder]"
+	    echo "./fetch_ql --date [YYYY-MM-DD | YYYY-DOY] [-f lat,lon] [-q /path/to/ql_folder]"
 	    echo "  [-f default: Greenland]"
 	    echo "  [-q default: ./quicklook]"
 	    exit 1
 	    ;;
-	--start)
-	    STARTDATE="$2"
-	    shift # past argument
-	    shift # past value
-	    ;;
-	--stop)
-	    STOPDATE="$2"
+	--date)
+	    DATE="$2"
 	    shift # past argument
 	    shift # past value
 	    ;;
@@ -55,13 +50,25 @@ FILENAME="filename:*EFR*"
 MISC="orbitdirection:descending"
 
 # Check search dates
-if [ -z $STARTDATE ] || [ -z $STOPDATE ];then
-    echo "--start or --stop date option not set"
+if [ -z $DATE ]; then
+    echo "--date not set"
     echo " "
     $0 -h
     exit 1
 else
-    DATESTR="beginposition:[${STARTDATE}T00:00:00.000Z TO ${STOPDATE}T00:00:00.000Z]"
+    if [[ $DATE =~ 20[1,2][0-9]-[0-9][0-9]?[0-9]?$ ]]; then
+	YEAR=$(echo $DATE | cut -d"-" -f1)
+	DOY1=$(echo $DATE | cut -d"-" -f2)
+	DOY0=$(echo "${DOY1}-1" | bc -l)
+	# echo $DOY1 $DOY0
+	DATE0=$(gdate -d "${YEAR}-01-01 +${DOY0} days" "+%Y-%m-%d")
+	DATE1=$(gdate -d "${YEAR}-01-01 +${DOY1} days" "+%Y-%m-%d")
+	DATESTR="beginposition:[${DATE0}T00:00:00.000Z TO ${DATE1}T00:00:00.000Z]"
+    else
+	DATE1=$(gdate -d "${DATE} +1 days" "+%Y-%m-%d")
+	# echo $DATE $DATE1
+	DATESTR="beginposition:[${DATE}T00:00:00.000Z TO ${DATE1}T00:00:00.000Z]"
+    fi
 fi
 
 if [ -z $FOOTPRINT ]; then
