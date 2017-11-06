@@ -2,13 +2,28 @@
 
 # ./dm.sh 20170801 ./tmp ./mosaic
 
+if [ "$#" -ne 3 ]; then
+  echo "Usage: $0 <yyyymmdd> <infolder> <outfolder>" >&2
+  exit 1
+fi
+
+DATE=$1
+INFOLDER=$2
+OUTFOLDER=$3
+
+# TESTING
+# DATE=20170601
+# INFOLDER=./tmp2
+# OUTFOLDER=./mosaic
+
 export GISBASE=/sw/Applications/GRASS-mac-7.2.app/Contents/MacOS
 
-${GISBASE}/grass.sh -e -c EPSG:3413 /tmp/mosaic
+rm -fR ./tmpG
+${GISBASE}/grass.sh -e -c EPSG:3413 ./tmpG
 
 #generate GISRCRC
-MYGISDBASE=/tmp/
-MYLOC=mosaic
+MYGISDBASE=./
+MYLOC=tmpG
 MYMAPSET=PERMANENT
 
 # Set the global grassrc file to individual file name
@@ -44,20 +59,6 @@ export GIS_LOCK=42
 # export TGISDB_DRIVER=sqlite
 # export TGISDB_DATABASE=$MYGISDBASE/$MYLOC/PERMANENT/tgis/sqlite.db
 
-# # test a command
-# g.list rast
-# g.region -p
-
-
-if [ "$#" -ne 3 ]; then
-  echo "Usage: $0 <yyyymmdd> <infolder> <outfolder>" >&2
-  exit 1
-fi
-
-DATE=$1
-INFOLDER=$2
-OUTFOLDER=$3
-
 if ! [ -e "$INFOLDER" ]; then
   echo "$INFOLDER not found" >&2
   exit 1
@@ -70,7 +71,7 @@ for ASCENE in $(cd $INFOLDER; find . -name "${DATE}T??????" -type d -depth 1); d
     g.mapset -c ${SCENE}
     for file in $(ls ${INFOLDER}/${SCENE}/*.tif); do
 	# echo $file
-	band=$(echo $(basename ${file} .tif) | cut -d"_" -f1)
+	band=$(echo $(basename ${file} .tif))
 	# echo $band
 	r.in.gdal input=${file} output=${band}
     done
@@ -78,11 +79,12 @@ done
 
 BANDS=$(g.list type=raster mapset=* | cut -d"@" -f1 | sort | uniq)
 
-
-# # # set the region to include all the data
+# set the region to include all the data
 g.mapset PERMANENT
 g.region raster=$(g.list type=raster pattern=SZA separator=, mapset=*)
 g.region res=500 -a -p
+r.in.gdal input=mask.tif output=MASK
+g.region zoom=MASK
 g.region -s
 g.mapset -c ${DATE}
 
@@ -96,7 +98,6 @@ r.series input=${SZA_list} method=min_raster output=SZA_LUT --o
 
 SZA_LUT_idxs=$(r.stats -n -l SZA_LUT)
 n_imgs=$(echo $SZA_LUT_idxs |wc -w)
-
 
 # make N temp rasters, one for each patch, each masked as appropriate
 for i in $SZA_LUT_idxs; do
@@ -112,7 +113,8 @@ for i in $SZA_LUT_idxs; do
 	r.mapcalc "${B}_tmp_${i} = ${BAND_arr[${i}]}" --o
     done
 done
-r.mask -r
+r.mask zoom=MASK@PERMANENT
+r.mask raster=MASK@PERMANENT --o
 g.region -d
 
 # patch the temp arrays to one mosaic and write to disk
@@ -123,9 +125,8 @@ for B in $(echo ${BANDS}); do
     r.out.gdal -c input=${B} output=${OUTFOLDER}/${DATE}/${B}.tif ${TIFOPTS}
 done
 
-r.composite -d -c blue=Oa04 green=Oa06 red=Oa08 output=RGB --o
+r.composite -d -c blue=Oa04_reflectance green=Oa06_reflectance red=Oa08_reflectance output=RGB --o
 r.out.gdal -c input=RGB output=${OUTFOLDER}/${DATE}/RGB.tif ${TIFOPTS}
 r.out.png input=RGB output=${OUTFOLDER}/${DATE}/RGB.png --o
 
 g.remove -f type=raster pattern="*_tmp_*"
-

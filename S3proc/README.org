@@ -18,173 +18,8 @@
 This step is a combination of [[./S3_proc.sh]] and [[./S3_proc.xml]].
 
 * Notes
-** Misc Code Snippest
-*** Fetch all QL scenes
-+ June 1 to sep 1 = DOY 152 to 245
-+ Fetch scenes in 10 day increments because =./fetch_ql.sh= (actually, Copernicus) only delivers 100 products at a time
-#+BEGIN_SRC sh :results verbatim :eval no-export
-for day0 in $(seq 152 10 245); do # 15 day increments
-    day1=$((day0+15))
-    date0=$(gdate --date="2017-01-01 +${day0} days" --iso-8601)
-    date1=$(gdate --date="2017-01-01 +${day1} days" --iso-8601)
-
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
-done
-#+END_SRC
-*** Fetch some
-#+BEGIN_SRC sh :results verbatim :eval no-export
-date0=2017-06-01 
-date1=2017-06-02
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
-
-date0=2017-06-15
-date1=2017-06-16
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
-
-date0=2017-07-01 
-date1=2017-07-02
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
-
-date0=2017-07-15
-date1=2017-07-16
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
-
-date0=2017-08-01
-date1=2017-08-02
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
-
-date0=2017-08-15
-date1=2017-08-16
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
-
-date0=2017-09-01
-date1=2017-09-02
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
-
-date0=2017-09-15
-date1=2017-09-16
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
-
-date0=2017-10-01
-date1=2017-10-02
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
-
-date0=2017-10-15
-date1=2017-10-16
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 62,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 66,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 70,-45
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-35
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 76,-50
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-30
-    ./fetch_ql.sh --start $date0 --stop $date1 -f 80,-50
-
-#+END_SRC
-#+RESULTS:
-
-** Projection 
-*** EPSG:3413
-#+BEGIN_SRC sh :results verbatim :eval no-export
-grass72 -e -c EPSG:3413 ./G3413
-grass72 ./G3413/PERMANENT
-
-r.in.gdal input=~/data/Greenland/GIMP/gimpdem0_0_v1.1.tif output=tmp0
-r.in.gdal input=~/data/Greenland/GIMP/gimpdem5_5_v1.1.tif output=tmp1
-g.region raster=tmp0,tmp1 -p
-g.region res=500 -a -p
-v.import extent=region input=~/data/GIS/NaturalEarth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp  output=countries
-d.mon start=wx0
-d.vect countries
-
-exit
-rm -fR G3413
-#+END_SRC
-#+RESULTS:
-
-*** From Iceland Email
-+ See [[mu4e:msgid:CAMNM-+Hv2tSmCy8r9Gqe3_E89invtzUg1vr0kKTKNbpkhknNTg@mail.gmail.com][Fwd: Glacier work]]
-+ proj4 string:
-  '+proj=laea +lat_0=90 +lon_0=-100 +x_0=0 +y_0=2200000 +datum=WGS84 +units=km +no_defs'
-
-#+BEGIN_SRC sh :results verbatim :eval no-export
-grass72 -c EPSG:4326 ./Gtmp
-g.proj proj4='+proj=laea +lat_0=90 +lon_0=-100 +x_0=0 +y_0=2200000 +datum=WGS84 +units=km +no_defs' location=Gsin
-g.mapset mapset=PERMANENT location=Gsin
-
-g.region n=1000 s=-3000 e=10000 w=-10000 -pl
-v.import extent=region --o input=~/data/GIS/NaturalEarth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp  output=countries
-
-d.mon start=wx0
-g.region n=100000 s=-100000 e=100000 w=-100000
-g.region n=n+100000 s=s-100000 e=e+100000 w=w-100000
-d.erase
-d.vect countries
-d.grid -w 10:0:0
-#+END_SRC
-#+RESULTS:
-
-
 ** SZA
++ These snippets have been implemented as [[./dm.sh]].
 *** Overlay all
 #+BEGIN_SRC sh :results verbatim :eval no-export
 grass72 -e -c EPSG:3413 ./G
@@ -336,4 +171,38 @@ Resulting figure:
 #+ATTR_LATEX: :width \textwidth
 #+CAPTION: RGB mosaic based on minimum SZA
 [[./fig/RGB_mosaic.png]]
+** Generate ice mask
++ Use the icemask from BedMachine v3
+#+BEGIN_SRC sh :results verbatim :eval no-export
+grass72 -c EPSG:3413 ./Gtmp
+r.in.gdal input=NetCDF:~/data/Greenland/Morlighem_2017/BedMachineGreenland-2017-09-20.nc:mask output=icemask
 
+g.region raster=icemask
+g.region res=500 -ap
+
+r.mapcalc "MASK = if((icemask == 2) ||| (icemask == 3), 1, null())" --o
+
+d.mon start=wx0
+d.erase
+d.rast icemask
+
+r.out.gdal input=MASK output=mask.tif type=Byte createopt=COMPRESS=DEFLATE --o
+exit
+trash Gtmp
+#+END_SRC
+#+RESULTS:
+
+** Misc Code Snippest
+*** Fetch all QL scenes
+#+BEGIN_SRC sh :results verbatim :eval no-export
+for d in $(seq 1 365); do
+    ./fetch_ql.sh --date 2017-${d}
+done
+#+END_SRC
+*** Fetch JJA
++ June 1 to sep 1 = DOY 152 to 245
+#+BEGIN_SRC sh :results verbatim :eval no-export
+for d in $(seq 152 245); do
+    ./fetch_ql.sh --date 2017-${d}
+done
+#+END_SRC
