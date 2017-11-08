@@ -14,7 +14,7 @@ do
 	    echo "  [-q default: ./quicklook]"
 	    exit 1
 	    ;;
-	--date)
+	-d|--date)
 	    DATE="$2"
 	    shift # past argument
 	    shift # past value
