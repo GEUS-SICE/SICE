@@ -115,7 +115,7 @@ for uniq_dts in $(cut -c1-31 product_IDs.txt | sort | uniq); do
     ql_id=$(grep ${uniq_dts} product_IDs.txt | head -n1 | cut -d" " -f2)
     URL="https://scihub.copernicus.eu/s3/odata/v1/Products('${ql_id}')/Products('Quicklook')/\$value"
     
-    wget "${URL}" --user=s3guest --password=s3guest -nc -c -nd -P ./quicklook -O ./quicklook/${filename_clean}_${ql_id}.jpg
+    wget "${URL}" --user=s3guest --password=s3guest -nc -c -nd -P ${QLFOLDER} -O ${QLFOLDER}/${filename_clean}_${ql_id}.jpg
 done
 
 rm product_IDs.txt
