@@ -29,7 +29,10 @@ do
 	    shift # past argument
 	    shift # past value
 	    ;;
-    
+	--debug)
+	    DEBUG=1
+	    shift
+	    ;;
 	*)    # unknown option
 	    POSITIONAL+=("$1") # save it in an array for later
 	    shift # past argument
@@ -74,7 +77,7 @@ fi
 if [ -z $FOOTPRINT ]; then
     echo "--footprint not set"
     echo "SEARCHING ALL OF GREENLAND"
-    FOOTPRINT="footprint:\"Intersects(POLYGON((84.29 -34.51,78.23 -74.49,75.76 -69.47,75.46 -59.76,65.40 -53.76,60.25 -48.64,59.36 -42.62,62.37 -41.47,69.77 -21.22,81.43 -8.74,84.29 -34.51)))\""
+    FOOTPRINT="footprint:\"Intersects(POLYGON((-34.51 84.29,-74.49 78.23,-69.47 75.76,-59.76 75.46,-53.76 65.40,-48.64 60.25,-42.62 59.36,-41.47 62.37,-21.22 69.77,-8.74 81.43,-34.51 84.29)))\""
 elif [[ $FOOTPRINT =~ ^[-+]?[0-9]*\.?[0-9]+,([-+]?[0-9]*\.?[0-9]+)$ ]]; then
     arr=(${FOOTPRINT//,/ })
     x1=${arr[0]}
@@ -118,5 +121,7 @@ for uniq_dts in $(cut -c1-31 product_IDs.txt | sort | uniq); do
     wget "${URL}" --user=s3guest --password=s3guest -nc -c -nd -P ${QLFOLDER} -O ${QLFOLDER}/${filename_clean}_${ql_id}.jpg
 done
 
-rm product_IDs.txt
-rm query_results.xml
+if [[ -z $DEBUG ]]; then
+    rm product_IDs.txt
+    rm query_results.xml
+fi
