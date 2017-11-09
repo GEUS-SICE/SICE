@@ -388,26 +388,6 @@
     </parameters>
   </node>
 
-  <node id="BandSelect_13">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>Oa13_reflectance</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_13">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_13</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/Oa13_reflectance.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
   <node id="BandSelect_14">
     <operator>BandSelect</operator>
     <sources>
@@ -428,6 +408,26 @@
     </parameters>
   </node>
 
+  <node id="BandSelect_15">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa15_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_15">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_15</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa15_reflectance.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
   <node id="BandSelect_17">
     <operator>BandSelect</operator>
     <sources>
