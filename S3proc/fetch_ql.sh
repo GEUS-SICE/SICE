@@ -61,16 +61,12 @@ if [ -z $DATE ]; then
 else
     if [[ $DATE =~ 20[1,2][0-9]-[0-9][0-9]?[0-9]?$ ]]; then
 	YEAR=$(echo $DATE | cut -d"-" -f1)
-	DOY1=$(echo $DATE | cut -d"-" -f2)
-	DOY0=$(echo "${DOY1}-1" | bc -l)
-	# echo $DOY1 $DOY0
-	DATE0=$(gdate -d "${YEAR}-01-01 +${DOY0} days" "+%Y-%m-%d")
-	DATE1=$(gdate -d "${YEAR}-01-01 +${DOY1} days" "+%Y-%m-%d")
-	DATESTR="beginposition:[${DATE0}T00:00:00.000Z TO ${DATE1}T00:00:00.000Z]"
+	DOY=$(echo $DATE | cut -d"-" -f2)
+	DOY=$(($DOY-1))
+	DATE=$(gdate -d "${YEAR}-01-01 +${DOY} days" "+%Y-%m-%d")
+	DATESTR="beginposition:[${DATE}T06:00:00.000Z TO ${DATE}T18:00:00.000Z]"
     else
-	DATE1=$(gdate -d "${DATE} +1 days" "+%Y-%m-%d")
-	# echo $DATE $DATE1
-	DATESTR="beginposition:[${DATE}T00:00:00.000Z TO ${DATE1}T00:00:00.000Z]"
+	DATESTR="beginposition:[${DATE}T06:00:00.000Z TO ${DATE}T18:00:00.000Z]"
     fi
 fi
 
