@@ -3,7 +3,7 @@
 
 1. Fetch S3 quicklook products
 2. Process with SNAP
-   1. Radiance to reflectance
+   1. Radiance to reflectance and albedo
    2. Export as folders of GeoTIFFs
 3. Mosaic all scenes in a day to produce one Greenland-wide product
 
