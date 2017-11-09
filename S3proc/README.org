@@ -180,13 +180,13 @@ r.in.gdal input=NetCDF:~/data/Greenland/Morlighem_2017/BedMachineGreenland-2017-
 g.region raster=icemask
 g.region res=500 -ap
 
-r.mapcalc "MASK = if((icemask == 2) ||| (icemask == 3), 1, null())" --o
+r.mapcalc "mask = if(icemask == 4, null(), icemask)" --o
 
 d.mon start=wx0
 d.erase
-d.rast icemask
+d.rast mask
 
-r.out.gdal input=MASK output=mask.tif type=Byte createopt=COMPRESS=DEFLATE --o
+r.out.gdal -c -m input=mask output=mask.tif type=Byte createopt=COMPRESS=DEFLATE --o
 exit
 trash Gtmp
 #+END_SRC
