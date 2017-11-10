@@ -13,18 +13,18 @@ OUTFOLDER=$3
 
 # TESTING
 # DATE=20170601
-# INFOLDER=./tmp2
+# INFOLDER=./tmp
 # OUTFOLDER=./mosaic
 
 export GISBASE=/sw/Applications/GRASS-mac-7.2.app/Contents/MacOS
 
-rm -fR ./tmpG
-${GISBASE}/grass.sh -e -c EPSG:3413 ./tmpG
-
 #generate GISRCRC
-MYGISDBASE=./
+MYGISDBASE=/tmp
 MYLOC=tmpG
 MYMAPSET=PERMANENT
+
+rm -fR ${MYGISDBASE}/${MYLOC}
+${GISBASE}/grass.sh -e -c EPSG:3413 ./tmpG
 
 # Set the global grassrc file to individual file name
 MYGISRC="$HOME/.grassrc.$GRASS_VERSION.$$"
