@@ -113,9 +113,9 @@ for i in $SZA_LUT_idxs; do
 	r.mapcalc "${B}_tmp_${i} = ${BAND_arr[${i}]}" --o
     done
 done
-r.mask zoom=MASK@PERMANENT
 r.mask raster=MASK@PERMANENT --o
 g.region -d
+g.region zoom=MASK@PERMANENT
 
 # patch the temp arrays to one mosaic and write to disk
 TIFOPTS='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
