@@ -24,7 +24,7 @@ MYLOC=tmpG
 MYMAPSET=PERMANENT
 
 rm -fR ${MYGISDBASE}/${MYLOC}
-${GISBASE}/grass.sh -e -c EPSG:3413 ./tmpG
+${GISBASE}/grass.sh -e -c EPSG:3413  ${MYGISDBASE}/${MYLOC}
 
 # Set the global grassrc file to individual file name
 MYGISRC="$HOME/.grassrc.$GRASS_VERSION.$$"
