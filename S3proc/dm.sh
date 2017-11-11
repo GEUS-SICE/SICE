@@ -38,15 +38,10 @@ echo "GRASS_GUI: text" >> "$MYGISRC"
 export GISRC=$MYGISRC
 export GRASS_PYTHON=python
 export GRASS_MESSAGE_FORMAT=plain
-# export GRASS_TRUECOLOR=TRUE
-# export GRASS_TRANSPARENT=TRUE
-# export GRASS_PNG_AUTO_WRITE=TRUE
-# export GRASS_GNUPLOT='gnuplot -persist'
+export GRASS_TRUECOLOR=TRUE
+export GRASS_TRANSPARENT=TRUE
 # export GRASS_WIDTH=640
 # export GRASS_HEIGHT=480
-# # export GRASS_HTML_BROWSER=firefox
-# export GRASS_PAGER=cat
-# export GRASS_WISH=wish
         
 export PATH="$GISBASE/bin:$GISBASE/scripts:$PATH"
 export LD_LIBRARY_PATH="$GISBASE/lib"
@@ -55,9 +50,6 @@ export PYTHONPATH="$GISBASE/etc/python:$PYTHONPATH"
 export MANPATH=$MANPATH:$GISBASE/man
 
 export GIS_LOCK=42
-# #For the temporal modules
-# export TGISDB_DRIVER=sqlite
-# export TGISDB_DATABASE=$MYGISDBASE/$MYLOC/PERMANENT/tgis/sqlite.db
 
 if ! [ -e "$INFOLDER" ]; then
   echo "$INFOLDER not found" >&2
@@ -74,7 +66,11 @@ for ASCENE in $(cd $INFOLDER; find . -name "${DATE}T??????" -type d -depth 1); d
 	band=$(echo $(basename ${file} .tif))
 	# echo $band
 	r.in.gdal input=${file} output=${band}
-	r.null map=${band} setnull=inf
+
+	# fix inf values in two of the rasters
+	if [[ ${band} == "albedo_broadband_planar" ]] || [[ ${band} == "albedo_broadband_spherical" ]]; then
+	    r.null map=${band} setnull=inf
+	fi
     done
 done
 
