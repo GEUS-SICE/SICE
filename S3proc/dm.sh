@@ -88,14 +88,15 @@ done
 # The target bands. For example, Oa01_reflectance or SZA.
 BANDS=$(g.list type=raster mapset=* | cut -d"@" -f1 | sort | uniq)
 
-# set the region to include all the data
+# Mask and zoom to Greenland ice+land
 g.mapset PERMANENT --quiet
 g.region raster=$(g.list type=raster pattern=SZA separator=, mapset=*)
 g.region res=500 -a
 r.in.gdal input=mask.tif output=MASK --quiet
 g.region zoom=MASK
-g.region -s
-g.mapset -c ${DATE} --quiet
+g.region -s # save as default region
+g.mapset -c ${DATE} --quiet # create a new mapset for final product
+r.mask raster=MASK@PERMANENT --o # mask to Greenland ice+land
 
 # find the array index with the minimum SZA
 # Array for indexing, list for using in GRASS
@@ -106,11 +107,6 @@ r.series input=${SZA_list} method=min_raster output=SZA_LUT --o
 # find the indices used. It is possible one scene is never used
 SZA_LUT_idxs=$(r.stats -n -l SZA_LUT)
 n_imgs=$(echo $SZA_LUT_idxs |wc -w)
-
-# Mask and zoom to Greenland ice+land
-r.mask raster=MASK@PERMANENT --o
-g.region -d
-g.region zoom=MASK@PERMANENT
 
 # Patch each BAND based on the minimum SZA_LUT
 for B in $(echo $BANDS); do
@@ -128,13 +124,13 @@ TIFOPTS='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
 for B in $(echo ${BANDS}); do
     echo "Writing ${B} to ${OUTFOLDER}/${DATE}/${B}.tif"
     r.colors map=${B} color=grey --q
-    r.out.gdal -c input=${B} output=${OUTFOLDER}/${DATE}/${B}.tif ${TIFOPTS}
+    r.out.gdal -m -c input=${B} output=${OUTFOLDER}/${DATE}/${B}.tif ${TIFOPTS}
 done
 
 # combine bands to make RGB
 echo "Writing out RGB and SZA_LUT"
 r.composite -d -c blue=Oa04_reflectance green=Oa06_reflectance red=Oa08_reflectance output=RGB --o
-r.out.gdal -c input=RGB output=${OUTFOLDER}/${DATE}/RGB.tif ${TIFOPTS}
+r.out.gdal -m -c input=RGB output=${OUTFOLDER}/${DATE}/RGB.tif ${TIFOPTS}
 r.out.png input=RGB output=${OUTFOLDER}/${DATE}/RGB.png --o
 r.colors map=SZA_LUT color=random
 r.out.png input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.png --o
