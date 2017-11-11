@@ -74,6 +74,7 @@ for ASCENE in $(cd $INFOLDER; find . -name "${DATE}T??????" -type d -depth 1); d
 	band=$(echo $(basename ${file} .tif))
 	# echo $band
 	r.in.gdal input=${file} output=${band}
+	r.null map=${band} setnull=inf
     done
 done
 
