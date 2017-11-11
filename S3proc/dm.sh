@@ -118,21 +118,25 @@ for B in $(echo $BANDS); do
     B_arr=($(g.list type=raster pattern=${B} mapset=* | grep "@.*T"))
     r.mapcalc "${B} = null()" --o --q
     for i in $SZA_LUT_idxs; do
-	echo "patching ${B} from ${B_arr[${i}]} [$i]"
-	r.mapcalc "${B} = if(SZA_LUT == ${i}, ${B_arr[${i}]}, ${B})" --o --q
+        echo "patching ${B} from ${B_arr[${i}]} [$i]"
+        r.mapcalc "${B} = if(SZA_LUT == ${i}, ${B_arr[${i}]}, ${B})" --o --q
     done
 done
 
-# combine bands to make RGB
-r.composite -d -c blue=Oa04_reflectance green=Oa06_reflectance red=Oa08_reflectance output=RGB --o
-r.out.png input=RGB output=${OUTFOLDER}/${DATE}/RGB.png --o
-
 # save everything to disk
 TIFOPTS='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
-for B in $(echo ${BANDS} RGB); do
-    # r.patch input=$(g.list type=raster pattern="${B}_tmp_*" separator=,) output=${B} --o
-    r.colors map=${B} color=grey
+for B in $(echo ${BANDS}); do
+    echo "Writing ${B} to ${OUTFOLDER}/${DATE}/${B}.tif"
+    r.colors map=${B} color=grey --q
     r.out.gdal -c input=${B} output=${OUTFOLDER}/${DATE}/${B}.tif ${TIFOPTS}
 done
+
+# combine bands to make RGB
+echo "Writing out RGB and SZA_LUT"
+r.composite -d -c blue=Oa04_reflectance green=Oa06_reflectance red=Oa08_reflectance output=RGB --o
+r.out.gdal -c input=RGB output=${OUTFOLDER}/${DATE}/RGB.tif ${TIFOPTS}
+r.out.png input=RGB output=${OUTFOLDER}/${DATE}/RGB.png --o
+r.colors map=SZA_LUT color=random
+r.out.png input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.png --o
 
 # rm -fR /tmp/tmpG
