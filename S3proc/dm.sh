@@ -62,14 +62,14 @@ for ASCENE in $(cd $INFOLDER; find . -name "${DATE}T??????" -type d -depth 1); d
     SCENE=$(echo $ASCENE | cut -c3-)
     g.mapset -c ${SCENE}
     for file in $(ls ${INFOLDER}/${SCENE}/*.tif); do
-	# echo $file
+	echo "Importing $file"
 	band=$(echo $(basename ${file} .tif))
 	# echo $band
-	r.in.gdal input=${file} output=${band}
+	r.in.gdal input=${file} output=${band} --quiet
 
 	# fix inf values in two of the rasters
 	if [[ ${band} == "albedo_broadband_planar" ]] || [[ ${band} == "albedo_broadband_spherical" ]]; then
-	    r.null map=${band} setnull=inf
+          r.null map=${band} setnull=inf --quiet
 	fi
     done
 done
