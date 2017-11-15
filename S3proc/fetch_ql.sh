@@ -64,9 +64,9 @@ else
 	DOY=$(echo $DATE | cut -d"-" -f2)
 	DOY=$(($DOY-1))
 	DATE=$(gdate -d "${YEAR}-01-01 +${DOY} days" "+%Y-%m-%d")
-	DATESTR="beginposition:[${DATE}T06:00:00.000Z TO ${DATE}T18:00:00.000Z]"
+	DATESTR="beginposition:[${DATE}T00:00:01.000Z TO ${DATE}T23:59:59.000Z]"
     else
-	DATESTR="beginposition:[${DATE}T06:00:00.000Z TO ${DATE}T18:00:00.000Z]"
+	DATESTR="beginposition:[${DATE}T00:00:01.000Z TO ${DATE}T23:59:59.000Z]"
     fi
 fi
 
