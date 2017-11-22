@@ -51,11 +51,11 @@ for zipfile in $(ls ${INPATH}/S3A_OL_1_EFR____*.zip); do
     
     OUTFOLDER=$(echo $zipfile | cut -d_ -f9)
     DEST=${OUTPATH}/${OUTFOLDER}
-    if [[ -d ${OUTPATH}/${OUTFOLDER} ]]; then
-    	message "${OUTPATH}/${OUTFOLDER} already exists. Skipping processing..."
-    	continue
-    fi
-    message "Generating ${OUTPATH}/${OUTFOLDER}"
+    # if [[ -d ${OUTPATH}/${OUTFOLDER} ]]; then
+    # 	message "${OUTPATH}/${OUTFOLDER} already exists. Skipping processing..."
+    # 	continue
+    # fi
+    # message "Generating ${OUTPATH}/${OUTFOLDER}"
 
     message "Unzipping: Start"
     timing
