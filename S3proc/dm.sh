@@ -103,6 +103,7 @@ r.mask raster=MASK@PERMANENT --o # mask to Greenland ice+land
 SZA_arr=($(g.list type=raster pattern=SZA mapset=*))
 SZA_list=$(g.list type=raster pattern=SZA mapset=* separator=comma)
 r.series input=${SZA_list} method=min_raster output=SZA_LUT --o
+echo ${SZA_list} | tr ',' '\n' | cut -d@ -f2 > ${OUTFOLDER}/${DATE}/SZA_LUT.txt
 
 # find the indices used. It is possible one scene is never used
 SZA_LUT_idxs=$(r.stats -n -l SZA_LUT)
@@ -132,7 +133,8 @@ echo "Writing out RGB and SZA_LUT"
 r.composite -d -c blue=Oa04_reflectance green=Oa06_reflectance red=Oa08_reflectance output=RGB --o
 r.out.gdal -m -c input=RGB output=${OUTFOLDER}/${DATE}/RGB.tif ${TIFOPTS}
 r.out.png input=RGB output=${OUTFOLDER}/${DATE}/RGB.png --o
+r.out.gdal -m -c input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.tif ${TIFOPTS}
 r.colors map=SZA_LUT color=random
 r.out.png input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.png --o
 
-# rm -fR /tmp/tmpG
+rm -fR /tmp/tmpG
