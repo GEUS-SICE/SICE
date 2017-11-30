@@ -9,13 +9,14 @@ if ! [ -e "$1" ]; then
   exit 1
 fi
 
-mkdir -p $2
-for file in $(ls $1); do
+IN=$1
+OUT=$2
+mkdir -p ${OUT}
+for file in $(ls ${IN}); do
     id=$(echo $(basename $file .jpg) | cut -d"_" -f2)  # product ID from QL filename
     PRODUCTURL="https://scihub.copernicus.eu/s3/odata/v1/Products('${id}')/"
-    wget "${PRODUCTURL}" --user=s3guest --password=s3guest -nc -c -nd -O ${2}/${id}.xml
-    PRODUCT_NAME=$(grep -o "file name.*" ${2}/${id}.xml |cut -d\" -f2)
-    DATAURL="https://scihub.copernicus.eu/s3/odata/v1/Products('${id}')/\$value"
+    wget "${PRODUCTURL}" --user=s3guest --password=s3guest -nc -c -nd -O ${OUT}/${id}.xml
+    PRODUCT_NAME=$(grep -o "<d:Name>.*" ${OUT}/${id}.xml | cut -d">" -f2 | cut -d"<" -f1)
     rm ${2}/${id}.xml
-    wget "${DATAURL}" --user=s3guest --password=s3guest --continue -nd -O ${2}/${PRODUCT_NAME}
+    wget "${PRODUCTURL}\$value" --user=s3guest --password=s3guest --continue -nd -O ${OUT}/${PRODUCT_NAME}.zip
 done
