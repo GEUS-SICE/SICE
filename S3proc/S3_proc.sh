@@ -3,20 +3,23 @@
 timing() { if [[ $TIMING == 1 ]]; then date; fi; }
 message() { if [[ $VERBOSE == 1 ]]; then echo $1; fi; }
 
+Q=30
+
 while [[ $# -gt 0 ]]
 do
     key="$1"
     
     case $key in
 	-h|--help)
-	    echo "./S3_proc.sh -i inpath -o outpath [-h -v -t]"
+	    echo "./S3_proc.sh -i inpath -o outpath -x XML [-q n] [-h -v -t]"
 	    echo "  -i: Path to input S3 EFR ZIP files"
 	    echo "  -o: Path where to store ouput"
+	    echo "  -x: XML file for GPT"
+	    echo "  -q: Q CPU multiplier for Java"
 	    echo "  -v: Print verbose messages during processing"
 	    echo "  -t: Print timing messages during processing"
 	    echo "  -h: print this help"
-	    exit 1
-	    ;;
+	    exit 1;;
 	-i)
 	    INPATH="$2"
 	    shift # past argument
@@ -24,22 +27,30 @@ do
 	    ;;
 	-o)
 	    OUTPATH="$2"
-	    shift # past argument
-	    shift # past value
-	    ;;
+	    shift; shift;;
+	-x)
+	    XML="$2"
+	    shift; shift;;
+	-q)
+	    Q="$2"
+	    shift; shift;;
 	-v)
 	    VERBOSE=1
-	    shift # past argument
-	    ;;
+	    shift;;
 	-t)
 	    TIMING=1
-	    shift # past argument
-	    ;;
+	    shift;;
     esac
 done
 
 if [ -z $INPATH ] || [ -z $OUTPATH ];then
     echo "-i and -o option not set"
+    echo " "
+    $0 -h
+    exit 1
+fi
+if [ -z $XML ]; then
+    echo "-x not set"
     echo " "
     $0 -h
     exit 1
@@ -67,7 +78,7 @@ for zipfile in $(ls ${INPATH}/S3A_OL_1_EFR____*.zip); do
     mkdir -p ${DEST}
     timing
 
-    gpt S3_proc.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
+    gpt ${XML} -q ${Q} -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
     timing
     message "GPT: Finished"
 

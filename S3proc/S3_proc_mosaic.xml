@@ -1,0 +1,175 @@
+<graph id="S3_proc">
+  <version>1.0</version>
+  
+  <node id="Rad2Refl">
+    <operator>Rad2Refl</operator>
+    <sources>
+      <source>${source}</source>
+    </sources>
+    <parameters>
+      <sensor>OLCI</sensor>
+      <copyTiePointGrids>true</copyTiePointGrids>
+      <copyFlagBandsAndMasks>true</copyFlagBandsAndMasks>
+      <copyNonSpectralBands>true</copyNonSpectralBands>
+    </parameters>
+  </node>
+
+  <node id="Reproject">
+    <operator>Reproject</operator>
+    <sources>
+      <source>Rad2Refl</source>
+    </sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>
+
+
+  <node id="BandSelect_04">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa04_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_04">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_04</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa04_reflectance.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_06">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa06_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_06">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_06</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa06_reflectance.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_08">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa08_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_08">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_08</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa08_reflectance.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+
+  <!-- orbital parameters -->
+  <!--
+      Radiance bands have NoData stripes.
+      SZA does not.
+      Make SZA data invald where there is no Radiance data
+  -->
+  <node id="SZA_invalid">
+    <operator>BandMaths</operator>
+    <sources>
+      <sourceProducts>Reproject</sourceProducts>
+    </sources>
+    <parameters>
+      <targetBands>
+        <targetBand>
+          <name>sun_zenith</name>
+          <type>float32</type>
+          <expression>quality_flags.invalid ? NaN : SZA</expression>
+        </targetBand>
+      </targetBands>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_SZA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>SZA_invalid</source>
+    </sources>
+    <parameters>
+      <sourceBands>sun_zenith</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_SZA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_SZA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/SZA.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  
+  <node id="BandSelect_lon">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>longitude</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_lon">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_lon</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/lon.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_lat">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>latitude</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_lat">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_lat</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/lat.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+</graph>
