@@ -8,9 +8,7 @@
       <sourceProduct>${source}</sourceProduct>
     </sources>
     <parameters>
-      <!-- <spectralAlbedoComputationMode>spectralAlbedoMode</spectralAlbedoComputationMode> -->
       <copyReflectanceBands>false</copyReflectanceBands>
-      <!-- <olciGains>double,double,double,...</olciGains> -->
     </parameters>
   </node>
   

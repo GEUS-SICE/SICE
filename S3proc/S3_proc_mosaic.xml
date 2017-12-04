@@ -1,3 +1,10 @@
+<!--
+    The minimum needed to generate a mosaic of radiance:
+    1) rad2refl
+    2) Reproject
+    3) Write out bands 4,6,8 and SZA
+-->
+
 <graph id="S3_proc">
   <version>1.0</version>
   
@@ -127,47 +134,6 @@
     </sources>
     <parameters>
       <file>${targetFolder}/SZA.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-  
-  
-  <node id="BandSelect_lon">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>longitude</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_lon">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_lon</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/lon.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-  <node id="BandSelect_lat">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>latitude</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_lat">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_lat</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/lat.tif</file>
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
