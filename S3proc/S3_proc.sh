@@ -49,7 +49,7 @@ fi
 for zipfile in $(ls ${INPATH}/S3A_OL_1_EFR____*.zip); do
     S3FOLDER=$(echo $(basename ${zipfile} .zip).SEN3)
     
-    OUTFOLDER=$(echo $zipfile | cut -d_ -f9)
+    OUTFOLDER=$(echo $zipfile | rev | cut -d_ -f11 | rev)
     DEST=${OUTPATH}/${OUTFOLDER}
     # if [[ -d ${OUTPATH}/${OUTFOLDER} ]]; then
     # 	message "${OUTPATH}/${OUTFOLDER} already exists. Skipping processing..."
