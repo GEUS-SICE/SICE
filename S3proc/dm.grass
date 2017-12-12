@@ -17,8 +17,7 @@ for ASCENE in $(cd $INFOLDER; find . -maxdepth 1 -type d -name "${DATE}T??????")
     for file in $(ls ${INFOLDER}/${SCENE}/*.tif); do
         echo "Importing $file"
         band=$(echo $(basename ${file} .tif))
-	r.in.gdal input=${file} output=${band} --quiet
-	r.null map=${band} setnull=inf --quiet
+	r.external source=${file} output=${band} --quiet
     done
 done
 
@@ -62,6 +61,7 @@ TIFOPTS='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
 for B in $(echo ${BANDS}); do
     echo "Writing ${B} to ${OUTFOLDER}/${DATE}/${B}.tif"
     r.colors map=${B} color=grey --q
+    r.null map=${B} setnull=inf --quiet
     r.out.gdal -m -c input=${B} output=${OUTFOLDER}/${DATE}/${B}.tif ${TIFOPTS}
 done
 
@@ -74,4 +74,4 @@ r.out.gdal -m -c input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.tif ${TIFOPTS
 r.colors map=SZA_LUT color=random
 r.out.png input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.png --o
 
-# rm -fR /tmp/tmpG
+rm -fR /tmp/tmpG
