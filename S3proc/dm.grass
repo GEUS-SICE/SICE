@@ -21,7 +21,7 @@ for ASCENE in $(cd $INFOLDER; find . -name "${DATE}T??????" -type d -depth 1); d
         r.in.gdal input=${file} output=${band} --quiet
 
         # fix inf values in two of the rasters
-        if [[ ${band} == "grain_diameter" ]] || ${band} == "albedo_broadband_planar" ]] || [[ ${band} == "albedo_broadband_spherical" ]]; then
+        if [[ ${band} == "grain_diameter" ]] || [[ ${band} == "albedo_broadband_planar" ]] || [[ ${band} == "albedo_broadband_spherical" ]]; then
            r.null map=${band} setnull=inf --quiet
         fi
     done
