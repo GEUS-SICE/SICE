@@ -11,22 +11,15 @@ fi
 mkdir -p $OUTFOLDER/${DATE}
 
 # load all the data
-for ASCENE in $(cd $INFOLDER; find . -name "${DATE}T??????" -type d -depth 1); do
+for ASCENE in $(cd $INFOLDER; find . -type d -maxdepth 1 -name "${DATE}T??????"); do
     SCENE=$(echo $ASCENE | cut -c3-)
     g.mapset -c ${SCENE} --quiet
     for file in $(ls ${INFOLDER}/${SCENE}/*.tif); do
         echo "Importing $file"
         band=$(echo $(basename ${file} .tif))
-        # echo $band
-        r.in.gdal input=${file} output=${band} --quiet
-
-        # fix inf values in two of the rasters
-        if [[ ${band} == "grain_diameter" ]] || [[ ${band} == "albedo_broadband_planar" ]] || [[ ${band} == "albedo_broadband_spherical" ]]; then
-           r.null map=${band} setnull=inf --quiet
-        fi
+	r.external source=${file} output=${band} --quiet
     done
 done
-
 
 # The target bands. For example, Oa01_reflectance or SZA.
 BANDS=$(g.list type=raster mapset=* | cut -d"@" -f1 | sort | uniq)
@@ -68,6 +61,7 @@ TIFOPTS='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
 for B in $(echo ${BANDS}); do
     echo "Writing ${B} to ${OUTFOLDER}/${DATE}/${B}.tif"
     r.colors map=${B} color=grey --q
+    r.null map=${B} setnull=inf --quiet
     r.out.gdal -m -c input=${B} output=${OUTFOLDER}/${DATE}/${B}.tif ${TIFOPTS}
 done
 
@@ -80,4 +74,4 @@ r.out.gdal -m -c input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.tif ${TIFOPTS
 r.colors map=SZA_LUT color=random
 r.out.png input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.png --o
 
-rm -fR /tmp/tmpG
+# rm -fR /tmp/tmpG
