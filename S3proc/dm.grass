@@ -11,13 +11,14 @@ fi
 mkdir -p $OUTFOLDER/${DATE}
 
 # load all the data
-for ASCENE in $(cd $INFOLDER; find . -type d -maxdepth 1 -name "${DATE}T??????"); do
+for ASCENE in $(cd $INFOLDER; find . -maxdepth 1 -type d -name "${DATE}T??????"); do
     SCENE=$(echo $ASCENE | cut -c3-)
     g.mapset -c ${SCENE} --quiet
     for file in $(ls ${INFOLDER}/${SCENE}/*.tif); do
         echo "Importing $file"
         band=$(echo $(basename ${file} .tif))
-	r.external source=${file} output=${band} --quiet
+	r.in.gdal input=${file} output=${band} --quiet
+	r.null map=${band} setnull=inf --quiet
     done
 done
 
@@ -61,7 +62,6 @@ TIFOPTS='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
 for B in $(echo ${BANDS}); do
     echo "Writing ${B} to ${OUTFOLDER}/${DATE}/${B}.tif"
     r.colors map=${B} color=grey --q
-    r.null map=${B} setnull=inf --quiet
     r.out.gdal -m -c input=${B} output=${OUTFOLDER}/${DATE}/${B}.tif ${TIFOPTS}
 done
 
