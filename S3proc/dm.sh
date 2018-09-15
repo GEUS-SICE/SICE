@@ -21,9 +21,9 @@ BASE=/tmp
 LOC=tmpG
 
 rm -fR ${BASE}/${LOC}
-grass72 -e -c EPSG:3413 ${BASE}/${LOC}
+grass74 -e -c EPSG:3413 ${BASE}/${LOC}
 
-grass72 ${BASE}/${LOC}/PERMANENT --exec ./dm.grass $DATE $INFOLDER $OUTFOLDER
+grass74 ${BASE}/${LOC}/PERMANENT --exec ./dm.grass $DATE $INFOLDER $OUTFOLDER
 
 # debug:
 # grass72 /tmp/tmpG/PERMANENT
