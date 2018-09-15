@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
 
 timing() { if [[ $TIMING == 1 ]]; then date; fi; }
 message() { if [[ $VERBOSE == 1 ]]; then echo $1; fi; }
@@ -51,7 +52,7 @@ if [ -z $XML ]; then
 fi
 
 
-for zipfile in $(ls ${INPATH}/S3A_OL_1_EFR____*.zip); do
+for zipfile in $(ls ${INPATH}/S3?_OL_1_EFR____*.zip); do
     S3FOLDER=$(echo $(basename ${zipfile} .zip).SEN3)
     
     OUTFOLDER=$(echo $zipfile | rev | cut -d_ -f11 | rev)
