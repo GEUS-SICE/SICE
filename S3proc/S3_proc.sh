@@ -3,19 +3,16 @@
 timing() { if [[ $TIMING == 1 ]]; then date; fi; }
 message() { if [[ $VERBOSE == 1 ]]; then echo $1; fi; }
 
-Q=30
-
 while [[ $# -gt 0 ]]
 do
     key="$1"
     
     case $key in
 	-h|--help)
-	    echo "./S3_proc.sh -i inpath -o outpath -x XML [-q n] [-h -v -t]"
+	    echo "./S3_proc.sh -i inpath -o outpath -x XML [-h -v -t]"
 	    echo "  -i: Path to input S3 EFR ZIP files"
 	    echo "  -o: Path where to store ouput"
 	    echo "  -x: XML file for GPT"
-	    echo "  -q: Q CPU multiplier for Java"
 	    echo "  -v: Print verbose messages during processing"
 	    echo "  -t: Print timing messages during processing"
 	    echo "  -h: print this help"
@@ -30,9 +27,6 @@ do
 	    shift; shift;;
 	-x)
 	    XML="$2"
-	    shift; shift;;
-	-q)
-	    Q="$2"
 	    shift; shift;;
 	-v)
 	    VERBOSE=1
@@ -78,7 +72,7 @@ for zipfile in $(ls ${INPATH}/S3A_OL_1_EFR____*.zip); do
     mkdir -p ${DEST}
     timing
 
-    gpt ${XML} -q ${Q} -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
+    gpt ${XML} -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
     timing
     message "GPT: Finished"
 
