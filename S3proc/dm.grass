@@ -26,10 +26,11 @@ BANDS=$(g.list type=raster mapset=* | cut -d"@" -f1 | sort | uniq)
 
 # Mask and zoom to Greenland ice+land
 g.mapset PERMANENT --quiet
-g.region raster=$(g.list type=raster pattern=SZA separator=, mapset=*)
-g.region res=500 -a
 r.in.gdal input=mask.tif output=MASK --quiet
+g.region raster=MASK
 g.region zoom=MASK
+g.region res=500 -a
+# g.region raster=$(g.list type=raster pattern=SZA separator=, mapset=*)
 g.region -s # save as default region
 g.mapset -c ${DATE} --quiet # create a new mapset for final product
 r.mask raster=MASK@PERMANENT --o # mask to Greenland ice+land
