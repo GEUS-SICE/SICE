@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+### DEBUG GPT XML file:
+# S3A=./dat_S3A/S3A_OL_1_EFR____20180708T123330_20180708T123630_20180709T172128_0179_033_152_1620_LN1_O_NT_002.SEN3
+### LITE
+# ~/local/snap/bin/gpt ./S3_proc_lite.xml -Ssource=${S3A}/xfdumanifest.xml -PtargetFolder=./S3A_DEBUG_out
+### EVERYTHING:
+# ~/local/snap/bin/gpt ./S3_proc.xml -Ssource=${S3A}/xfdumanifest.xml -PtargetFolder=./S3A_DEBUG_out
+
+# Run it:
+# PATH=~/local/snap/bin:$PATH ./S3_proc.sh -i ./dat_S3A -o ./out_S3A -x ./S3_proc.xml
 
 timing() { if [[ $TIMING == 1 ]]; then date; fi; }
 message() { if [[ $VERBOSE == 1 ]]; then echo $1; fi; }
