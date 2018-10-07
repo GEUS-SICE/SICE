@@ -209,3 +209,32 @@ for d in $(seq 152 245); do
     ./fetch_ql.sh --date 2017-${d}
 done
 #+END_SRC
+* Flowchart
+
+#+BEGIN_SRC dot :file flow.png :cmdline -Kdot -Tpng
+digraph {
+Source -> Rad2Refl -> Reproject;
+Reproject -> "Band 04 Reflectance"
+Reproject -> "Band 06 Reflectance"
+Reproject -> "Band 08 Reflectance"
+Reproject -> "Band 21 Reflectance"
+Reproject -> SZA
+Reproject -> OZA
+Reproject -> SAA
+Reproject -> OAA
+Reproject -> lon
+Reproject -> lat
+
+Source -> OLCISnowProperties -> ReprojectSnowProperties;
+ReprojectSnowProperties -> "Grain Diameter"
+ReprojectSnowProperties -> "Snow Specific Area"
+ReprojectSnowProperties -> NDSI
+ReprojectSnowProperties -> "NDSI Mask"
+ReprojectSnowProperties -> "Ice Indicator"
+ReprojectSnowProperties -> "Albedo BB Planar SW"
+ReprojectSnowProperties -> "Albedo Spectral Planar 1020"
+}
+#+END_SRC
+
+#+RESULTS:
+[[file:flow.png]]

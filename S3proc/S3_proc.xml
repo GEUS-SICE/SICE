@@ -9,14 +9,25 @@
   <!-- albedo_spectral_planar_1020 -->
   <!-- SZA, OZA, SAA, OAA -->
   <!-- lat, lon -->
-
   <!-- rBRR_04,06,08,21 -->
-  <!-- What are these? The original bands, I think... -->
+
+  <node id="Rad2Refl">
+    <operator>Rad2Refl</operator>
+    <sources>
+      <source>${source}</source>
+    </sources>
+    <parameters>
+      <sensor>OLCI</sensor>
+      <copyTiePointGrids>true</copyTiePointGrids>
+      <copyFlagBandsAndMasks>true</copyFlagBandsAndMasks>
+      <copyNonSpectralBands>true</copyNonSpectralBands>
+    </parameters>
+  </node>
 
   <node id="Reproject">
     <operator>Reproject</operator>
     <sources>
-      <source>${source}</source>
+      <source>Rad2Refl</source>
     </sources>
     <parameters>
       <crs>EPSG:3413</crs>
@@ -26,6 +37,7 @@
     </parameters>
   </node>
   
+
   <node id="OLCI.SnowProperties">
     <operator>OLCI.SnowProperties</operator>
     <sources>
@@ -41,32 +53,31 @@
       <computePPA>true</computePPA>
     </parameters>
   </node>
-  
-  <node id="Rad2Refl">
-    <operator>Rad2Refl</operator>
+
+  <node id="Reproject.SnowProperties">
+    <operator>Reproject</operator>
     <sources>
-      <source>Reproject</source>
+      <source>OLCI.SnowProperties</source>
     </sources>
     <parameters>
-      <sensor>OLCI</sensor>
-      <copyTiePointGrids>true</copyTiePointGrids>
-      <copyFlagBandsAndMasks>true</copyFlagBandsAndMasks>
-      <copyNonSpectralBands>true</copyNonSpectralBands>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
     </parameters>
   </node>
 
   <!--
       from here down, pairs:
-      1) Select a band (from albedo or reflectance) and
+      1) Select a band
       2) write to disk
   -->
-
   
   <!-- grain_diameter -->
   <node id="BandSelect_grain_diameter">
     <operator>BandSelect</operator>
     <sources>
-      <source>OLCI.SnowProperties</source>
+      <source>Reproject.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>grain_diameter</sourceBands>
@@ -87,7 +98,7 @@
   <node id="BandSelect_snow_specific_area">
     <operator>BandSelect</operator>
     <sources>
-      <source>OLCI.SnowProperties</source>
+      <source>Reproject.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>snow_specific_area</sourceBands>
@@ -108,7 +119,7 @@
   <node id="BandSelect_ndsi">
     <operator>BandSelect</operator>
     <sources>
-      <source>OLCI.SnowProperties</source>
+      <source>Reproject.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>ndsi</sourceBands>
@@ -127,7 +138,7 @@
   <node id="BandSelect_ndsi_mask">
     <operator>BandSelect</operator>
     <sources>
-      <source>OLCI.SnowProperties</source>
+      <source>Reproject.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>ndsi_mask</sourceBands>
@@ -151,7 +162,7 @@
   <node id="BandSelect_ice_indicator">
     <operator>BandSelect</operator>
     <sources>
-      <source>OLCI.SnowProperties</source>
+      <source>Reproject.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>ice_indicator</sourceBands>
@@ -175,7 +186,7 @@
   <node id="BandSelect_albedo_bb_planar_sw">
     <operator>BandSelect</operator>
     <sources>
-      <source>OLCI.SnowProperties</source>
+      <source>Reproject.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>albedo_bb_planar_sw</sourceBands>
@@ -198,7 +209,7 @@
   <node id="BandSelect_1020">
     <operator>BandSelect</operator>
     <sources>
-      <source>OLCI.SnowProperties</source>
+      <source>Reproject.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>albedo_spectral_planar_1020</sourceBands>
@@ -220,7 +231,7 @@
   <node id="BandSelect_04">
     <operator>BandSelect</operator>
     <sources>
-      <source>Rad2Refl</source>
+      <source>Reproject</source>
     </sources>
     <parameters>
       <sourceBands>Oa04_reflectance</sourceBands>
@@ -241,7 +252,7 @@
   <node id="BandSelect_06">
     <operator>BandSelect</operator>
     <sources>
-      <source>Rad2Refl</source>
+      <source>Reproject</source>
     </sources>
     <parameters>
       <sourceBands>Oa06_reflectance</sourceBands>
@@ -261,7 +272,7 @@
     <node id="BandSelect_08">
     <operator>BandSelect</operator>
     <sources>
-      <source>Rad2Refl</source>
+      <source>Reproject</source>
     </sources>
     <parameters>
       <sourceBands>Oa08_reflectance</sourceBands>
@@ -281,7 +292,7 @@
     <node id="BandSelect_21">
     <operator>BandSelect</operator>
     <sources>
-      <source>Rad2Refl</source>
+      <source>Reproject</source>
     </sources>
     <parameters>
       <sourceBands>Oa21_reflectance</sourceBands>
@@ -344,7 +355,7 @@
   <node id="BandSelect_OZA">
     <operator>BandSelect</operator>
     <sources>
-      <source>Rad2Refl</source>
+      <source>Reproject</source>
     </sources>
     <parameters>
       <sourceBands>OZA</sourceBands>
@@ -364,7 +375,7 @@
   <node id="BandSelect_SAA">
     <operator>BandSelect</operator>
     <sources>
-      <source>Rad2Refl</source>
+      <source>Reproject</source>
     </sources>
     <parameters>
       <sourceBands>SAA</sourceBands>
@@ -384,7 +395,7 @@
   <node id="BandSelect_OAA">
     <operator>BandSelect</operator>
     <sources>
-      <source>Rad2Refl</source>
+      <source>Reproject</source>
     </sources>
     <parameters>
       <sourceBands>OAA</sourceBands>
@@ -404,7 +415,7 @@
   <node id="BandSelect_lon">
     <operator>BandSelect</operator>
     <sources>
-      <source>Rad2Refl</source>
+      <source>Reproject</source>
     </sources>
     <parameters>
       <sourceBands>longitude</sourceBands>
@@ -424,7 +435,7 @@
   <node id="BandSelect_lat">
     <operator>BandSelect</operator>
     <sources>
-      <source>Rad2Refl</source>
+      <source>Reproject</source>
     </sources>
     <parameters>
       <sourceBands>latitude</sourceBands>
