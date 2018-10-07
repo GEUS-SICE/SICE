@@ -12,6 +12,19 @@
 
   <!-- rBRR_04,06,08,21 -->
   <!-- What are these? The original bands, I think... -->
+
+  <node id="Reproject">
+    <operator>Reproject</operator>
+    <sources>
+      <source>${source}</source>
+    </sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>
   
   <node id="OLCI.SnowProperties">
     <operator>OLCI.SnowProperties</operator>
@@ -29,25 +42,10 @@
     </parameters>
   </node>
   
-  <node id="ReprojectAlbedo">
-    <operator>Reproject</operator>
-    <sources>
-      <source>OLCI.SnowProperties</source>
-    </sources>
-    <parameters>
-      <crs>EPSG:3413</crs>
-      <resampling>Nearest</resampling>
-      <noDataValue>NaN</noDataValue>
-      <includeTiePointGrids>true</includeTiePointGrids>
-    </parameters>
-  </node>
-
-
-
   <node id="Rad2Refl">
     <operator>Rad2Refl</operator>
     <sources>
-      <source>${source}</source>
+      <source>Reproject</source>
     </sources>
     <parameters>
       <sensor>OLCI</sensor>
@@ -57,19 +55,6 @@
     </parameters>
   </node>
 
-  <node id="Reproject">
-    <operator>Reproject</operator>
-    <sources>
-      <source>Rad2Refl</source>
-    </sources>
-    <parameters>
-      <crs>EPSG:3413</crs>
-      <resampling>Nearest</resampling>
-      <noDataValue>NaN</noDataValue>
-      <includeTiePointGrids>true</includeTiePointGrids>
-    </parameters>
-  </node>
-  
   <!--
       from here down, pairs:
       1) Select a band (from albedo or reflectance) and
@@ -81,7 +66,7 @@
   <node id="BandSelect_grain_diameter">
     <operator>BandSelect</operator>
     <sources>
-      <source>ReprojectAlbedo</source>
+      <source>OLCI.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>grain_diameter</sourceBands>
@@ -102,7 +87,7 @@
   <node id="BandSelect_snow_specific_area">
     <operator>BandSelect</operator>
     <sources>
-      <source>ReprojectAlbedo</source>
+      <source>OLCI.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>snow_specific_area</sourceBands>
@@ -123,7 +108,7 @@
   <node id="BandSelect_ndsi">
     <operator>BandSelect</operator>
     <sources>
-      <source>ReprojectAlbedo</source>
+      <source>OLCI.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>ndsi</sourceBands>
@@ -142,7 +127,7 @@
   <node id="BandSelect_ndsi_mask">
     <operator>BandSelect</operator>
     <sources>
-      <source>ReprojectAlbedo</source>
+      <source>OLCI.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>ndsi_mask</sourceBands>
@@ -166,7 +151,7 @@
   <node id="BandSelect_ice_indicator">
     <operator>BandSelect</operator>
     <sources>
-      <source>ReprojectAlbedo</source>
+      <source>OLCI.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>ice_indicator</sourceBands>
@@ -190,7 +175,7 @@
   <node id="BandSelect_albedo_bb_planar_sw">
     <operator>BandSelect</operator>
     <sources>
-      <source>ReprojectAlbedo</source>
+      <source>OLCI.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>albedo_bb_planar_sw</sourceBands>
@@ -213,7 +198,7 @@
   <node id="BandSelect_1020">
     <operator>BandSelect</operator>
     <sources>
-      <source>ReprojectAlbedo</source>
+      <source>OLCI.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>albedo_spectral_planar_1020</sourceBands>
@@ -232,91 +217,10 @@
   
 
   <!-- rBRR_04,06,08,21 -->
-  <!-- <node id="BandSelect_rBRR_04"> -\-> -->
-  <!--   <operator>BandSelect</operator> -->
-  <!--   <sources> -->
-  <!--     <source>ReprojectAlbedo</source> -->
-  <!--   </sources> -->
-  <!--   <parameters> -->
-  <!--     <sourceBands>rBRR_04</sourceBands> -->
-  <!--   </parameters> -->
-  <!-- </node> -->
-  <!-- <node id="Write_rBRR_04"> -->
-  <!--   <operator>Write</operator> -->
-  <!--   <sources> -->
-  <!--     <sourceProduct>BandSelect_rBRR_04</sourceProduct> -->
-  <!--   </sources> -->
-  <!--   <parameters> -->
-  <!--     <file>${targetFolder}/rBRR_04_x.tif</file> -->
-  <!--     <formatName>GeoTIFF</formatName> -->
-  <!--   </parameters> -->
-  <!-- </node> -->
-
-  <!--  <node id="BandSelect_rBRR_06"> -\-> -->
-  <!--   <operator>BandSelect</operator> -->
-  <!--   <sources> -->
-  <!--     <source>ReprojectAlbedo</source> -->
-  <!--   </sources> -->
-  <!--   <parameters> -->
-  <!--     <sourceBands>rBRR_06</sourceBands> -->
-  <!--   </parameters> -->
-  <!-- </node> -->
-  <!-- <node id="Write_rBRR_06"> -->
-  <!--   <operator>Write</operator> -->
-  <!--   <sources> -->
-  <!--     <sourceProduct>BandSelect_rBRR_06</sourceProduct> -->
-  <!--   </sources> -->
-  <!--   <parameters> -->
-  <!--     <file>${targetFolder}/rBRR_06_x.tif</file> -->
-  <!--     <formatName>GeoTIFF</formatName> -->
-  <!--   </parameters> -->
-  <!-- </node> -->
-
-  <!--  <node id="BandSelect_rBRR_08"> -\-> -->
-  <!--   <operator>BandSelect</operator> -->
-  <!--   <sources> -->
-  <!--     <source>ReprojectAlbedo</source> -->
-  <!--   </sources> -->
-  <!--   <parameters> -->
-  <!--     <sourceBands>rBRR_08</sourceBands> -->
-  <!--   </parameters> -->
-  <!-- </node> -->
-  <!-- <node id="Write_rBRR_08"> -->
-  <!--   <operator>Write</operator> -->
-  <!--   <sources> -->
-  <!--     <sourceProduct>BandSelect_rBRR_08</sourceProduct> -->
-  <!--   </sources> -->
-  <!--   <parameters> -->
-  <!--     <file>${targetFolder}/rBRR_08_x.tif</file> -->
-  <!--     <formatName>GeoTIFF</formatName> -->
-  <!--   </parameters> -->
-  <!-- </node> -->
-
-  <!-- <node id="BandSelect_rBRR_21"> -\-> -->
-  <!--   <operator>BandSelect</operator> -->
-  <!--   <sources> -->
-  <!--     <source>ReprojectAlbedo</source> -->
-  <!--   </sources> -->
-  <!--   <parameters> -->
-  <!--     <sourceBands>rBRR_21</sourceBands> -->
-  <!--   </parameters> -->
-  <!-- </node> -->
-  <!-- <node id="Write_rBRR_21"> -->
-  <!--   <operator>Write</operator> -->
-  <!--   <sources> -->
-  <!--     <sourceProduct>BandSelect_rBRR_21</sourceProduct> -->
-  <!--   </sources> -->
-  <!--   <parameters> -->
-  <!--     <file>${targetFolder}/rBRR_21_x.tif</file> -->
-  <!--     <formatName>GeoTIFF</formatName> -->
-  <!--   </parameters> -->
-  <!-- </node> -->
-
-  
   <node id="BandSelect_04">
     <operator>BandSelect</operator>
     <sources>
-      <source>Reproject</source>
+      <source>Rad2Refl</source>
     </sources>
     <parameters>
       <sourceBands>Oa04_reflectance</sourceBands>
@@ -337,7 +241,7 @@
   <node id="BandSelect_06">
     <operator>BandSelect</operator>
     <sources>
-      <source>Reproject</source>
+      <source>Rad2Refl</source>
     </sources>
     <parameters>
       <sourceBands>Oa06_reflectance</sourceBands>
@@ -357,7 +261,7 @@
     <node id="BandSelect_08">
     <operator>BandSelect</operator>
     <sources>
-      <source>Reproject</source>
+      <source>Rad2Refl</source>
     </sources>
     <parameters>
       <sourceBands>Oa08_reflectance</sourceBands>
@@ -377,7 +281,7 @@
     <node id="BandSelect_21">
     <operator>BandSelect</operator>
     <sources>
-      <source>Reproject</source>
+      <source>Rad2Refl</source>
     </sources>
     <parameters>
       <sourceBands>Oa21_reflectance</sourceBands>
@@ -425,115 +329,117 @@
     <parameters>
       <sourceBands>sun_zenith</sourceBands>
     </parameters>
-    </node>
-    <node id="Write_SZA">
-      <operator>Write</operator>
-      <sources>
-        <sourceProduct>BandSelect_SZA</sourceProduct>
-      </sources>
-      <parameters>
-        <file>${targetFolder}/SZA.tif</file>
-        <formatName>GeoTIFF</formatName>
-      </parameters>
-    </node>
-    
-    <node id="BandSelect_OZA">
-      <operator>BandSelect</operator>
-      <sources>
-        <source>Reproject</source>
-      </sources>
-      <parameters>
-        <sourceBands>OZA</sourceBands>
-      </parameters>
-    </node>
-    <node id="Write_OZA">
-      <operator>Write</operator>
-      <sources>
-        <sourceProduct>BandSelect_OZA</sourceProduct>
-      </sources>
-      <parameters>
-        <file>${targetFolder}/OZA_x.tif</file>
-        <formatName>GeoTIFF</formatName>
-      </parameters>
-    </node>
+  </node>
+  <node id="Write_SZA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_SZA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/SZA.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_OZA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Rad2Refl</source>
+    </sources>
+    <parameters>
+      <sourceBands>OZA</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_OZA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_OZA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/OZA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_SAA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Rad2Refl</source>
+    </sources>
+    <parameters>
+      <sourceBands>SAA</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_SAA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_SAA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/SAA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_OAA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Rad2Refl</source>
+    </sources>
+    <parameters>
+      <sourceBands>OAA</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_OAA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_OAA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/OAA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_lon">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Rad2Refl</source>
+    </sources>
+    <parameters>
+      <sourceBands>longitude</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_lon">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_lon</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/lon.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_lat">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Rad2Refl</source>
+    </sources>
+    <parameters>
+      <sourceBands>latitude</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_lat">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_lat</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/lat.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+</graph>
 
-    <node id="BandSelect_SAA">
-      <operator>BandSelect</operator>
-      <sources>
-        <source>Reproject</source>
-      </sources>
-      <parameters>
-        <sourceBands>SAA</sourceBands>
-      </parameters>
-    </node>
-    <node id="Write_SAA">
-      <operator>Write</operator>
-      <sources>
-        <sourceProduct>BandSelect_SAA</sourceProduct>
-      </sources>
-      <parameters>
-        <file>${targetFolder}/SAA_x.tif</file>
-        <formatName>GeoTIFF</formatName>
-      </parameters>
-    </node>
-
-    <node id="BandSelect_OAA">
-      <operator>BandSelect</operator>
-      <sources>
-        <source>Reproject</source>
-      </sources>
-      <parameters>
-        <sourceBands>OAA</sourceBands>
-      </parameters>
-    </node>
-    <node id="Write_OAA">
-      <operator>Write</operator>
-      <sources>
-        <sourceProduct>BandSelect_OAA</sourceProduct>
-      </sources>
-      <parameters>
-        <file>${targetFolder}/OAA_x.tif</file>
-        <formatName>GeoTIFF</formatName>
-      </parameters>
-    </node>
-
-    <node id="BandSelect_lon">
-      <operator>BandSelect</operator>
-      <sources>
-        <source>Reproject</source>
-      </sources>
-      <parameters>
-        <sourceBands>longitude</sourceBands>
-      </parameters>
-    </node>
-    <node id="Write_lon">
-      <operator>Write</operator>
-      <sources>
-        <sourceProduct>BandSelect_lon</sourceProduct>
-      </sources>
-      <parameters>
-        <file>${targetFolder}/lon.tif</file>
-        <formatName>GeoTIFF</formatName>
-      </parameters>
-    </node>
-
-    <node id="BandSelect_lat">
-      <operator>BandSelect</operator>
-      <sources>
-        <source>Reproject</source>
-      </sources>
-      <parameters>
-        <sourceBands>latitude</sourceBands>
-      </parameters>
-    </node>
-    <node id="Write_lat">
-      <operator>Write</operator>
-      <sources>
-        <sourceProduct>BandSelect_lat</sourceProduct>
-      </sources>
-      <parameters>
-        <file>${targetFolder}/lat.tif</file>
-        <formatName>GeoTIFF</formatName>
-      </parameters>
-    </node>
-  </graph>
+  
