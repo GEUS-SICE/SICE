@@ -45,7 +45,7 @@
     </sources>
     <parameters>
       <spectralAlbedoTargetBands>Oa04 (490 nm),Oa06 (560 nm),Oa08 (665 nm),Oa21 (1020 nm)</spectralAlbedoTargetBands>
-      <copyReflectanceBands>false</copyReflectanceBands>
+      <copyReflectanceBands>true</copyReflectanceBands>
       <considerNdsiSnowMask>true</considerNdsiSnowMask>
       <considerSnowPollution>true</considerSnowPollution>
       <writeAdditionalSnowPollutionParms>true</writeAdditionalSnowPollutionParms>
@@ -215,7 +215,7 @@
       <sourceBands>albedo_spectral_planar_1020</sourceBands>
     </parameters>
   </node>
-  <node id="Write_01">
+  <node id="Write_1020">
     <operator>Write</operator>
     <sources>
       <sourceProduct>BandSelect_1020</sourceProduct>
@@ -226,8 +226,7 @@
     </parameters>
   </node>
   
-
-  <!-- rBRR_04,06,08,21 -->
+  
   <node id="BandSelect_04">
     <operator>BandSelect</operator>
     <sources>
@@ -309,6 +308,88 @@
     </parameters>
   </node>
 
+
+  <!-- rBRR_04,06,08,21 -->
+  <node id="BandSelect_rBRR_04">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject.SnowProperties</source>
+    </sources>
+    <parameters>
+      <sourceBands>rBRR_04</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_rBRR_04">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_rBRR_04</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/rBRR_04_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_rBRR_06">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject.SnowProperties</source>
+    </sources>
+    <parameters>
+      <sourceBands>rBRR_06</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_rBRR_06">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_rBRR_06</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/rBRR_06_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_rBRR_08">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject.SnowProperties</source>
+    </sources>
+    <parameters>
+      <sourceBands>rBRR_08</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_rBRR_08">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_rBRR_08</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/rBRR_08_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_rBRR_21">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject.SnowProperties</source>
+    </sources>
+    <parameters>
+      <sourceBands>rBRR_21</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_rBRR_21">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_rBRR_21</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/rBRR_21_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
   <!-- SZA, OZA, SAA, OAA -->
   <!-- lat, lon -->
   <!--
