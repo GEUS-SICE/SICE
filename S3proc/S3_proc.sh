@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
 
-### DEBUG GPT XML file:
-# S3A=./dat_S3A/S3A_OL_1_EFR____20180708T123330_20180708T123630_20180709T172128_0179_033_152_1620_LN1_O_NT_002.SEN3
-### LITE
-# ~/local/snap/bin/gpt ./S3_proc_lite.xml -Ssource=${S3A}/xfdumanifest.xml -PtargetFolder=./S3A_DEBUG_out
-### EVERYTHING:
-# ~/local/snap/bin/gpt ./S3_proc.xml -Ssource=${S3A}/xfdumanifest.xml -PtargetFolder=./S3A_DEBUG_out
-
-# Run it:
-# PATH=~/local/snap/bin:$PATH ./S3_proc.sh -i ./dat_S3A -o ./out_S3A -x ./S3_proc.xml
+# PATH=~/local/snap/bin:$PATH ./S3_proc.sh -i ./dat_S3A -o ./out_S3A
 
 timing() { if [[ $TIMING == 1 ]]; then date; fi; }
 message() { if [[ $VERBOSE == 1 ]]; then echo $1; fi; }
@@ -35,9 +27,6 @@ do
 	-o)
 	    OUTPATH="$2"
 	    shift; shift;;
-	-x)
-	    XML="$2"
-	    shift; shift;;
 	-v)
 	    VERBOSE=1
 	    shift;;
@@ -49,12 +38,6 @@ done
 
 if [ -z $INPATH ] || [ -z $OUTPATH ];then
     echo "-i and -o option not set"
-    echo " "
-    $0 -h
-    exit 1
-fi
-if [ -z $XML ]; then
-    echo "-x not set"
     echo " "
     $0 -h
     exit 1
@@ -82,9 +65,16 @@ for zipfile in $(ls ${INPATH}/S3?_OL_1_EFR____*.zip); do
     mkdir -p ${DEST}
     timing
 
-    gpt ${XML} -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
+    # process the bands that do use OLCI.SnowProperties
+    gpt S3_proc_OLCISnowProcessor.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
+    # process the bands that do not use OLCI.SnowProperties
+    gpt S3_proc.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
+
     timing
     message "GPT: Finished"
+
+    message "renaming..."
+    for f in $(ls ${DEST}/*_x*); do mv -v ${f} "${f//_x}"; done
 
     message "Compressing: Start"
     timing

@@ -241,10 +241,19 @@ ReprojectSnowProperties -> "Albedo Spectral Planar 1020"
 * DEBUG
 ** GPT XML and one scene
 #+BEGIN_SRC sh :results verbatim
+S3A=./dat_S3A/S3A_OL_1_EFR____20180708T123330_20180708T123630_20180709T172128_0179_033_152_1620_LN1_O_NT_002.SEN3
+
 date
- S3A=./dat_S3A/S3A_OL_1_EFR____20180708T123330_20180708T123630_20180709T172128_0179_033_152_1620_LN1_O_NT_002.SEN3
+~/local/snap/bin/gpt ./S3_proc.xml -Ssource=${S3A}/xfdumanifest.xml -PtargetFolder=./S3A_DEBUG_out -PBANDSELECT={}
+date
+
+date
+export LIST="albedo_bb_planar_sw lat lon rBRR_04 reflectance_04"
+parallel --progress ~/local/snap/bin/gpt ./S3_proc.xml -q 1 -Ssource=${S3A}/xfdumanifest.xml -PtargetFolder=./S3A_DEBUG_out -PBANDSELECT={} ::: ${LIST}
+date
 
 # lite
+date
 ~/local/snap/bin/gpt ./S3_proc_lite.xml -Ssource=${S3A}/xfdumanifest.xml -PtargetFolder=./S3A_DEBUG_out
 date
 

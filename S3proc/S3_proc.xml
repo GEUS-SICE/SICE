@@ -1,36 +1,19 @@
 <graph id="S3_proc">
   <version>1.0</version>
 
-  <!-- grain_diameter -->
-  <!-- snow_specific_area -->
-  <!-- ndsi -->
-  <!-- ice_indicator -->
-  <!-- albedo_bb_planar_sw -->
-  <!-- albedo_spectral_planar_1020 -->
-  <!-- SZA, OZA, SAA, OAA -->
-  <!-- lat, lon -->
-  <!-- rBRR_04,06,08,21 -->
-
-  <node id="Rad2Refl">
-    <operator>Rad2Refl</operator>
-    <sources>
-      <source>${source}</source>
-    </sources>
-    <parameters>
-      <sensor>OLCI</sensor>
-      <copyTiePointGrids>true</copyTiePointGrids>
-      <copyFlagBandsAndMasks>true</copyFlagBandsAndMasks>
-      <copyNonSpectralBands>true</copyNonSpectralBands>
-    </parameters>
-  </node>
+  <!--
+      Write out bands that don't need to go through the OLCI.SnowProcessor
+      Should mimic *the same workflow* (reproject, subset, etc.)
+  -->
 
   <node id="Subset">
     <operator>Subset</operator>
     <sources>
-      <source>Rad2Refl</source>
+      <source>${source}</source>
     </sources>
     <parameters>
-      <geoRegion>"-54.634 83.180, -75.408 77.550, -67.674 75.551, -61.388 75.397, -53.150 63.528, -48.690 60.477, -45.101 59.493, -42.699 59.596, -38.359 64.437, -21.019 69.860, -15.603 75.032, -14.757 79.908, -9.265 81.399, -25.354 83.740, -54.634 83.180"</geoRegion>
+      <!-- rough outline of Greenland -->
+      <geoRegion>"-54.6 83.2, -75.4 77.5  -67.7 75.5, -61.4 75.4, -53.1 63.5, -48.7 60.5, -45.1 59.5, -42.7 59.6, -38.4 64.4, -21.0 69.9, -15.6 75.0, -14.7 79.9, -9.3 81.4, -25.3 83.7, -54.6 83.20"</geoRegion>
       <!-- <fullSwath>boolean</fullSwath> -->
       <copyMetadata>true</copyMetadata>
     </parameters>
@@ -48,495 +31,13 @@
       <includeTiePointGrids>true</includeTiePointGrids>
     </parameters>
   </node>
+
   
-
-  <node id="OLCI.SnowProperties">
-    <operator>OLCI.SnowProperties</operator>
-    <sources>
-      <sourceProduct>${source}</sourceProduct>
-    </sources>
-    <parameters>
-      <spectralAlbedoTargetBands>Oa04 (490 nm),Oa06 (560 nm),Oa08 (665 nm),Oa21 (1020 nm)</spectralAlbedoTargetBands>
-      <copyReflectanceBands>true</copyReflectanceBands>
-      <considerNdsiSnowMask>true</considerNdsiSnowMask>
-      <considerSnowPollution>true</considerSnowPollution>
-      <writeAdditionalSnowPollutionParms>true</writeAdditionalSnowPollutionParms>
-      <writeUncertaintiesOfAdditionalSnowPollutionParms>true</writeUncertaintiesOfAdditionalSnowPollutionParms>
-      <computePPA>true</computePPA>
-    </parameters>
-  </node>
-
-  <node id="Subset.SnowProperties">
-    <operator>Subset</operator>
-    <sources>
-      <source>OLCI.SnowProperties</source>
-    </sources>
-    <parameters>
-      <!-- rough outline of Greenland -->
-      <geoRegion>"-54.6 83.2, -75.4 77.5  -67.7 75.5, -61.4 75.4, -53.1 63.5, -48.7 60.5, -45.1 59.5, -42.7 59.6, -38.4 64.4, -21.0 69.9, -15.6 75.0, -14.7 79.9, -9.3 81.4, -25.3 83.7, -54.6 83.20"</geoRegion>
-      <!-- <fullSwath>boolean</fullSwath> -->
-      <copyMetadata>true</copyMetadata>
-    </parameters>
-  </node>
-
-  <node id="Reproject.SnowProperties">
-    <operator>Reproject</operator>
-    <sources>
-      <source>Subset.SnowProperties</source>
-    </sources>
-    <parameters>
-      <crs>EPSG:3413</crs>
-      <resampling>Nearest</resampling>
-      <noDataValue>NaN</noDataValue>
-      <includeTiePointGrids>true</includeTiePointGrids>
-    </parameters>
-  </node>
-
   <!--
       from here down, pairs:
       1) Select a band
       2) write to disk
   -->
-  
-  <!-- grain_diameter -->
-  <node id="BandSelect_grain_diameter">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject.SnowProperties</source>
-    </sources>
-    <parameters>
-      <sourceBands>grain_diameter</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_grain_diameter">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_grain_diameter</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/grain_diameter_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-  <!-- snow_specific_area -->
-  <node id="BandSelect_snow_specific_area">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject.SnowProperties</source>
-    </sources>
-    <parameters>
-      <sourceBands>snow_specific_area</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_snow_specific_area">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_snow_specific_area</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/snow_specific_area_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-  <!-- ndsi -->
-  <node id="BandSelect_ndsi">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject.SnowProperties</source>
-    </sources>
-    <parameters>
-      <sourceBands>ndsi</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_ndsi">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_ndsi</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/ndsi_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-  <node id="BandSelect_ndsi_mask">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject.SnowProperties</source>
-    </sources>
-    <parameters>
-      <sourceBands>ndsi_mask</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_ndsi">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_ndsi_mask</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/ndsi_mask_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-
-
-
-  <!-- ice_indicator -->
-  <node id="BandSelect_ice_indicator">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject.SnowProperties</source>
-    </sources>
-    <parameters>
-      <sourceBands>ice_indicator</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_ice_indicator">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_ice_indicator</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/ice_indicator_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-  
-
-
-
-  <!-- albedo_bb_planar_sw -->
-  <node id="BandSelect_albedo_bb_planar_sw">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject.SnowProperties</source>
-    </sources>
-    <parameters>
-      <sourceBands>albedo_bb_planar_sw</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_albedo_bb_planar_sw">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_albedo_bb_planar_sw</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/albedo_bb_planar_sw_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-  
- 
-
-  <!-- albedo_spectral_planar_1020 -->
-  <node id="BandSelect_1020">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject.SnowProperties</source>
-    </sources>
-    <parameters>
-      <sourceBands>albedo_spectral_planar_1020</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_1020">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_1020</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/albedo_spectral_planar_1020_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-  
-  
-  <node id="BandSelect_04">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>Oa04_reflectance</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_04">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_04</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/Oa04_reflectance_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-  
- 
-  <node id="BandSelect_06">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>Oa06_reflectance</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_06">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_06</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/Oa06_reflectance_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-    <node id="BandSelect_08">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>Oa08_reflectance</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_08">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_08</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/Oa08_reflectance_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-    <node id="BandSelect_21">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>Oa21_reflectance</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_21">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_21</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/Oa21_reflectance_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-
-  <!-- rBRR_04,06,08,21 -->
-  <node id="BandSelect_rBRR_04">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject.SnowProperties</source>
-    </sources>
-    <parameters>
-      <sourceBands>rBRR_04</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_rBRR_04">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_rBRR_04</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/rBRR_04_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-  <node id="BandSelect_rBRR_06">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject.SnowProperties</source>
-    </sources>
-    <parameters>
-      <sourceBands>rBRR_06</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_rBRR_06">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_rBRR_06</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/rBRR_06_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-  <node id="BandSelect_rBRR_08">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject.SnowProperties</source>
-    </sources>
-    <parameters>
-      <sourceBands>rBRR_08</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_rBRR_08">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_rBRR_08</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/rBRR_08_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-  <node id="BandSelect_rBRR_21">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject.SnowProperties</source>
-    </sources>
-    <parameters>
-      <sourceBands>rBRR_21</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_rBRR_21">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_rBRR_21</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/rBRR_21_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-  
-  <!-- SZA, OZA, SAA, OAA -->
-  <!-- lat, lon -->
-  <!--
-      Reflectance bands have NoData stripes.
-      SZA does not.
-      Make SZA data invald where there is no reflectance data
-  -->
-  <node id="SZA_invalid">
-    <operator>BandMaths</operator>
-    <sources>
-      <sourceProducts>Reproject</sourceProducts>
-    </sources>
-    <parameters>
-      <targetBands>
-        <targetBand>
-          <name>sun_zenith</name>
-          <type>float32</type>
-          <expression>quality_flags.invalid ? NaN : SZA</expression>
-        </targetBand>
-      </targetBands>
-    </parameters>
-  </node>
-  
-  <node id="BandSelect_SZA">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>SZA_invalid</source>
-    </sources>
-    <parameters>
-      <sourceBands>sun_zenith</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_SZA">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_SZA</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/SZA.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-  
-  <node id="BandSelect_OZA">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>OZA</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_OZA">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_OZA</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/OZA_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-  
-  <node id="BandSelect_SAA">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>SAA</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_SAA">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_SAA</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/SAA_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-  
-  <node id="BandSelect_OAA">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>OAA</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_OAA">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_OAA</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/OAA_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-  
-  <node id="BandSelect_lon">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>longitude</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_lon">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_lon</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/lon.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
   
   <node id="BandSelect_lat">
     <operator>BandSelect</operator>
@@ -557,6 +58,124 @@
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
-</graph>
 
+
+  <node id="BandSelect_lon">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>longitude</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_lon">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_lon</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/lon.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
   
+
+  <node id="SZA_invalid">
+    <operator>BandMaths</operator>
+    <sources>
+      <sourceProducts>Reproject</sourceProducts>
+    </sources>
+    <parameters>
+      <targetBands>
+        <targetBand>
+          <name>sun_zenith</name>
+          <type>float32</type>
+          <expression>quality_flags.invalid ? NaN : SZA</expression>
+        </targetBand>
+      </targetBands>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_SZA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>SZA_invalid</source>
+    </sources>
+    <parameters>
+      <sourceBands>sun_zenith</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_SZA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_SZA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/SZA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OZA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>OZA</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_OZA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_OZA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/OZA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+
+  <node id="BandSelect_SAA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>SAA</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_SAA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_SAA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/SAA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OAA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>OAA</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_OAA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_OAA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/OAA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+</graph>
