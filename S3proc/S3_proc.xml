@@ -24,10 +24,22 @@
     </parameters>
   </node>
 
+  <node id="Subset">
+    <operator>Subset</operator>
+    <sources>
+      <source>Rad2Refl</source>
+    </sources>
+    <parameters>
+      <geoRegion>"-54.634 83.180, -75.408 77.550, -67.674 75.551, -61.388 75.397, -53.150 63.528, -48.690 60.477, -45.101 59.493, -42.699 59.596, -38.359 64.437, -21.019 69.860, -15.603 75.032, -14.757 79.908, -9.265 81.399, -25.354 83.740, -54.634 83.180"</geoRegion>
+      <!-- <fullSwath>boolean</fullSwath> -->
+      <copyMetadata>true</copyMetadata>
+    </parameters>
+  </node>
+
   <node id="Reproject">
     <operator>Reproject</operator>
     <sources>
-      <source>Rad2Refl</source>
+      <source>Subset</source>
     </sources>
     <parameters>
       <crs>EPSG:3413</crs>
@@ -54,10 +66,23 @@
     </parameters>
   </node>
 
+  <node id="Subset.SnowProperties">
+    <operator>Subset</operator>
+    <sources>
+      <source>OLCI.SnowProperties</source>
+    </sources>
+    <parameters>
+      <!-- rough outline of Greenland -->
+      <geoRegion>"-54.6 83.2, -75.4 77.5  -67.7 75.5, -61.4 75.4, -53.1 63.5, -48.7 60.5, -45.1 59.5, -42.7 59.6, -38.4 64.4, -21.0 69.9, -15.6 75.0, -14.7 79.9, -9.3 81.4, -25.3 83.7, -54.6 83.20"</geoRegion>
+      <!-- <fullSwath>boolean</fullSwath> -->
+      <copyMetadata>true</copyMetadata>
+    </parameters>
+  </node>
+
   <node id="Reproject.SnowProperties">
     <operator>Reproject</operator>
     <sources>
-      <source>OLCI.SnowProperties</source>
+      <source>Subset.SnowProperties</source>
     </sources>
     <parameters>
       <crs>EPSG:3413</crs>
