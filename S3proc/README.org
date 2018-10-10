@@ -275,3 +275,251 @@ PATH=~/local/snap/bin:$PATH ./S3_proc.sh -i ./dat_S3A -o ./out_S3A -x ./S3_proc.
 #+END_SRC
 #+RESULTS:
 
+** NaNs due to per-pixel geocoding
+
+*** Version
+#+BEGIN_SRC sh :results verbatim drawer
+uname -a
+~/local/snap/bin/gpt --diag
+#+END_SRC
+#+RESULTS:
+:RESULTS:
+Linux geus3064linuxwsm 4.15.0-36-generic #39-Ubuntu SMP Mon Sep 24 16:19:09 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
+SNAP Release version 7.0-SNAPSHOT
+SNAP home: /home/kdm/local/snap/bin//..
+SNAP debug: null
+SNAP log level: null
+Java home: /home/kdm/local/snap/jre
+Java version: 1.8.0_102
+Processors: 8
+Max memory: 18.7 GB
+Cache size: 1024.0 MB
+Tile parallelism: 8
+Tile size: 512 x 512 pixels
+
+To configure your gpt memory usage:
+Edit snap/bin/gpt.vmoptions
+
+To configure your gpt cache size and parallelism:
+Edit .snap/etc/snap.properties or gpt -c ${cachesize-in-GB}G -q ${parallelism} 
+:END:
+
+*** Prepare a single Sentinel scene
+
+#+BEGIN_SRC sh :results verbatim
+wget -nc --continue https://www.dropbox.com/s/tqkku3k3x3d49gw/S3A.zip?dl=1
+unzip S3A.zip -d ./DEBUG_in
+#+END_SRC
+#+RESULTS:
+
+*** Simple GPT XML file
+
+#+BEGIN_SRC xml :tangle DEBUG.xml
+<graph id="S3_proc">
+  <version>1.0</version>
+
+  <!--
+      Write out bands that don't need to go through the OLCI.SnowProcessor
+      Should mimic *the same workflow* (reproject, subset, etc.)
+  -->
+
+  <node id="Subset">
+    <operator>Subset</operator>
+    <sources>
+      <source>${source}</source>
+    </sources>
+    <parameters>
+      <!-- rough outline of Greenland -->
+      <geoRegion>"-54.6 83.2, -75.4 77.5  -67.7 75.5, -61.4 75.4, -53.1 63.5, -48.7 60.5, -45.1 59.5, -42.7 59.6, -38.4 64.4, -21.0 69.9, -15.6 75.0, -14.7 79.9, -9.3 81.4, -25.3 83.7, -54.6 83.20"</geoRegion>
+      <!-- <fullSwath>boolean</fullSwath> -->
+      <copyMetadata>true</copyMetadata>
+    </parameters>
+  </node>
+
+  <node id="Reproject">
+    <operator>Reproject</operator>
+    <sources>
+      <source>Subset</source>
+    </sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>
+
+  
+  <!--
+      from here down, pairs:
+      1) Select a band
+      2) write to disk
+  -->
+  
+  <node id="BandSelect_lat">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>latitude</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_lat">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_lat</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/lat.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+
+  <node id="BandSelect_lon">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>longitude</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_lon">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_lon</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/lon.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+
+  <node id="SZA_invalid">
+    <operator>BandMaths</operator>
+    <sources>
+      <sourceProducts>Reproject</sourceProducts>
+    </sources>
+    <parameters>
+      <targetBands>
+        <targetBand>
+          <name>sun_zenith</name>
+          <type>float32</type>
+          <expression>quality_flags.invalid ? NaN : SZA</expression>
+        </targetBand>
+      </targetBands>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_SZA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>SZA_invalid</source>
+    </sources>
+    <parameters>
+      <sourceBands>sun_zenith</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_SZA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_SZA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/SZA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OZA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>OZA</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_OZA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_OZA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/OZA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+
+  <node id="BandSelect_SAA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>SAA</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_SAA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_SAA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/SAA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OAA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>OAA</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_OAA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_OAA</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/OAA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+</graph>
+#+END_SRC
+
+*** Run GPT w/ and w/o per-pixel geocoding
+
+#+BEGIN_SRC sh :results verbatim
+DIR=$(ls DEBUG_in)
+
+time ~/local/snap/bin/gpt ./DEBUG.xml -Ssource=./DEBUG_in/${DIR}/xfdumanifest.xml -PtargetFolder=./DEBUG_nopixel -Ds3tbx.reader.olci.pixelGeoCoding=false
+
+time ~/local/snap/bin/gpt ./DEBUG.xml -Ssource=./DEBUG_in/${DIR}/xfdumanifest.xml -PtargetFolder=./DEBUG_pixel -Ds3tbx.reader.olci.pixelGeoCoding=true
+#+END_SRC
+#+RESULTS:
+* Runner
+
+187G /Volumes/Ice/Sentinel-3/_zip/201705
+190G /Volumes/Ice/Sentinel-3/_zip/201706
+186G /Volumes/Ice/Sentinel-3/_zip/201707
+182G /Volumes/Ice/Sentinel-3/_zip/201708
+186G /Volumes/Ice/Sentinel-3/_zip/201805
+188G /Volumes/Ice/Sentinel-3/_zip/201806
+181G /Volumes/Ice/Sentinel-3/_zip/201807
+ 27G /Volumes/Ice/Sentinel-3/_zip/201808
+
+#+BEGIN_SRC sh :results verbatim
+./S3_proc.sh -i /media/kdm/ice/Sentinel-3/_zip/201705 -o /media/kdm/ice/Ken/S3Snow/tmp -v
+done
+#+END_SRC
