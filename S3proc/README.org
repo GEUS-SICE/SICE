@@ -275,7 +275,7 @@ PATH=~/local/snap/bin:$PATH ./S3_proc.sh -i ./dat_S3A -o ./out_S3A -x ./S3_proc.
 #+END_SRC
 #+RESULTS:
 
-** NaNs due to per-pixel geocoding
+** FAIL NaNs due to per-pixel geocoding
 
 *** Version
 #+BEGIN_SRC sh :results verbatim drawer
@@ -508,6 +508,17 @@ time ~/local/snap/bin/gpt ./DEBUG.xml -Ssource=./DEBUG_in/${DIR}/xfdumanifest.xm
 time ~/local/snap/bin/gpt ./DEBUG.xml -Ssource=./DEBUG_in/${DIR}/xfdumanifest.xml -PtargetFolder=./DEBUG_pixel -Ds3tbx.reader.olci.pixelGeoCoding=true
 #+END_SRC
 #+RESULTS:
+
+** Find folders with bad files
+#+BEGIN_SRC sh :results verbatim
+for folder in $(ls); do
+  echo "Checking ${folder}"
+  ls ${folder} | parallel gdalinfo -mm ${folder}/{} > /dev/null
+done
+#+END_SRC
+#+RESULTS:
+
+
 * Runner
 
 187G /Volumes/Ice/Sentinel-3/_zip/201705
