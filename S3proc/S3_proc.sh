@@ -14,7 +14,6 @@ do
 	    echo "./S3_proc.sh -i inpath -o outpath -x XML [-h -v -t]"
 	    echo "  -i: Path to input S3 EFR ZIP files"
 	    echo "  -o: Path where to store ouput"
-	    echo "  -x: XML file for GPT"
 	    echo "  -v: Print verbose messages during processing"
 	    echo "  -t: Print timing messages during processing"
 	    echo "  -h: print this help"
@@ -49,11 +48,11 @@ for zipfile in $(ls ${INPATH}/S3?_OL_1_EFR____*.zip); do
     
     OUTFOLDER=$(echo $zipfile | rev | cut -d_ -f11 | rev)
     DEST=${OUTPATH}/${OUTFOLDER}
-    # if [[ -d ${OUTPATH}/${OUTFOLDER} ]]; then
-    # 	message "${OUTPATH}/${OUTFOLDER} already exists. Skipping processing..."
-    # 	continue
-    # fi
-    # message "Generating ${OUTPATH}/${OUTFOLDER}"
+    if [[ -d ${OUTPATH}/${OUTFOLDER} ]]; then
+    	message "${OUTPATH}/${OUTFOLDER} already exists. Skipping processing..."
+    	continue
+    fi
+    message "Generating ${OUTPATH}/${OUTFOLDER}"
 
     message "Unzipping: Start"
     timing
@@ -65,10 +64,10 @@ for zipfile in $(ls ${INPATH}/S3?_OL_1_EFR____*.zip); do
     mkdir -p ${DEST}
     timing
 
-    # process the bands that do use OLCI.SnowProperties
-    gpt S3_proc_OLCISnowProcessor.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
     # process the bands that do not use OLCI.SnowProperties
     gpt S3_proc.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
+    # process the bands that do use OLCI.SnowProperties
+    gpt S3_proc_OLCISnowProcessor.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
 
     timing
     message "GPT: Finished"
