@@ -519,6 +519,35 @@ done
 #+RESULTS:
 
 
+** Failed days on OS X laptop run x2
+
+*** kdm
+20180601T151719
+20180602T162908
+20180602T181007
+
+*** kdm2
+
+20180601T133620
+20180601T151719
+20180601T165519
+20180602T162908
+20180602T181007
+
+*** kdm3
+
+20180601T151719
+20180601T165519
+20180602T162908
+20180602T181007
+
+*** kdm4
+
+Only simple SZA no SnowProcessor
+
+20180601T151719
+20180601T165519
+
 * Runner
 
 187G /Volumes/Ice/Sentinel-3/_zip/201705
@@ -534,3 +563,10 @@ done
 ./S3_proc.sh -i /media/kdm/ice/Sentinel-3/_zip/201705 -o /media/kdm/ice/Ken/S3Snow/tmp -v
 done
 #+END_SRC
+* Docker
+
+https://github.com/edwardpmorris/docker-snap
+#+BEGIN_SRC sh :results verbatim
+docker pull epmorris/debian8-snap2:s3tbx
+#+END_SRC
+#+RESULTS:

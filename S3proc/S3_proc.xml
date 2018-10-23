@@ -1,90 +1,10 @@
 <graph id="S3_proc">
   <version>1.0</version>
 
-  <!--
-      Write out bands that don't need to go through the OLCI.SnowProcessor
-      Should mimic *the same workflow* (reproject, subset, etc.)
-  -->
-
-  <node id="Subset">
-    <operator>Subset</operator>
-    <sources>
-      <source>${source}</source>
-    </sources>
-    <parameters>
-      <!-- rough outline of Greenland -->
-      <geoRegion>"-54.6 83.2, -75.4 77.5  -67.7 75.5, -61.4 75.4, -53.1 63.5, -48.7 60.5, -45.1 59.5, -42.7 59.6, -38.4 64.4, -21.0 69.9, -15.6 75.0, -14.7 79.9, -9.3 81.4, -25.3 83.7, -54.6 83.20"</geoRegion>
-      <!-- <fullSwath>boolean</fullSwath> -->
-      <copyMetadata>true</copyMetadata>
-    </parameters>
-  </node>
-
-  <node id="Reproject">
-    <operator>Reproject</operator>
-    <sources>
-      <source>Subset</source>
-    </sources>
-    <parameters>
-      <crs>EPSG:3413</crs>
-      <resampling>Nearest</resampling>
-      <noDataValue>NaN</noDataValue>
-      <includeTiePointGrids>true</includeTiePointGrids>
-    </parameters>
-  </node>
-
-  
-  <!--
-      from here down, pairs:
-      1) Select a band
-      2) write to disk
-  -->
-  
-  <node id="BandSelect_lat">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>latitude</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_lat">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_lat</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/lat.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-
-  <node id="BandSelect_lon">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>longitude</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_lon">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_lon</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/lon.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-  
-
   <node id="SZA_invalid">
     <operator>BandMaths</operator>
     <sources>
-      <sourceProducts>Reproject</sourceProducts>
+      <sourceProducts>${source}</sourceProducts>
     </sources>
     <parameters>
       <targetBands>
@@ -117,65 +37,106 @@
     </parameters>
   </node>
 
-  <node id="BandSelect_OZA">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>OZA</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_OZA">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_OZA</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/OZA_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
+  <!-- <node id="BandSelect_lat"> -->
+  <!--   <operator>BandSelect</operator> -->
+  <!--   <sources> -->
+  <!--     <source>${source}</source> -->
+  <!--   </sources> -->
+  <!--   <parameters> -->
+  <!--     <sourceBands>latitude</sourceBands> -->
+  <!--   </parameters> -->
+  <!-- </node> -->
+  <!-- <node id="Write_lat"> -->
+  <!--   <operator>Write</operator> -->
+  <!--   <sources> -->
+  <!--     <sourceProduct>BandSelect_lat</sourceProduct> -->
+  <!--   </sources> -->
+  <!--   <parameters> -->
+  <!--     <file>${targetFolder}/lat.tif</file> -->
+  <!--     <formatName>GeoTIFF</formatName> -->
+  <!--   </parameters> -->
+  <!-- </node> -->
 
 
-  <node id="BandSelect_SAA">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>SAA</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_SAA">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_SAA</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/SAA_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
+  <!-- <node id="BandSelect_lon"> -->
+  <!--   <operator>BandSelect</operator> -->
+  <!--   <sources> -->
+  <!--     <source>${source}</source> -->
+  <!--   </sources> -->
+  <!--   <parameters> -->
+  <!--     <sourceBands>longitude</sourceBands> -->
+  <!--   </parameters> -->
+  <!-- </node> -->
+  <!-- <node id="Write_lon"> -->
+  <!--   <operator>Write</operator> -->
+  <!--   <sources> -->
+  <!--     <sourceProduct>BandSelect_lon</sourceProduct> -->
+  <!--   </sources> -->
+  <!--   <parameters> -->
+  <!--     <file>${targetFolder}/lon.tif</file> -->
+  <!--     <formatName>GeoTIFF</formatName> -->
+  <!--   </parameters> -->
+  <!-- </node> -->
 
-  <node id="BandSelect_OAA">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>OAA</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_OAA">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_OAA</sourceProduct>
-    </sources>
-    <parameters>
-      <file>${targetFolder}/OAA_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
+  <!-- <node id="BandSelect_OZA"> -->
+  <!--   <operator>BandSelect</operator> -->
+  <!--   <sources> -->
+  <!--     <source>${source}</source> -->
+  <!--   </sources> -->
+  <!--   <parameters> -->
+  <!--     <sourceBands>OZA</sourceBands> -->
+  <!--   </parameters> -->
+  <!-- </node> -->
+  <!-- <node id="Write_OZA"> -->
+  <!--   <operator>Write</operator> -->
+  <!--   <sources> -->
+  <!--     <sourceProduct>BandSelect_OZA</sourceProduct> -->
+  <!--   </sources> -->
+  <!--   <parameters> -->
+  <!--     <file>${targetFolder}/OZA_x.tif</file> -->
+  <!--     <formatName>GeoTIFF</formatName> -->
+  <!--   </parameters> -->
+  <!-- </node> -->
+
+
+  <!-- <node id="BandSelect_SAA"> -->
+  <!--   <operator>BandSelect</operator> -->
+  <!--   <sources> -->
+  <!--     <source>${source}</source> -->
+  <!--   </sources> -->
+  <!--   <parameters> -->
+  <!--     <sourceBands>SAA</sourceBands> -->
+  <!--   </parameters> -->
+  <!-- </node> -->
+  <!-- <node id="Write_SAA"> -->
+  <!--   <operator>Write</operator> -->
+  <!--   <sources> -->
+  <!--     <sourceProduct>BandSelect_SAA</sourceProduct> -->
+  <!--   </sources> -->
+  <!--   <parameters> -->
+  <!--     <file>${targetFolder}/SAA_x.tif</file> -->
+  <!--     <formatName>GeoTIFF</formatName> -->
+  <!--   </parameters> -->
+  <!-- </node> -->
+
+  <!-- <node id="BandSelect_OAA"> -->
+  <!--   <operator>BandSelect</operator> -->
+  <!--   <sources> -->
+  <!--     <source>${source}</source> -->
+  <!--   </sources> -->
+  <!--   <parameters> -->
+  <!--     <sourceBands>OAA</sourceBands> -->
+  <!--   </parameters> -->
+  <!-- </node> -->
+  <!-- <node id="Write_OAA"> -->
+  <!--   <operator>Write</operator> -->
+  <!--   <sources> -->
+  <!--     <sourceProduct>BandSelect_OAA</sourceProduct> -->
+  <!--   </sources> -->
+  <!--   <parameters> -->
+  <!--     <file>${targetFolder}/OAA_x.tif</file> -->
+  <!--     <formatName>GeoTIFF</formatName> -->
+  <!--   </parameters> -->
+  <!-- </node> -->
   
 </graph>

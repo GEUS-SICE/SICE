@@ -2,11 +2,6 @@
   <version>1.0</version>
 
   <!--
-      NOTE: Any changes made here outside of the OLCI.SnowProcessor
-      should be copied to S3_proc.xml
-  -->
-
-  <!--
       here we process:
       
       grain_diameter
@@ -28,7 +23,7 @@
       <sourceProduct>${source}</sourceProduct>
     </sources>
     <parameters>
-      <spectralAlbedoTargetBands>Oa04 (490 nm),Oa06 (560 nm),Oa08 (665 nm),Oa21 (1020 nm)</spectralAlbedoTargetBands>
+      <spectralAlbedoTargetBands>Oa21 (1020 nm)</spectralAlbedoTargetBands>
       <copyReflectanceBands>true</copyReflectanceBands>
       <considerNdsiSnowMask>true</considerNdsiSnowMask>
       <considerSnowPollution>true</considerSnowPollution>
@@ -38,43 +33,11 @@
     </parameters>
   </node>
 
-  <node id="Subset">
-    <operator>Subset</operator>
-    <sources>
-      <source>OLCI.SnowProperties</source>
-    </sources>
-    <parameters>
-      <!-- rough outline of Greenland -->
-      <geoRegion>"-54.6 83.2, -75.4 77.5  -67.7 75.5, -61.4 75.4, -53.1 63.5, -48.7 60.5, -45.1 59.5, -42.7 59.6, -38.4 64.4, -21.0 69.9, -15.6 75.0, -14.7 79.9, -9.3 81.4, -25.3 83.7, -54.6 83.20"</geoRegion>
-      <!-- <fullSwath>boolean</fullSwath> -->
-      <copyMetadata>true</copyMetadata>
-    </parameters>
-  </node>
-
-  <node id="Reproject">
-    <operator>Reproject</operator>
-    <sources>
-      <source>Subset</source>
-    </sources>
-    <parameters>
-      <crs>EPSG:3413</crs>
-      <resampling>Nearest</resampling>
-      <noDataValue>NaN</noDataValue>
-      <includeTiePointGrids>true</includeTiePointGrids>
-    </parameters>
-  </node>
-
-
-  <!--
-      from here down, pairs:
-      1) Select a band
-      2) write to disk
-  -->
   
   <node id="BandSelect_04">
     <operator>BandSelect</operator>
     <sources>
-      <source>Reproject</source>
+      <source>OLCI.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>rBRR_04</sourceBands>
@@ -94,7 +57,7 @@
   <node id="BandSelect_06">
     <operator>BandSelect</operator>
     <sources>
-      <source>Reproject</source>
+      <source>OLCI.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>rBRR_06</sourceBands>
@@ -114,7 +77,7 @@
   <node id="BandSelect_08">
     <operator>BandSelect</operator>
     <sources>
-      <source>Reproject</source>
+      <source>OLCI.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>rBRR_08</sourceBands>
@@ -134,7 +97,7 @@
   <node id="BandSelect_21">
     <operator>BandSelect</operator>
     <sources>
-      <source>Reproject</source>
+      <source>OLCI.SnowProperties</source>
     </sources>
     <parameters>
       <sourceBands>rBRR_21</sourceBands>
@@ -153,7 +116,7 @@
 
   <node id="BandSelect_grain">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>OLCI.SnowProperties</source></sources>
     <parameters><sourceBands>grain_diameter</sourceBands></parameters>
   </node>
   <node id="Write_grain">
@@ -165,7 +128,7 @@
 
   <node id="BandSelect_snow_specific_area">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>OLCI.SnowProperties</source></sources>
     <parameters><sourceBands>snow_specific_area</sourceBands></parameters>
   </node>
   <node id="Write_snow_specific_area">
@@ -178,7 +141,7 @@
 
   <node id="BandSelect_ndsi">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>OLCI.SnowProperties</source></sources>
     <parameters><sourceBands>ndsi</sourceBands></parameters>
   </node>
   <node id="Write_ndsi">
@@ -189,7 +152,7 @@
 
   <node id="BandSelect_ice_indicator">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>OLCI.SnowProperties</source></sources>
     <parameters><sourceBands>ice_indicator</sourceBands></parameters>
   </node>
   <node id="Write_ice_indicator">
@@ -201,7 +164,7 @@
 
   <node id="BandSelect_albedo_bb_planar_sw">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>OLCI.SnowProperties</source></sources>
     <parameters><sourceBands>albedo_bb_planar_sw</sourceBands></parameters>
   </node>
   <node id="Write_albedo_bb_planar_sw">
@@ -213,7 +176,7 @@
   
   <node id="BandSelect_albedo_spectral_planar_1020">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>OLCI.SnowProperties</source></sources>
     <parameters><sourceBands>albedo_spectral_planar_1020</sourceBands></parameters>
   </node>
   <node id="Write_albedo_spectral_planar_1020">
