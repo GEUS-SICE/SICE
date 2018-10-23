@@ -23,7 +23,8 @@
       <sourceProduct>${source}</sourceProduct>
     </sources>
     <parameters>
-      <spectralAlbedoTargetBands>Oa21 (1020 nm)</spectralAlbedoTargetBands>
+      <spectralAlbedoTargetBands>Oa04 (490 nm),Oa06 (560 nm),Oa08 (665 nm),Oa21 (1020 nm)</spectralAlbedoTargetBands>
+      <!-- <spectralAlbedoTargetBands>Oa21 (1020 nm)</spectralAlbedoTargetBands> -->
       <copyReflectanceBands>true</copyReflectanceBands>
       <considerNdsiSnowMask>true</considerNdsiSnowMask>
       <considerSnowPollution>true</considerSnowPollution>
