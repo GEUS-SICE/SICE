@@ -1,12 +1,6 @@
-* S3Snow Private Repository
+* S3Snow Repository
 
 This code repository is for the S3Snow project
 
-** TODO:
-
-+ [ ] Git Intro for Jason and Maxim
-+ [X] Improve search utility to avoid corners
-  + DONE by searching for scenes that cover a POINT near the center of the ROI
-+ [ ] Get jpy bug fixed - see https://github.com/bcdev/jpy/issues/108
-+ [ ] Figure out CollocateWith target Grids & generate GPT graph for it
-+ [X] Generate GIMP NetCDF DEM - See [[./DEM/DEM.org]]
++ [[./S3Search]] contains some scripts to find and download Sentinel 3 scenes
++ [[./S3proc]] contains scripts to search scenes, fetch scenes, process them using [[http://step.esa.int/main/toolboxes/snap/][ESA SNAP]], and mosaic them.
