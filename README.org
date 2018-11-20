@@ -1,6 +1,6 @@
-* S3Snow Repository
+* SICE Repository
 
-This code repository is for the S3Snow project
+This code repository is for the Sentinel Ice (SICE) project
 
 + [[./S3Search]] contains some scripts to find and download Sentinel 3 scenes
 + [[./S3proc]] contains scripts to search scenes, fetch scenes, process them using [[http://step.esa.int/main/toolboxes/snap/][ESA SNAP]], and mosaic them.
