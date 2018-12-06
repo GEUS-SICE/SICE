@@ -12,7 +12,7 @@ do
     case $key in
 	-h|--help)
 	    echo "./S3_proc.sh -i inpath -o outpath [-h -v -t]"
-	    echo "  -i: Path to input S3 EFR ZIP files"
+	    echo "  -i: Path to folder containing S3A_*_EFR_*_002.SEN3 (unzipped S3 EFR) files"
 	    echo "  -o: Path where to store ouput"
 	    echo "  -v: Print verbose messages during processing"
 	    echo "  -t: Print timing messages during processing"
@@ -42,31 +42,24 @@ if [ -z $INPATH ] || [ -z $OUTPATH ];then
     exit 1
 fi
 
-for zipfile in $(ls ${INPATH}/S3?_OL_1_EFR____*.zip); do
-    S3FOLDER=$(echo $(basename ${zipfile} .zip).SEN3)
-    OUTFOLDER=$(echo $zipfile | rev | cut -d_ -f11 | rev)
+for folder in $(ls ${INPATH}); do
+    S3FOLDER=$(basename ${folder})
+    OUTFOLDER=$(echo $S3FOLDER | rev | cut -d_ -f11 | rev)
     DEST=${OUTPATH}/${OUTFOLDER}
-    if [[ -d ${OUTPATH}/${OUTFOLDER} ]]; then
+    if [[ -d ${DEST} ]]; then
     	message "${OUTPATH}/${OUTFOLDER} already exists. Skipping processing..."
     	continue
+    else
+    	message "Generating ${OUTPATH}/${OUTFOLDER}"
+    	mkdir -p ${DEST}
     fi
-    message "Generating ${OUTPATH}/${OUTFOLDER}"
 
-    message "Unzipping: Start"
-    timing
-    unzip -q -u $zipfile -d ${INPATH}
-    timing
-    message "Unzipping: Finished"
-    
     message "GPT: Start"
-    mkdir -p ${DEST}
     timing
-
     # process the bands that do not use OLCI.SnowProperties
     gpt S3_proc.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
     # process the bands that do use OLCI.SnowProperties
     gpt S3_proc_OLCISnowProcessor.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
-
     timing
     message "GPT: Finished"
 
@@ -76,13 +69,10 @@ for zipfile in $(ls ${INPATH}/S3?_OL_1_EFR____*.zip); do
     message "Compressing: Start"
     timing
     for f in $(ls ${DEST}); do
-	echo $f
+    	echo $f
     	gdal_translate -co "COMPRESS=DEFLATE" ${DEST}/${f} ${DEST}/${f}_tmp.tif
-	mv  ${DEST}/${f}_tmp.tif ${DEST}/${f}
+    	mv  ${DEST}/${f}_tmp.tif ${DEST}/${f}
     done
     timing
-    message "Extracting and Compressing: Finished"
-
-    # cleanup
-    /bin/rm -R ${INPATH}/${S3FOLDER}
+    message "Finished: ${folder}"
 done
