@@ -1,176 +1,32 @@
 
 * Sentinel-3 (S3) Albedo Processing Pipeline
 
-1. Fetch S3 quicklook products
+1. Fetch S3 OLCI products
 2. Process with SNAP
-   1. Radiance to reflectance and albedo
-   2. Export as folders of GeoTIFFs
 3. Mosaic all scenes in a day to produce one Greenland-wide product
+
+In more detail:
 
 ** Fetch S3 OLCI products
 
-1. Fetch quicklook files for a given time period with [[./fetch_ql.sh]].
-2. Manually view and filter the quicklook files
-3. Download OLCI EFR products with [[./fetch_scene_from_ql.sh]].
++ Fetch quicklook files for a given time period with [[./fetch_ql.sh]].
++ Manually view and filter the quicklook files
+  + Generally the filter step means discarding scenes that are too cloudy
++ Download OLCI EFR products with [[./fetch_scene_from_ql.sh]].
 
 ** Process with SNAP
 
-This step is a combination of [[./S3_proc.sh]] and [[./S3_proc.xml]].
++ This step is a combination of running GPT on [[./S3_proc.xml]] with [[./S3_proc.sh]].
++ Outputs: A folder for each OLCI scene
 
-* Notes
-** SZA
-+ These snippets have been implemented as [[./dm.sh]].
-*** Overlay all
-#+BEGIN_SRC sh :results verbatim :eval no-export
-grass72 -e -c EPSG:3413 ./G
-grass72 ./G/PERMANENT
+** Mosaic
 
-for item in $(ls tmp); do
-    echo $item
-    r.in.gdal input=tmp/${item}/SZA.tif output=${item}_SZA --o
-done
++ As implemented in [[./dm.sh]] and [[./dm.grass]], for each day
+  + Reproject to EPSG:3413
+  + Combine all the files from to form a mosaic using
+  + When scenes overlap, selection criteria is "minumum SZA"
 
-g.region raster=$(g.list type=raster pattern=*_SZA separator=,)
-g.region res=500 -a -p
-g.region -s
-
-#v.proj input=countries location=NaturalEarth mapset=10M dbase=~/data/grass --o
-v.import extent=region input=~/data/GIS/NaturalEarth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp  output=countries
-
-r.colors map=$(g.list type=raster pattern=*_SZA separator=,) color=viridis
-
-d.mon start=png output="./fig/sza_all.png" --overwrite
-for raster in $(g.list type=raster pattern=*_SZA); do d.rast $raster; done
-d.legend raster=20170801T131738_SZA
-d.vect countries where="NAME='Greenland'" fill_color=none
-d.mon stop=png
-open ./fig/sza_all.png
-#+END_SRC
-#+RESULTS:
-
-Resulting figure:
-#+NAME: fig:SZA_all
-#+ATTR_LATEX: :width \textwidth
-# #+ATTR_LATEX: :float wrap :placement [23]{l}{0.4\textwidth} :width 0.4\textwidth
-#+CAPTION: SZA from multiple scenes overlaid
-[[./fig/sza_all.png]]
-
-*** Minimum SZA
-#+BEGIN_SRC sh :results verbatim :eval no-export
-grass72 ./G/PERMANENT
-
-img_arr=($(g.list type=raster pattern=*_SZA))
-imgs=$(g.list type=raster pattern=*_SZA separator=,)
-
-# find the array index with the minimum SZA
-r.series input=${imgs} method=min_raster output=SZA_LUT
-
-SZA_LUT_idxs=$(r.stats -n -l SZA_LUT)
-n_imgs=$(echo $SZA_LUT_idxs |wc -w)
-
-for i in $SZA_LUT_idxs; do
-    echo $i
-    r.mask raster=SZA_LUT maskcats=${i} --o --q
-    g.region raster=MASK zoom=MASK
-    r.mapcalc "tmp_${i} = ${img_arr[${i}]}" --o
-done
-r.mask -r
-g.region -d
-
-tmp_list=$(g.list type=raster pattern=tmp_* separator=,)
-r.patch input=${tmp_list} output=SZA_min --o
-g.remove -f type=raster pattern=${tmp_list}
-
-d.mon start=png output="./fig/sza_lut.png" --overwrite
-d.rast SZA_LUT
-d.vect countries where="NAME='Greenland'" fill_color=none
-d.mon stop=png
-open ./fig/sza_lut.png
-
-d.mon start=wx0
-d.mon start=png output="./fig/sza_min.png" --overwrite
-d.erase
-d.rast SZA_min
-d.legend SZA_min
-d.vect countries where="NAME='Greenland'" fill_color=none
-d.mon stop=png
-open ./fig/sza_min.png
-#+END_SRC
-#+RESULTS:
-
-Resulting figures:
-#+NAME: fig:SZA_lut
-#+ATTR_LATEX: :width \textwidth
-#+CAPTION: Location and scene with minimum SZA
-[[./fig/sza_lut.png]]
-
-
-#+NAME: fig:SZA_min
-#+ATTR_LATEX: :width \textwidth
-#+CAPTION: Minimum SZA from multiple scenes
-[[./fig/sza_min.png]]
-
-
-*** Mosaic RGB based on Minimum SZA
-+ OLCI 468 = BGR
-
-#+BEGIN_SRC sh :results verbatim :eval no-export
-grass72 ./G/PERMANENT
-
-# load data
-for item in $(ls tmp); do
-    echo $item
-    r.in.gdal input=tmp/${item}/Oa04_reflectance.tif output=${item}_Oa04_reflectance --o
-    r.in.gdal input=tmp/${item}/Oa06_reflectance.tif output=${item}_Oa06_reflectance --o
-    r.in.gdal input=tmp/${item}/Oa08_reflectance.tif output=${item}_Oa08_reflectance --o
-done
-
-img_arr_Oa04=($(g.list type=raster pattern=*Oa04_reflectance))
-img_arr_Oa06=($(g.list type=raster pattern=*Oa06_reflectance))
-img_arr_Oa08=($(g.list type=raster pattern=*Oa08_reflectance))
-
-
-# SZA_LUT_idxs=$(r.stats -n -l SZA_LUT)  # already defined above
-# n_imgs=$(echo $SZA_LUT_idxs |wc -w)
-
-for i in $SZA_LUT_idxs; do
-    echo $i
-    r.mask raster=SZA_LUT maskcats=${i} --o --q
-    g.region raster=MASK zoom=MASK
-    r.mapcalc "Oa04_tmp_${i} = ${img_arr_Oa04[${i}]}" --o
-    r.mapcalc "Oa06_tmp_${i} = ${img_arr_Oa06[${i}]}" --o
-    r.mapcalc "Oa08_tmp_${i} = ${img_arr_Oa08[${i}]}" --o
-done
-r.mask -r
-g.region -d
-
-Oa04_tmp_list=$(g.list type=raster pattern=Oa04_tmp_* separator=,)
-Oa06_tmp_list=$(g.list type=raster pattern=Oa06_tmp_* separator=,)
-Oa08_tmp_list=$(g.list type=raster pattern=Oa08_tmp_* separator=,)
-r.patch input=${Oa04_tmp_list} output=Oa04_mosaic --o
-r.patch input=${Oa06_tmp_list} output=Oa06_mosaic --o
-r.patch input=${Oa08_tmp_list} output=Oa08_mosaic --o
-g.remove -f type=raster pattern=${Oa04_tmp_list},${Oa06_tmp_list},${Oa08_tmp_list}
-
-
-r.colors map=Oa04_mosaic,Oa06_mosaic,Oa08_mosaic color=grey
-
-d.mon start=wx0
-d.mon start=png output="./fig/RGB_mosaic.png" --overwrite resolution=3
-d.erase
-d.rgb blue=Oa04_mosaic green=Oa06_mosaic red=Oa08_mosaic
-d.vect countries where="NAME='Greenland'" fill_color=none color=black width=3
-d.vect countries where="NAME='Greenland'" fill_color=none color=white width=1
-d.mon stop=png
-open ./fig/RGB_mosaic.png
-#+END_SRC
-#+RESULTS:
-
-Resulting figure:
-#+NAME: fig:SZA_min
-#+ATTR_LATEX: :width \textwidth
-#+CAPTION: RGB mosaic based on minimum SZA
-[[./fig/RGB_mosaic.png]]
+* Misc Notes & Code Snippets
 ** Generate ice mask
 + Use the icemask from BedMachine v3
 #+BEGIN_SRC sh :results verbatim :eval no-export
@@ -195,17 +51,87 @@ trash Gtmp
 #+END_SRC
 #+RESULTS:
 
-** Misc Code Snippest
-*** Fetch all QL scenes
+** Fetch all QL scenes
 #+BEGIN_SRC sh :results verbatim :eval no-export
 for d in $(seq 1 365); do
     ./fetch_ql.sh --date 2017-${d}
 done
 #+END_SRC
-*** Fetch JJA
-+ June 1 to sep 1 = DOY 152 to 245
+
+Or, fetch JJA: June 1 to sep 1 = DOY 152 to 245
 #+BEGIN_SRC sh :results verbatim :eval no-export
 for d in $(seq 152 245); do
     ./fetch_ql.sh --date 2017-${d}
 done
 #+END_SRC
+** Per pixel geocoding options on CLI
+From: https://forum.step.esa.int/t/best-practice-to-convert-and-reproject-sentinel-3-radiances-to-reflectance/5744/25
+
++ =-Ds3tbx.reader.olci.pixelGeoCoding=true=. See also
++ =s3tbx.reader.slstrl1b.pixelGeoCodings=
++ =s3tbx.reader.meris.pixelGeoCoding=
+
+
+** Footprint
+Get GL outline by drawing in Google Earth, export KML, then:
+#+BEGIN_SRC sh :results verbatim
+ogrinfo -al GL_outline.kml  | grep LINESTRING | sed s/\ 0//g
+#+END_SRC
+#+RESULTS:
+:   LINESTRING Z (-53.656510998614 82.4951349654326,-59.9608997952054 82.1309669419302,-67.7892790605668 80.5602726884285,-67.9606014394374 80.0218479599442,-67.6072679271745 79.3014049647312,-72.7375435732184 78.589499923855,-73.5413877637147 78.1636943551527,-72.9428482239824 77.383771707567,-69.0700767925261 76.0128312085861,-66.6509837672326 75.7624371858398,-60.3956740146368 75.8231961720352,-58.4311886831941 74.885454496734,-55.1967975793182 69.6980961092145,-53.856542195614 68.836827126205,-54.2986423614971 67.0754091899264,-53.556230345375 65.610957996411,-52.3863139424116 64.7989541895734,-52.3228757389159 64.0074120108603,-50.207636158087 62.10102160819,-48.6300832525784 60.7381422112742,-45.052233335019 59.7674821385312,-43.2890274040171 59.6436933230826,-42.4957557404764 60.3093279369714,-41.8486807919329 61.5655162642218,-41.696971498891 62.648646023379,-40.1106185043429 63.5452982243944,-39.9111533763437 64.794417571311,-38.0777963367496 65.4068477012585,-36.9899016468925 65.1987069880844,-31.2165494022336 67.7166128864512,-25.8502840866575 68.6303659153185,-21.6517276244872 70.0839769825896,-20.9932063064242 70.7880484213637,-21.2829833867197 72.9254092162205,-16.9050363384979 74.9601702268335,-17.1213527989912 79.6158229046929,-10.2883304040514 81.4244115757783,-14.0398740460794 81.9745362690188,-17.8112945221629 82.0131368667592,-28.5252333238728 83.7013945514435,-40.1075150451371 83.6651081451092,-53.656510998614 82.4951349654326)
+* Debugging & Testing
+** Fetch scenes
+#+BEGIN_SRC sh :results verbatim
+./fetch_ql.sh --date 2017-08-15 ./quicklook
+./fetch_scene_from_ql.sh ./quicklook/ ./S3_dat
+#+END_SRC
+#+RESULTS:
+
+** GPT one scene
+Given one S3 EFR folder
+#+BEGIN_SRC sh :results verbatim :exports both
+ls ./S3_dat | head -n1
+#+END_SRC
+#+RESULTS:
+: S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
+
+Run our simple [[./DEBUG.xml]] processor and mosaic one day
+
+#+BEGIN_SRC sh :results verbatim
+PATH=~/local/snap/bin:${PATH}
+rm -fR tmp.out tmp.mosaic
+mkdir tmp.out
+S3=S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
+gpt DEBUG.xml -Ssource=./S3_dat/${S3}/xfdumanifest.xml -PtargetFolder=./tmp.out
+nth tmp.out
+#+END_SRC
+#+RESULTS:
+** Process One Day
+Given the following S3 EFR folders:
+#+BEGIN_SRC sh :results verbatim :exports both
+ls ./S3_dat
+#+END_SRC
+#+RESULTS:
+: S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T121103_20170815T121403_20180707T033458_0179_021_109_1620_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T121403_20170815T121703_20180707T033531_0179_021_109_1800_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T135202_20170815T135502_20180707T032400_0179_021_110_1620_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T135502_20170815T135802_20180707T032438_0179_021_110_1800_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T135802_20170815T140102_20180707T032538_0180_021_110_1980_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T153301_20170815T153601_20180707T033529_0180_021_111_1620_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T153601_20170815T153901_20180707T033614_0179_021_111_1800_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T171400_20170815T171700_20180707T032123_0179_021_112_1620_LR2_R_NT_002.SEN3
+
+Run our simple [[./DEBUG.xml]] processor on one day
+
+#+BEGIN_SRC sh :results verbatim
+PATH=~/local/snap/bin:${PATH}
+rm -fR tmp.out tmp.mosaic
+
+# Process all days in S3_dat
+./S3_proc.sh -i ./S3_dat -o ./tmp.out -D -v
+
+# Mosaic one day
+./dm.sh 20170815 ./tmp.out ./tmp.mosaic
+#+END_SRC
+#+RESULTS:
