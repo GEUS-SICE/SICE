@@ -2,8 +2,15 @@
 
 # PATH=~/local/snap/bin:$PATH ./S3_proc.sh -i ./dat_S3A -o ./out_S3A
 
-timing() { if [[ $TIMING == 1 ]]; then date; fi; }
-message() { if [[ $VERBOSE == 1 ]]; then echo $1; fi; }
+RED='\033[0;31m'
+ORANGE='\033[0;33m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+MSG_OK() { printf "${GREEN}${1}${NC}\n"; }
+MSG_WARN() { printf "${ORANGE}WARNING: ${1}${NC}\n"; }
+MSG_ERR() { printf "${RED}ERROR: ${1}${NC}\n"; }
+
+timing() { if [[ $TIMING == 1 ]]; then MSG_OK "$(date)"; fi; }
 
 while [[ $# -gt 0 ]]
 do
@@ -11,9 +18,10 @@ do
     
     case $key in
 	-h|--help)
-	    echo "./S3_proc.sh -i inpath -o outpath [-h -v -t]"
+	    echo "./S3_proc.sh -i inpath -o outpath [-D -h -v -t]"
 	    echo "  -i: Path to folder containing S3A_*_EFR_*_002.SEN3 (unzipped S3 EFR) files"
 	    echo "  -o: Path where to store ouput"
+	    echo "  -D: Use DEBUG.xml (fast, few bands)"
 	    echo "  -v: Print verbose messages during processing"
 	    echo "  -t: Print timing messages during processing"
 	    echo "  -h: print this help"
@@ -26,6 +34,9 @@ do
 	-o)
 	    OUTPATH="$2"
 	    shift; shift;;
+	-D)
+	    DEBUG=1
+	    shift;;
 	-v)
 	    VERBOSE=1
 	    shift;;
@@ -47,26 +58,31 @@ for folder in $(ls ${INPATH}); do
     OUTFOLDER=$(echo $S3FOLDER | rev | cut -d_ -f11 | rev)
     DEST=${OUTPATH}/${OUTFOLDER}
     if [[ -d ${DEST} ]]; then
-    	message "${OUTPATH}/${OUTFOLDER} already exists. Skipping processing..."
+    	MSG_WARN "${OUTPATH}/${OUTFOLDER} already exists. Skipping processing..."
     	continue
     else
-    	message "Generating ${OUTPATH}/${OUTFOLDER}"
+    	MSG_OK "Generating ${OUTPATH}/${OUTFOLDER}"
     	mkdir -p ${DEST}
     fi
 
-    message "GPT: Start"
+    MSG_OK "GPT: Start"
     timing
-    # process the bands that do not use OLCI.SnowProperties
-    gpt S3_proc.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
-    # process the bands that do use OLCI.SnowProperties
-    gpt S3_proc_OLCISnowProcessor.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
-    timing
-    message "GPT: Finished"
 
-    message "renaming..."
+    if [[ ${DEBUG} == 1 ]]; then
+	MSG_WARN "Using DEBUG.xml"
+	gpt DEBUG.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
+	# -Ds3tbx.reader.olci.pixelGeoCoding=true
+    else
+	gpt S3_proc.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true
+    fi
+    
+    timing
+    MSG_OK "GPT: Finished"
+
+    MSG_OK "renaming..."
     for f in $(ls ${DEST}/*_x*); do mv -v ${f} "${f//_x}"; done
 
-    message "Compressing: Start"
+    MSG_OK "Compressing: Start"
     timing
     for f in $(ls ${DEST}); do
     	echo $f
@@ -74,5 +90,5 @@ for folder in $(ls ${INPATH}); do
     	mv  ${DEST}/${f}_tmp.tif ${DEST}/${f}
     done
     timing
-    message "Finished: ${folder}"
+    MSG_OK "Finished: ${folder}"
 done

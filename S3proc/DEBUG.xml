@@ -1,0 +1,159 @@
+<graph id="S3_proc_lite">
+  <version>1.0</version>
+
+  <!--
+      DEBUG.xml - for fast debugging
+      1) Minimal bands: 4,6,8,21 + lon,lat + SZA
+      2) No slow processors
+      3) Suggestion: Run w/ CLI flags to disable per-pixel geocoding
+  -->
+
+  <!-- doesn't seem to work... -->
+  <!-- <node id="Subset"> -->
+  <!--   <operator>Subset</operator> -->
+  <!--   <sources> -->
+  <!--     <source>${source}</source> -->
+  <!--   </sources> -->
+  <!--   <parameters> -->
+  <!--     <!-\- rough Greenland outline -\-> -->
+  <!--     <geoRegion>"POLYGON((-54.6 83.2,-75.4 77.5,-67.7 75.5,-61.4 75.4,-53.1 63.5,-48.7 60.5,-45.1 59.5,-42.7 59.6,-38.4 64.4,-21.0 69.9,-15.6 75.0,-14.7 79.9,-9.3 81.4,-25.3 83.7,-54.6 83.2))"</geoRegion> -->
+  <!--     <!-\- <fullSwath>boolean</fullSwath> -\-> -->
+  <!--     <copyMetadata>true</copyMetadata> -->
+  <!--   </parameters> -->
+  <!-- </node> -->
+
+  <node id="Reproject">
+    <operator>Reproject</operator>
+    <sources>
+      <source>${source}</source>
+    </sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_04">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa04_radiance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_04">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_04</sourceProduct>
+    </sources>
+    <parameters>
+      <deleteOutputOnFailure>True</deleteOutputOnFailure>
+      <file>${targetFolder}/Oa04_radiance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_06">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa06_radiance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_06">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_06</sourceProduct>
+    </sources>
+    <parameters>
+      <deleteOutputOnFailure>True</deleteOutputOnFailure>
+      <file>${targetFolder}/Oa06_radiance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+    <node id="BandSelect_08">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa08_radiance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_08">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_08</sourceProduct>
+    </sources>
+    <parameters>
+      <deleteOutputOnFailure>True</deleteOutputOnFailure>
+      <file>${targetFolder}/Oa08_radiance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_21">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa21_radiance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_21">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_21</sourceProduct>
+    </sources>
+    <parameters>
+      <deleteOutputOnFailure>True</deleteOutputOnFailure>
+      <file>${targetFolder}/Oa21_radiance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="SZA_invalid">
+    <operator>BandMaths</operator>
+    <sources>
+      <sourceProducts>Reproject</sourceProducts>
+    </sources>
+    <parameters>
+      <targetBands>
+        <targetBand>
+          <name>sun_zenith</name>
+          <type>float32</type>
+          <expression>quality_flags.invalid ? NaN : SZA</expression>
+        </targetBand>
+      </targetBands>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_SZA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>SZA_invalid</source>
+    </sources>
+    <parameters>
+      <sourceBands>sun_zenith</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_SZA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_SZA</sourceProduct>
+    </sources>
+    <parameters>
+      <deleteOutputOnFailure>True</deleteOutputOnFailure>
+      <file>${targetFolder}/SZA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+</graph>
