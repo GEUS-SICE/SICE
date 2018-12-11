@@ -62,8 +62,7 @@ for folder in $(ls ${INPATH}); do
     OUTFOLDER=$(echo $S3FOLDER | rev | cut -d_ -f11 | rev)
     DEST=${OUTPATH}/${OUTFOLDER}
     if [[ -d ${DEST} ]]; then
-    	MSG_WARN "${OUTPATH}/${OUTFOLDER} already exists. Skipping processing..."
-    	continue
+    	MSG_WARN "${OUTPATH}/${OUTFOLDER} already exists. Overwriting and/or adding..."
     else
     	MSG_OK "Generating ${OUTPATH}/${OUTFOLDER}"
     	mkdir -p ${DEST}
