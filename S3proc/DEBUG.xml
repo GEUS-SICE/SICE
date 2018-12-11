@@ -1,26 +1,12 @@
-<graph id="S3_proc_lite">
+<graph id="DEBUG">
   <version>1.0</version>
 
   <!--
       DEBUG.xml - for fast debugging
-      1) Minimal bands: 4,6,8,21 + lon,lat + SZA
+      1) Minimal bands: 4,6,8,21 + SZA
       2) No slow processors
-      3) Suggestion: Run w/ CLI flags to disable per-pixel geocoding
+      3) Suggestion: Run w/ -Ds3tbx.reader.olci.pixelGeoCoding=false for speed
   -->
-
-  <!-- doesn't seem to work... -->
-  <!-- <node id="Subset"> -->
-  <!--   <operator>Subset</operator> -->
-  <!--   <sources> -->
-  <!--     <source>${source}</source> -->
-  <!--   </sources> -->
-  <!--   <parameters> -->
-  <!--     <!-\- rough Greenland outline -\-> -->
-  <!--     <geoRegion>"POLYGON((-54.6 83.2,-75.4 77.5,-67.7 75.5,-61.4 75.4,-53.1 63.5,-48.7 60.5,-45.1 59.5,-42.7 59.6,-38.4 64.4,-21.0 69.9,-15.6 75.0,-14.7 79.9,-9.3 81.4,-25.3 83.7,-54.6 83.2))"</geoRegion> -->
-  <!--     <!-\- <fullSwath>boolean</fullSwath> -\-> -->
-  <!--     <copyMetadata>true</copyMetadata> -->
-  <!--   </parameters> -->
-  <!-- </node> -->
 
   <node id="Reproject">
     <operator>Reproject</operator>
