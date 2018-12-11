@@ -3,7 +3,7 @@
 
   <!--
       DEBUG.xml - for fast debugging
-      1) Minimal bands: 4,6,8,21 + SZA
+      1) Minimal bands: 4,6,8 + SZA
       2) No slow processors
       3) Suggestion: Run w/ -Ds3tbx.reader.olci.pixelGeoCoding=false for speed
   -->
@@ -80,27 +80,6 @@
     <parameters>
       <deleteOutputOnFailure>True</deleteOutputOnFailure>
       <file>${targetFolder}/Oa08_radiance_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-  <node id="BandSelect_21">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>Oa21_radiance</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_21">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_21</sourceProduct>
-    </sources>
-    <parameters>
-      <deleteOutputOnFailure>True</deleteOutputOnFailure>
-      <file>${targetFolder}/Oa21_radiance_x.tif</file>
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
