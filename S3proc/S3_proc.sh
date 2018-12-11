@@ -18,10 +18,11 @@ do
     
     case $key in
 	-h|--help)
-	    echo "./S3_proc.sh -i inpath -o outpath [-D -h -v -t]"
+	    echo "./S3_proc.sh -i inpath -o outpath [-D | -x file.xml] [-h -v -t]"
 	    echo "  -i: Path to folder containing S3A_*_EFR_*_002.SEN3 (unzipped S3 EFR) files"
 	    echo "  -o: Path where to store ouput"
 	    echo "  -D: Use DEBUG.xml (fast, few bands)"
+	    echo "  -X: Use non-default XML file [default: S3_proc.xml]"
 	    echo "  -v: Print verbose messages during processing"
 	    echo "  -t: Print timing messages during processing"
 	    echo "  -h: print this help"
@@ -33,6 +34,9 @@ do
 	    ;;
 	-o)
 	    OUTPATH="$2"
+	    shift; shift;;
+	-X)
+	    XML="$2"
 	    shift; shift;;
 	-D)
 	    DEBUG=1
@@ -70,9 +74,15 @@ for folder in $(ls ${INPATH}); do
 
     if [[ ${DEBUG} == 1 ]]; then
 	MSG_WARN "Using DEBUG.xml"
-	gpt DEBUG.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST}
-	# -Ds3tbx.reader.olci.pixelGeoCoding=true
+	MSG_ERR "Not using per pixel geocoding for speed"
+	gpt DEBUG.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=false
+    elif [[ ! -z ${XML} ]]; then 
+	MSG_WARN "Using ${XML}"
+	MSG_OK "Per-pixel geocoding enabled"
+	gpt ${XML} -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true
     else
+	MSG_WARN "Using default XML: S3_proc.xml"
+	MSG_OK "Per-pixel geocoding enabled"
 	gpt S3_proc.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true
     fi
     
