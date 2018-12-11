@@ -2,15 +2,28 @@
   <version>1.0</version>
 
   <!--
-      S3_proc.xml: Minimum bands
-      Reflectance: 4,6,8,21
-      SZA
+      reflectance: 4,6,8,21
+      OLCI processor: albeod_bb_planar_sw
+      other: SZA
   -->
+  
+  <node id="Rad2Refl">
+    <operator>Rad2Refl</operator>
+    <sources>
+      <source>${source}</source>
+    </sources>
+    <parameters>
+      <sensor>OLCI</sensor>
+      <copyTiePointGrids>true</copyTiePointGrids>
+      <copyFlagBandsAndMasks>true</copyFlagBandsAndMasks>
+      <copyNonSpectralBands>true</copyNonSpectralBands>
+    </parameters>
+  </node>
 
   <node id="Reproject">
     <operator>Reproject</operator>
     <sources>
-      <source>${source}</source>
+      <source>Rad2Refl</source>
     </sources>
     <parameters>
       <crs>EPSG:3413</crs>
@@ -19,14 +32,64 @@
       <includeTiePointGrids>true</includeTiePointGrids>
     </parameters>
   </node>
+	  
+  <node id="OLCI.SnowProperties">
+    <operator>OLCI.SnowProperties</operator>
+    <sources>
+      <sourceProduct>${source}</sourceProduct>
+    </sources>
+    <parameters>
+      <spectralAlbedoTargetBands>Oa04 (490 nm),Oa06 (560 nm),Oa08 (665 nm),Oa21 (1020 nm)</spectralAlbedoTargetBands>
+      <copyReflectanceBands>true</copyReflectanceBands>
+      <considerNdsiSnowMask>true</considerNdsiSnowMask>
+      <considerSnowPollution>true</considerSnowPollution>
+      <writeAdditionalSnowPollutionParms>true</writeAdditionalSnowPollutionParms>
+      <writeUncertaintiesOfAdditionalSnowPollutionParms>true</writeUncertaintiesOfAdditionalSnowPollutionParms>
+      <computePPA>true</computePPA>
+    </parameters>
+  </node>
 
+  <node id="ReprojectAlbedo">
+    <operator>Reproject</operator>
+    <sources>
+      <source>OLCI.SnowProperties</source>
+    </sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>
+  
+  <!-- albedo_bb_planar_sw -->
+  <node id="BandSelect_albedo_bb_planar_sw">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>ReprojectAlbedo</source>
+    </sources>
+    <parameters>
+      <sourceBands>albedo_bb_planar_sw</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_albedo_bb_planar_sw">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_albedo_bb_planar_sw</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/albedo_bb_planar_sw_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
   <node id="BandSelect_04">
     <operator>BandSelect</operator>
     <sources>
       <source>Reproject</source>
     </sources>
     <parameters>
-      <sourceBands>Oa04_radiance</sourceBands>
+      <sourceBands>Oa04_reflectance</sourceBands>
     </parameters>
   </node>
   <node id="Write_04">
@@ -35,19 +98,18 @@
       <sourceProduct>BandSelect_04</sourceProduct>
     </sources>
     <parameters>
-      <deleteOutputOnFailure>True</deleteOutputOnFailure>
-      <file>${targetFolder}/Oa04_radiance_x.tif</file>
+      <file>${targetFolder}/Oa04_reflectance_x.tif</file>
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
-
+  
   <node id="BandSelect_06">
     <operator>BandSelect</operator>
     <sources>
       <source>Reproject</source>
     </sources>
     <parameters>
-      <sourceBands>Oa06_radiance</sourceBands>
+      <sourceBands>Oa06_reflectance</sourceBands>
     </parameters>
   </node>
   <node id="Write_06">
@@ -56,8 +118,7 @@
       <sourceProduct>BandSelect_06</sourceProduct>
     </sources>
     <parameters>
-      <deleteOutputOnFailure>True</deleteOutputOnFailure>
-      <file>${targetFolder}/Oa06_radiance_x.tif</file>
+      <file>${targetFolder}/Oa06_reflectance_x.tif</file>
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
@@ -68,7 +129,7 @@
       <source>Reproject</source>
     </sources>
     <parameters>
-      <sourceBands>Oa08_radiance</sourceBands>
+      <sourceBands>Oa08_reflectance</sourceBands>
     </parameters>
   </node>
   <node id="Write_08">
@@ -77,29 +138,7 @@
       <sourceProduct>BandSelect_08</sourceProduct>
     </sources>
     <parameters>
-      <deleteOutputOnFailure>True</deleteOutputOnFailure>
-      <file>${targetFolder}/Oa08_radiance_x.tif</file>
-      <formatName>GeoTIFF</formatName>
-    </parameters>
-  </node>
-
-  <node id="BandSelect_21">
-    <operator>BandSelect</operator>
-    <sources>
-      <source>Reproject</source>
-    </sources>
-    <parameters>
-      <sourceBands>Oa21_radiance</sourceBands>
-    </parameters>
-  </node>
-  <node id="Write_21">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandSelect_21</sourceProduct>
-    </sources>
-    <parameters>
-      <deleteOutputOnFailure>True</deleteOutputOnFailure>
-      <file>${targetFolder}/Oa21_radiance_x.tif</file>
+      <file>${targetFolder}/Oa08_reflectance_x.tif</file>
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
@@ -137,6 +176,26 @@
     <parameters>
       <deleteOutputOnFailure>True</deleteOutputOnFailure>
       <file>${targetFolder}/SZA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_21">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa21_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_21">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_21</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa21_reflectance_x.tif</file>
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
