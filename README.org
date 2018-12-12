@@ -26,9 +26,144 @@ In more detail:
   + Combine all the files from to form a mosaic using
   + When scenes overlap, selection criteria is "minumum SZA"
 * Debugging & Testing
-** Dev & Test Environment
-*** SNAP
+** Fetch scenes
+#+BEGIN_SRC sh :results verbatim
+./fetch_ql.sh --date 2017-08-15 ./quicklook
+./fetch_scene_from_ql.sh ./quicklook/ ./S3_dat
+#+END_SRC
+#+RESULTS:
+
+** GPT one scene
+Given one S3 EFR folder
+#+BEGIN_SRC sh :results verbatim :exports both
+ls ./S3_dat | head -n1
+#+END_SRC
+#+RESULTS:
+: S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
+
+Run our simple [[./DEBUG.xml]] processor and mosaic one day
+
+#+BEGIN_SRC sh :results verbatim
+PATH=~/local/snap/bin:${PATH}
+rm -fR tmp.out tmp.mosaic
+mkdir tmp.out
+S3=S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
+gpt DEBUG.xml -Ssource=./S3_dat/${S3}/xfdumanifest.xml -PtargetFolder=./tmp.out
+nth tmp.out
+#+END_SRC
+#+RESULTS:
+
+** Process One Day
+
+Given the following S3 EFR folders:
+
+#+BEGIN_SRC sh :results verbatim :exports both
+ls ./S3_dat
+#+END_SRC
+#+RESULTS:
+: S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T121103_20170815T121403_20180707T033458_0179_021_109_1620_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T121403_20170815T121703_20180707T033531_0179_021_109_1800_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T135202_20170815T135502_20180707T032400_0179_021_110_1620_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T135502_20170815T135802_20180707T032438_0179_021_110_1800_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T135802_20170815T140102_20180707T032538_0180_021_110_1980_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T153301_20170815T153601_20180707T033529_0180_021_111_1620_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T153601_20170815T153901_20180707T033614_0179_021_111_1800_LR2_R_NT_002.SEN3
+: S3A_OL_1_EFR____20170815T171400_20170815T171700_20180707T032123_0179_021_112_1620_LR2_R_NT_002.SEN3
+
+Run our simple [[./DEBUG.xml]] processor on one day
+
+#+BEGIN_SRC sh :results verbatim
+PATH=~/local/snap/bin:${PATH}
+rm -fR tmp.out tmp.mosaic
+
+# Process all days in S3_dat
+./S3_proc.sh -i ./S3_dat -o ./tmp.out -D -v
+
+# Mosaic one day
+./dm.sh 20170815 ./tmp.out ./tmp.mosaic
+#+END_SRC
+#+RESULTS:
+* Misc Notes & Code Snippets
+** Generate ice mask
++ Use the icemask from BedMachine v3
+#+BEGIN_SRC sh :results verbatim :eval no-export
+grass72 -c EPSG:3413 ./Gtmp
+r.in.gdal input=NetCDF:~/data/Greenland/Morlighem_2017/BedMachineGreenland-2017-09-20.nc:mask output=icemask
+
+g.region raster=icemask
+g.region res=500 -ap
+g.region zoom=icemask
+
+d.mon start=wx0
+d.erase
+d.rast icemask
+
+r.mapcalc "mask = if(icemask == 4, null(), icemask)" --o
+d.rast mask
+g.region zoom=mask
+
+r.out.gdal -c -m input=mask output=mask.tif type=Byte createopt=COMPRESS=DEFLATE --o
+exit
+trash Gtmp
+#+END_SRC
+#+RESULTS:
+
+** Fetch all QL scenes
+#+BEGIN_SRC sh :results verbatim :eval no-export
+for d in $(seq 1 365); do
+    ./fetch_ql.sh --date 2017-${d}
+done
+#+END_SRC
+
+Or, fetch JJA: June 1 to sep 1 = DOY 152 to 245
+#+BEGIN_SRC sh :results verbatim :eval no-export
+for d in $(seq 152 245); do
+    ./fetch_ql.sh --date 2017-${d}
+done
+#+END_SRC
+** Per pixel geocoding options on CLI
+From: https://forum.step.esa.int/t/best-practice-to-convert-and-reproject-sentinel-3-radiances-to-reflectance/5744/25
+
++ =-Ds3tbx.reader.olci.pixelGeoCoding=true=. See also
++ =s3tbx.reader.slstrl1b.pixelGeoCodings=
++ =s3tbx.reader.meris.pixelGeoCoding=
+
+
+** Footprint
+Get GL outline by drawing in Google Earth, export KML, then:
+#+BEGIN_SRC sh :results verbatim
+ogrinfo -al GL_outline.kml  | grep LINESTRING | sed s/\ 0//g
+#+END_SRC
+#+RESULTS:
+:   LINESTRING Z (-53.656510998614 82.4951349654326,-59.9608997952054 82.1309669419302,-67.7892790605668 80.5602726884285,-67.9606014394374 80.0218479599442,-67.6072679271745 79.3014049647312,-72.7375435732184 78.589499923855,-73.5413877637147 78.1636943551527,-72.9428482239824 77.383771707567,-69.0700767925261 76.0128312085861,-66.6509837672326 75.7624371858398,-60.3956740146368 75.8231961720352,-58.4311886831941 74.885454496734,-55.1967975793182 69.6980961092145,-53.856542195614 68.836827126205,-54.2986423614971 67.0754091899264,-53.556230345375 65.610957996411,-52.3863139424116 64.7989541895734,-52.3228757389159 64.0074120108603,-50.207636158087 62.10102160819,-48.6300832525784 60.7381422112742,-45.052233335019 59.7674821385312,-43.2890274040171 59.6436933230826,-42.4957557404764 60.3093279369714,-41.8486807919329 61.5655162642218,-41.696971498891 62.648646023379,-40.1106185043429 63.5452982243944,-39.9111533763437 64.794417571311,-38.0777963367496 65.4068477012585,-36.9899016468925 65.1987069880844,-31.2165494022336 67.7166128864512,-25.8502840866575 68.6303659153185,-21.6517276244872 70.0839769825896,-20.9932063064242 70.7880484213637,-21.2829833867197 72.9254092162205,-16.9050363384979 74.9601702268335,-17.1213527989912 79.6158229046929,-10.2883304040514 81.4244115757783,-14.0398740460794 81.9745362690188,-17.8112945221629 82.0131368667592,-28.5252333238728 83.7013945514435,-40.1075150451371 83.6651081451092,-53.656510998614 82.4951349654326)
+* Dev & Test Environment
 This work is developed and tested with the following software versions
+** GPT
+#+BEGIN_SRC sh :results verbatim :exports both
+~/local/snap/bin/gpt --diag
+#+END_SRC
+#+RESULTS:
+#+begin_example
+SNAP Release version 7.0-SNAPSHOT
+SNAP home: /home/kdm/local/snap/bin//..
+SNAP debug: null
+SNAP log level: null
+Java home: /home/kdm/local/snap/jre
+Java version: 1.8.0_102
+Processors: 8
+Max memory: 18.7 GB
+Cache size: 1024.0 MB
+Tile parallelism: 8
+Tile size: 512 x 512 pixels
+
+To configure your gpt memory usage:
+Edit snap/bin/gpt.vmoptions
+
+To configure your gpt cache size and parallelism:
+Edit .snap/etc/snap.properties or gpt -c ${cachesize-in-GB}G -q ${parallelism} 
+#+end_example
+** SNAP
 #+BEGIN_SRC sh :results verbatim :exports both
 ~/local/snap/bin/snap --modules --refresh --list
 #+END_SRC
@@ -355,141 +490,4 @@ org.esa.s1tbx.s1tbx.op.calibration                 7.0.0.0  Enabled
 org.netbeans.libs.jsr223                           1.35.1   Installed
 -------------------------------------------------- -------- ---------
 #+end_example
-*** GPT
-This work is developed and tested with the following software versions
-#+BEGIN_SRC sh :results verbatim :exports both
-~/local/snap/bin/gpt --diag
-#+END_SRC
-#+RESULTS:
-#+begin_example
-SNAP Release version 7.0-SNAPSHOT
-SNAP home: /home/kdm/local/snap/bin//..
-SNAP debug: null
-SNAP log level: null
-Java home: /home/kdm/local/snap/jre
-Java version: 1.8.0_102
-Processors: 8
-Max memory: 18.7 GB
-Cache size: 1024.0 MB
-Tile parallelism: 8
-Tile size: 512 x 512 pixels
 
-To configure your gpt memory usage:
-Edit snap/bin/gpt.vmoptions
-
-To configure your gpt cache size and parallelism:
-Edit .snap/etc/snap.properties or gpt -c ${cachesize-in-GB}G -q ${parallelism} 
-#+end_example
-
-** Fetch scenes
-#+BEGIN_SRC sh :results verbatim
-./fetch_ql.sh --date 2017-08-15 ./quicklook
-./fetch_scene_from_ql.sh ./quicklook/ ./S3_dat
-#+END_SRC
-#+RESULTS:
-
-** GPT one scene
-Given one S3 EFR folder
-#+BEGIN_SRC sh :results verbatim :exports both
-ls ./S3_dat | head -n1
-#+END_SRC
-#+RESULTS:
-: S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
-
-Run our simple [[./DEBUG.xml]] processor and mosaic one day
-
-#+BEGIN_SRC sh :results verbatim
-PATH=~/local/snap/bin:${PATH}
-rm -fR tmp.out tmp.mosaic
-mkdir tmp.out
-S3=S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
-gpt DEBUG.xml -Ssource=./S3_dat/${S3}/xfdumanifest.xml -PtargetFolder=./tmp.out
-nth tmp.out
-#+END_SRC
-#+RESULTS:
-
-** Process One Day
-
-Given the following S3 EFR folders:
-
-#+BEGIN_SRC sh :results verbatim :exports both
-ls ./S3_dat
-#+END_SRC
-#+RESULTS:
-: S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T121103_20170815T121403_20180707T033458_0179_021_109_1620_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T121403_20170815T121703_20180707T033531_0179_021_109_1800_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T135202_20170815T135502_20180707T032400_0179_021_110_1620_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T135502_20170815T135802_20180707T032438_0179_021_110_1800_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T135802_20170815T140102_20180707T032538_0180_021_110_1980_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T153301_20170815T153601_20180707T033529_0180_021_111_1620_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T153601_20170815T153901_20180707T033614_0179_021_111_1800_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T171400_20170815T171700_20180707T032123_0179_021_112_1620_LR2_R_NT_002.SEN3
-
-Run our simple [[./DEBUG.xml]] processor on one day
-
-#+BEGIN_SRC sh :results verbatim
-PATH=~/local/snap/bin:${PATH}
-rm -fR tmp.out tmp.mosaic
-
-# Process all days in S3_dat
-./S3_proc.sh -i ./S3_dat -o ./tmp.out -D -v
-
-# Mosaic one day
-./dm.sh 20170815 ./tmp.out ./tmp.mosaic
-#+END_SRC
-#+RESULTS:
-
-* Misc Notes & Code Snippets
-** Generate ice mask
-+ Use the icemask from BedMachine v3
-#+BEGIN_SRC sh :results verbatim :eval no-export
-grass72 -c EPSG:3413 ./Gtmp
-r.in.gdal input=NetCDF:~/data/Greenland/Morlighem_2017/BedMachineGreenland-2017-09-20.nc:mask output=icemask
-
-g.region raster=icemask
-g.region res=500 -ap
-g.region zoom=icemask
-
-d.mon start=wx0
-d.erase
-d.rast icemask
-
-r.mapcalc "mask = if(icemask == 4, null(), icemask)" --o
-d.rast mask
-g.region zoom=mask
-
-r.out.gdal -c -m input=mask output=mask.tif type=Byte createopt=COMPRESS=DEFLATE --o
-exit
-trash Gtmp
-#+END_SRC
-#+RESULTS:
-
-** Fetch all QL scenes
-#+BEGIN_SRC sh :results verbatim :eval no-export
-for d in $(seq 1 365); do
-    ./fetch_ql.sh --date 2017-${d}
-done
-#+END_SRC
-
-Or, fetch JJA: June 1 to sep 1 = DOY 152 to 245
-#+BEGIN_SRC sh :results verbatim :eval no-export
-for d in $(seq 152 245); do
-    ./fetch_ql.sh --date 2017-${d}
-done
-#+END_SRC
-** Per pixel geocoding options on CLI
-From: https://forum.step.esa.int/t/best-practice-to-convert-and-reproject-sentinel-3-radiances-to-reflectance/5744/25
-
-+ =-Ds3tbx.reader.olci.pixelGeoCoding=true=. See also
-+ =s3tbx.reader.slstrl1b.pixelGeoCodings=
-+ =s3tbx.reader.meris.pixelGeoCoding=
-
-
-** Footprint
-Get GL outline by drawing in Google Earth, export KML, then:
-#+BEGIN_SRC sh :results verbatim
-ogrinfo -al GL_outline.kml  | grep LINESTRING | sed s/\ 0//g
-#+END_SRC
-#+RESULTS:
-:   LINESTRING Z (-53.656510998614 82.4951349654326,-59.9608997952054 82.1309669419302,-67.7892790605668 80.5602726884285,-67.9606014394374 80.0218479599442,-67.6072679271745 79.3014049647312,-72.7375435732184 78.589499923855,-73.5413877637147 78.1636943551527,-72.9428482239824 77.383771707567,-69.0700767925261 76.0128312085861,-66.6509837672326 75.7624371858398,-60.3956740146368 75.8231961720352,-58.4311886831941 74.885454496734,-55.1967975793182 69.6980961092145,-53.856542195614 68.836827126205,-54.2986423614971 67.0754091899264,-53.556230345375 65.610957996411,-52.3863139424116 64.7989541895734,-52.3228757389159 64.0074120108603,-50.207636158087 62.10102160819,-48.6300832525784 60.7381422112742,-45.052233335019 59.7674821385312,-43.2890274040171 59.6436933230826,-42.4957557404764 60.3093279369714,-41.8486807919329 61.5655162642218,-41.696971498891 62.648646023379,-40.1106185043429 63.5452982243944,-39.9111533763437 64.794417571311,-38.0777963367496 65.4068477012585,-36.9899016468925 65.1987069880844,-31.2165494022336 67.7166128864512,-25.8502840866575 68.6303659153185,-21.6517276244872 70.0839769825896,-20.9932063064242 70.7880484213637,-21.2829833867197 72.9254092162205,-16.9050363384979 74.9601702268335,-17.1213527989912 79.6158229046929,-10.2883304040514 81.4244115757783,-14.0398740460794 81.9745362690188,-17.8112945221629 82.0131368667592,-28.5252333238728 83.7013945514435,-40.1075150451371 83.6651081451092,-53.656510998614 82.4951349654326)
