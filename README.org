@@ -407,8 +407,11 @@ gpt DEBUG.xml -Ssource=./S3_dat/${S3}/xfdumanifest.xml -PtargetFolder=./tmp.out
 nth tmp.out
 #+END_SRC
 #+RESULTS:
+
 ** Process One Day
+
 Given the following S3 EFR folders:
+
 #+BEGIN_SRC sh :results verbatim :exports both
 ls ./S3_dat
 #+END_SRC
