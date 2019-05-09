@@ -7,11 +7,19 @@
       2) No slow processors
       3) Suggestion: Run w/ -Ds3tbx.reader.olci.pixelGeoCoding=false for speed
   -->
-
+  <node id="Read">
+    <operator>Read</operator>
+    <parameters>
+      <file>${pathfile}</file>
+      <formatName>Sen3</formatName>
+      <!--Sen3 ensures that SLSTR is read as multisize-->
+    </parameters>
+  </node>
+  
   <node id="Reproject">
     <operator>Reproject</operator>
     <sources>
-      <source>${source}</source>
+      <source>Read</source>
     </sources>
     <parameters>
       <crs>EPSG:3413</crs>
