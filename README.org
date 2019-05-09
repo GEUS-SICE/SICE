@@ -1,5 +1,6 @@
 
 * Sentinel-3 (S3) Albedo Processing Pipeline
+Forked from Ken Mankoff scripts: https://github.com/mankoff/SICE
 
 1. Fetch S3 OLCI & SLSTR products
 2. Process with SNAP
