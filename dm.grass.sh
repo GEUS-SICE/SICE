@@ -70,11 +70,14 @@ done
 
 # combine bands to make RGB
 echo "Writing out RGB and SZA_LUT"
-r.composite -d -c blue=$(g.list type=raster pattern=Oa04_r* | head -n1) green=$(g.list type=raster pattern=Oa06_r* | head -n1) red=$(g.list type=raster pattern=Oa08_r* | head -n1) output=RGB --o
-r.out.gdal -m -c input=RGB output=${OUTFOLDER}/${DATE}/RGB.tif ${TIFOPTS}
-r.out.png input=RGB output=${OUTFOLDER}/${DATE}/RGB.png --o
-r.out.gdal -m -c input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.tif ${TIFOPTS}
-r.colors map=SZA_LUT color=random
-r.out.png input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.png --o
+
+# gdaldem color-relief $(g.list type=raster | head -n1)  col.txt ${OUTFOLDER}/${DATE}/thumb.jpeg -of JPEG -s 0.05
+
+# r.composite -d -c blue=$(g.list type=raster pattern=Oa04_r* | head -n1) green=$(g.list type=raster pattern=Oa06_r* | head -n1) red=$(g.list type=raster pattern=Oa08_r* | head -n1) output=RGB --o
+# r.out.gdal -m -c input=RGB output=${OUTFOLDER}/${DATE}/RGB.tif ${TIFOPTS}
+# r.out.png input=RGB output=${OUTFOLDER}/${DATE}/RGB.png --o
+# r.out.gdal -m -c input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.tif ${TIFOPTS}
+# r.colors map=SZA_LUT color=random
+# r.out.png input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.png --o
 
 rm -fR /tmp/tmpG

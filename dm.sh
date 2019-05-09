@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # ./dm.sh 20170801 ./tmp ./mosaic
 
@@ -23,7 +23,7 @@ LOC=tmpG
 rm -fR ${BASE}/${LOC}
 grass -e -c mask.tif ${BASE}/${LOC}
 
-grass ${BASE}/${LOC}/PERMANENT --exec ./dm.grass $DATE $INFOLDER $OUTFOLDER
+grass ${BASE}/${LOC}/PERMANENT --exec ./dm.grass.sh $DATE $INFOLDER $OUTFOLDER
 
 # debug:
 # grass72 /tmp/tmpG/PERMANENT

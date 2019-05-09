@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
+timing() { if [[ $TIMING == 1 ]]; then MSG_OK "$(date)"; fi; }
+start=`date +%s`
+
+RED='\033[0;31m'
+ORANGE='\033[0;33m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+MSG_OK() { printf "${GREEN}${1}${NC}\n"; }
+MSG_WARN() { printf "${ORANGE}WARNING: ${1}${NC}\n"; }
+MSG_ERR() { printf "${RED}ERROR: ${1}${NC}\n"; }
 
 POSITIONAL=()
-QLFOLDER="./quicklook"
+OUTFOLDER="./S3_scenes"
+NAMEINSTRUMENT="OLCI"
 
 while [[ $# -gt 0 ]]
 do
@@ -9,9 +20,10 @@ do
     
     case $key in
 	-h|--help)
-	    echo "./fetch_ql.sh --date [YYYY-MM-DD | YYYY-DOY] [-f lat,lon] [-q /path/to/ql_folder]"
+	    echo "./fetch_scene_from_date.sh --date [YYYY-MM-DD | YYYY-DOY] [-f lat,lon] [-o /path/to/output_folder] [-n name_instrument] "
 	    echo "  [-f default: Greenland]"
-	    echo "  [-q default: ./quicklook]"
+	    echo "  [-q default: ./S3_scenes]"
+	    echo "  [-n OLCI or SLSTR default: OLCI]"
 	    exit 1
 	    ;;
 	-d|--date)
@@ -24,8 +36,14 @@ do
 	    shift # past argument
 	    shift # past value
 	    ;;
-	-q|--quicklook-folder)
-	    QLFOLDER="$2"
+	-o|--output-folder)
+	    OUTFOLDER="$2"
+	    shift # past argument
+	    shift # past value
+	    ;;
+	
+	-n|--name-instrument)
+	    NAMEINSTRUMENT="$2"
 	    shift # past argument
 	    shift # past value
 	    ;;
@@ -48,8 +66,13 @@ PASS=s3guest
 BASE="https://scihub.copernicus.eu/s3/search?start=0&rows=100&q="
 
 MISSION="platformname:Sentinel-3"
-INSTRUMENT="instrumentshortname:OLCI"
-FILENAME="filename:*EFR*"
+INSTRUMENT="instrumentshortname:$NAMEINSTRUMENT"
+
+if test "$NAMEINSTRUMENT" = "OLCI"; then
+    FILENAME="filename:*EFR*"
+else
+    FILENAME="filename:*RBT*"
+fi    
 MISC="orbitdirection:descending"
 
 # Check search dates
@@ -89,6 +112,7 @@ fi
 # Build search expression
 export QUERY="$BASE$MISSION AND $FILENAME AND  $INSTRUMENT AND $DATESTR AND $FOOTPRINT AND $MISC"
 
+
 wget --no-check-certificate --user="$USER" --password="$PASS" --output-document=query_results.xml "$QUERY"
 
 # Print human readable results to screen and save the list of images and their id to a file in the script directory
@@ -105,19 +129,41 @@ paste -d" " tmp.filename.txt tmp.id.txt > product_IDs.txt
 rm tmp.filename.txt tmp.id.txt
 
 # Find unique filenames based on collection time. For the first of each one, download a QL image
-mkdir -p $QLFOLDER
-for uniq_dts in $(cut -c1-31 product_IDs.txt | sort | uniq); do
-    # first of the unique filenames
-    filename=$(grep ${uniq_dts} product_IDs.txt | head -n1 | cut -d" " -f1)
+mkdir -p $OUTFOLDER
+for entry in $(cut -c1-31 product_IDs.txt | sort); do
+	echo " "
+	echo ${entry}
+    echo " "
+	# first of the unique filenames
+    filename=$(grep ${entry} product_IDs.txt | head -n1 | cut -d" " -f1)
     filename_clean=$(echo $filename | cut -c17-31)
     # first of the quicklook IDs
-    ql_id=$(grep ${uniq_dts} product_IDs.txt | head -n1 | cut -d" " -f2)
-    URL="https://scihub.copernicus.eu/s3/odata/v1/Products('${ql_id}')/Products('Quicklook')/\$value"
+    id=$(grep ${entry} product_IDs.txt | head -n1 | cut -d" " -f2)
     
-    wget "${URL}" --user=s3guest --password=s3guest -nc -c -nd -P ${QLFOLDER} -O ${QLFOLDER}/${filename_clean}_${ql_id}.jpg
+    PRODUCTURL="https://scihub.copernicus.eu/s3/odata/v1/Products('${id}')/"
+    # wget "${PRODUCTURL}" --user=s3guest --password=s3guest -nc -c -nd -O ${OUT}/${id}.xml
+    curl --silent -u s3guest:s3guest -o ${OUTFOLDER}/${id}.xml "${PRODUCTURL}"
+    PRODUCT_NAME=$(grep -o "<d:Name>.*" ${OUTFOLDER}/${id}.xml | cut -d">" -f2 | cut -d"<" -f1)
+    rm ${OUTFOLDER}/${id}.xml
+
+	echo " ################"
+	echo ${OUTFOLDER}
+	echo " ################ "
+
+    # wget "${PRODUCTURL}\$value" --user=s3guest --password=s3guest -nc -O ${OUT}/${PRODUCT_NAME}.zip    #--continue
+    if [[ -d ${OUTFOLDER}/${PRODUCT_NAME}.SEN3 ]]; then
+	MSG_WARN "Skipping: ${PRODUCT_NAME}"
+    else	
+	MSG_OK "Fetching: ${PRODUCT_NAME}"
+	curl -o ${OUTFOLDER}/${PRODUCT_NAME}.zip -u s3guest:s3guest "${PRODUCTURL}\$value"
+	(cd ${OUTFOLDER}; unzip ${PRODUCT_NAME}.zip)
+	rm ${OUTFOLDER}/${PRODUCT_NAME}.zip
+    fi
 done
 
 if [[ -z $DEBUG ]]; then
     rm product_IDs.txt
     rm query_results.xml
 fi
+	end=`date +%s`
+	echo Execution time was `expr $end - $start` seconds.

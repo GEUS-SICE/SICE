@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<graph id="DEBUG_SLSTR">
+  <version>1.0</version>
+  
+  <node id="SLSTR_Product">
+    <operator>Read</operator>
+    <sources/>
+    <parameters>
+      <file>${pathfile}</file>
+      <formatName>Sen3</formatName>
+       <!--Sen3 ensures that SLSTR is read as multisize--> 
+    </parameters>
+  </node>
+ 
+  <node id="Resample">
+    <operator>Resample</operator>
+    <sources>
+      <sourceProduct refid="SLSTR_Product"/>
+    </sources>
+    <parameters>
+      <referenceBand>S4_radiance_an</referenceBand>
+      <upsampling>Nearest</upsampling>
+      <downsampling>First</downsampling>
+      <flagDownsampling>First</flagDownsampling>
+      <resampleOnPyramidLevels>true</resampleOnPyramidLevels>
+    </parameters>
+  </node>
+
+  <!--<node id="Rad2Refl">
+    <operator>Rad2Refl</operator>
+    <sources>
+      <sourceProduct refid="Resample"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <sensor>SLSTR_500m</sensor>
+      <conversionMode>RAD_TO_REFL</conversionMode>
+      <copyTiePointGrids>true</copyTiePointGrids>
+      <copyFlagBandsAndMasks>true</copyFlagBandsAndMasks>
+      <copyNonSpectralBands>true</copyNonSpectralBands>
+    </parameters>
+  </node>-->
+
+
+  <node id="Reproject_rad">
+    <operator>Reproject</operator>
+    <sources>
+      <source>Resample</source>
+    </sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>
+
+  <!--<node id="Reproject_ref">
+    <operator>Reproject</operator>
+    <sources>
+      <source>Rad2Refl</source>
+    </sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>-->
+
+  <node id="BandSelect_04">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject_rad</source>
+    </sources>
+    <parameters>
+      <sourceBands>S1_radiance_an</sourceBands>
+    </parameters>
+  </node>
+
+  <node id="Write_04">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_04</sourceProduct>
+    </sources>
+    <parameters>
+      <deleteOutputOnFailure>True</deleteOutputOnFailure>
+      <file>${targetFolder}/S1_radiance_an_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <!--<node id="BandSelect_04_ref">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject_ref</source>
+    </sources>
+    <parameters>
+      <sourceBands>S4_reflectance_an</sourceBands>
+    </parameters>
+  </node>-->
+
+  <!--<node id="Write_04_ref">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_04_ref</sourceProduct>
+    </sources>
+    <parameters>
+      <deleteOutputOnFailure>True</deleteOutputOnFailure>
+      <file>${targetFolder}/S4_reflectance_an_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>-->
+
+  <node id="BandSelect_SZA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject_rad</source>
+    </sources>
+    <parameters>
+      <sourceBands>solar_zenith_tn</sourceBands>
+    </parameters>
+  </node>
+
+  <node id="Write_SZA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_SZA</sourceProduct>
+    </sources>
+    <parameters>
+      <deleteOutputOnFailure>True</deleteOutputOnFailure>
+      <file>${targetFolder}/SZA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+</graph> 

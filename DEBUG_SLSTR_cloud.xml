@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<graph id="DEBUG_SLSTR">
+  <version>1.0</version>
+  
+  <node id="SLSTR_Product">
+    <operator>Read</operator>
+    <sources/>
+    <parameters>
+      <file>${pathfile}</file>
+      <formatName>Sen3</formatName>
+       Sen3 ensures that SLSTR is read as multisize 
+    </parameters>
+  </node>
+
+  <node id="Resample">
+    <operator>Resample</operator>
+    <sources>
+      <sourceProduct refid="SLSTR_Product"/>
+    </sources>
+    <parameters>
+      <referenceBand>S4_radiance_an</referenceBand>
+      <upsampling>Nearest</upsampling>
+      <downsampling>First</downsampling>
+      <flagDownsampling>First</flagDownsampling>
+      <resampleOnPyramidLevels>true</resampleOnPyramidLevels>
+    </parameters>
+  </node>
+
+  <node id="Reproject">
+    <operator>Reproject</operator>
+    <sources>
+      <source>Resample</source>
+    </sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>
+
+            <node id="BandSelect_cloud">
+              <operator>BandSelect</operator>
+              <sources>
+                <source>Reproject</source>
+              </sources>
+              <parameters>
+                <sourceBands>cloud_an</sourceBands>
+              </parameters>
+            </node>
+
+            <node id="Write_01">
+              <operator>Write</operator>
+              <sources>
+                <sourceProduct>BandSelect_cloud</sourceProduct>
+              </sources>
+              <parameters>
+                <deleteOutputOnFailure>True</deleteOutputOnFailure>
+                <file>${targetFolder}/cloud_an_x.tif</file>
+                <formatName>GeoTIFF</formatName>
+              </parameters>
+            </node>
+
+  <node id="BandSelect_flag">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>confidence_an</sourceBands>
+    </parameters>
+  </node>
+
+  <node id="Write_02">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_flag</sourceProduct>
+    </sources>
+    <parameters>
+      <deleteOutputOnFailure>True</deleteOutputOnFailure>
+      <file>${targetFolder}/confidence_an_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+              <node id="BandMaths_flag2">
+                <operator>BandMaths</operator>
+                <sources>
+                  <sourceProduct refid="BandSelect_flag"/>
+                </sources>
+                <parameters>
+                  <targetBands>
+                    <targetBand>
+                      <name>cloud_3</name>
+                      <type>float32</type>
+                      <expression>bit_set(confidence_an,14)</expression>
+                      <description/>
+                      <unit/>
+                      <noDataValue>-999.0</noDataValue>
+                    </targetBand>
+                  </targetBands>
+                  <variables/>
+                </parameters>
+              </node>
+
+              <node id="Write_022">
+                <operator>Write</operator>
+                <sources>
+                  <sourceProduct>BandMaths_flag2</sourceProduct>
+                </sources>
+                <parameters>
+                  <deleteOutputOnFailure>True</deleteOutputOnFailure>
+                  <file>${targetFolder}/summary_cloud_x.tif</file>
+                  <formatName>GeoTIFF</formatName>
+                </parameters>
+              </node>
+
+  <node id="BandMaths_3">
+    <operator>BandMaths</operator>
+    <sources>
+      <sourceProduct refid="BandSelect_cloud"/>
+    </sources>
+    <parameters>
+      <targetBands>
+        <targetBand>
+          <name>cloud_3</name>
+          <type>float32</type>
+          <expression>cloud_an==0</expression>
+          <description/>
+          <unit/>
+          <noDataValue>-999.0</noDataValue>
+        </targetBand>
+      </targetBands>
+      <variables/>
+    </parameters>
+  </node>
+
+  <node id="Write_03">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandMaths_3</sourceProduct>
+    </sources>
+    <parameters>
+      <deleteOutputOnFailure>True</deleteOutputOnFailure>
+      <file>${targetFolder}/cloud_all_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_SZA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>solar_zenith_tn</sourceBands>
+    </parameters>
+  </node>
+
+  <node id="Write_SZA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_SZA</sourceProduct>
+    </sources>
+    <parameters>
+      <deleteOutputOnFailure>True</deleteOutputOnFailure>
+      <file>${targetFolder}/SZA_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+</graph> 

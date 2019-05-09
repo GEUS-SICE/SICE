@@ -17,26 +17,25 @@
     </parameters>
   </node>
   
-  <!--<node id="Resample">
+  <node id="Resample">
     <operator>Resample</operator>
     <sources>
       <sourceProduct refid="Read"/>
     </sources>
     <parameters>
-      --><!--<targetWidth>1000</targetWidth>
-      <targetHeight>840</targetHeight>--><!--
-      <referenceBand>Oa01_radiance</referenceBand>
+      <targetWidth>1000</targetWidth>
+      <targetHeight>840</targetHeight>     
       <upsampling>Nearest</upsampling>
       <downsampling>First</downsampling>
       <flagDownsampling>First</flagDownsampling>
       <resampleOnPyramidLevels>true</resampleOnPyramidLevels>
     </parameters>
-  </node>-->
+  </node>
   
   <node id="Rad2Refl">
     <operator>Rad2Refl</operator>
     <sources>
-      <source>Read</source>
+      <source>Resample</source>
     </sources>
     <parameters>
       <sensor>OLCI</sensor>
@@ -62,7 +61,7 @@
   <node id="OLCI.SnowProperties">
     <operator>OLCI.SnowProperties</operator>
     <sources>
-      <sourceProduct refid="Read"/>
+      <sourceProduct refid="Resample"/>
     </sources>
     <parameters>
       <spectralAlbedoTargetBands>Oa01 (400 nm),Oa02 (412.5 nm),Oa05 (510 nm),Oa06 (560 nm),Oa08 (665 nm),Oa09 (673.75 nm),Oa17 (865 nm),Oa21 (1020 nm)</spectralAlbedoTargetBands>
@@ -94,7 +93,7 @@
       The rest is just selecting and writing out individual bands
   -->
     
-  <node id="BandSelect_01">
+  <!--<node id="BandSelect_01">
     <operator>BandSelect</operator>
     <sources>
       <source>Reproject</source>
@@ -126,7 +125,7 @@
       <file>${targetFolder}/Oa02_reflectance_x.tif</file>
       <formatName>GeoTIFF</formatName>
     </parameters>
-  </node>
+  </node>-->
   
   <node id="BandSelect_04">
     <operator>BandSelect</operator>
@@ -142,7 +141,7 @@
     </parameters>
   </node>
 
-  <node id="BandSelect_05">
+  <!--<node id="BandSelect_05">
     <operator>BandSelect</operator>
     <sources><source>Reproject</source></sources>
     <parameters><sourceBands>Oa05_reflectance</sourceBands></parameters>
@@ -154,7 +153,7 @@
       <file>${targetFolder}/Oa05_reflectance_x.tif</file>
       <formatName>GeoTIFF</formatName>
     </parameters>
-  </node>
+  </node>-->
 
   <node id="BandSelect_06">
     <operator>BandSelect</operator>
@@ -184,7 +183,7 @@
     </parameters>
   </node>
 
-  <node id="BandSelect_09">
+  <!--<node id="BandSelect_09">
     <operator>BandSelect</operator>
     <sources><source>Reproject</source></sources>
     <parameters><sourceBands>Oa09_reflectance</sourceBands></parameters>
@@ -266,7 +265,7 @@
       <file>${targetFolder}/Oa21_reflectance_x.tif</file>
       <formatName>GeoTIFF</formatName>
     </parameters>
-  </node>
+  </node>-->
 
 
   <!--
@@ -355,7 +354,7 @@
   <!--
       rBRR: 1,2,5,6,8,9,17,21
   -->
-  <node id="BandSelect_rBRR_01">
+  <!--<node id="BandSelect_rBRR_01">
     <operator>BandSelect</operator>	
     <sources><source>OLCI.Reproject</source></sources>	
     <parameters><sourceBands>rBRR_01</sourceBands></parameters>	
@@ -465,7 +464,7 @@
       <file>${targetFolder}/rBRR_21_x.tif</file>	
       <formatName>GeoTIFF</formatName>	
     </parameters>	
-  </node>
+  </node>-->
 
 
   <!--

@@ -1,7 +1,6 @@
-#!/usr/bin/env bash
-
-# PATH=~/local/snap/bin:$PATH ./S3_proc.sh -i ./dat_S3A -o ./out_S3A
-
+#!/usr/bin/env bash 
+#PATH=~/local/snap/bin:$PATH #./S3_proc.sh -i ./dat_S3A -o ./out_S3A
+start=`date +%s`
 RED='\033[0;31m'
 ORANGE='\033[0;33m'
 GREEN='\033[0;32m'
@@ -18,7 +17,7 @@ do
     
     case $key in
 	-h|--help)
-	    echo "./S3_proc.sh -i inpath -o outpath [-D | -x file.xml] [-h -v -t]"
+	    echo "./S3_proc.sh -i inpath -o outpath [-D | -X file.xml] [-h -v -t]"
 	    echo "  -i: Path to folder containing S3A_*_EFR_*_002.SEN3 (unzipped S3 EFR) files"
 	    echo "  -o: Path where to store ouput"
 	    echo "  -D: Use DEBUG.xml (fast, few bands)"
@@ -61,8 +60,11 @@ for folder in $(ls ${INPATH}); do
     S3FOLDER=$(basename ${folder})
     OUTFOLDER=$(echo $S3FOLDER | rev | cut -d_ -f11 | rev)
     DEST=${OUTPATH}/${OUTFOLDER}
-    if [[ -d ${DEST} ]]; then
-    	MSG_WARN "${OUTPATH}/${OUTFOLDER} already exists. Overwriting and/or adding..."
+	FILETMP=${DEST}/summary_cloud.tif 
+
+    if [ -f ${FILETMP} ]; then
+    	MSG_WARN "${FILETMP} already exists. Skipping..."
+		continue
     else
     	MSG_OK "Generating ${OUTPATH}/${OUTFOLDER}"
     	mkdir -p ${DEST}
@@ -72,17 +74,20 @@ for folder in $(ls ${INPATH}); do
     timing
 
     if [[ ${DEBUG} == 1 ]]; then
-	MSG_WARN "Using DEBUG.xml"
-	MSG_ERR "Not using per pixel geocoding for speed"
-	gpt DEBUG.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=false
+		MSG_WARN "Using DEBUG.xml"
+		MSG_ERR "Not using per pixel geocoding for speed"
+		gpt DEBUG.xml -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=false -e
     elif [[ ! -z ${XML} ]]; then 
-	MSG_WARN "Using ${XML}"
-	MSG_OK "Per-pixel geocoding enabled"
-	gpt ${XML} -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true
-    else
-	MSG_WARN "Using default XML: S3_proc.xml"
-	MSG_OK "Per-pixel geocoding enabled"
-	gpt S3_proc.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true
+		MSG_WARN "Using ${XML}"
+		MSG_OK "Per-pixel geocoding enabled"
+		gpt ${XML} -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true -e
+		echo "  "
+		echo "	gpt ${XML} -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true -e"
+		echo "  "
+	else
+		MSG_WARN "Using default XML: S3_proc.xml"
+		MSG_OK "Per-pixel geocoding enabled"
+		gpt S3_proc.xml -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true -e
     fi
     
     timing
@@ -100,4 +105,6 @@ for folder in $(ls ${INPATH}); do
     done
     timing
     MSG_OK "Finished: ${folder}"
+	end=`date +%s`
+	echo Execution time was `expr $end - $start` seconds.
 done
