@@ -1,40 +1,35 @@
 
 * Sentinel-3 (S3) Albedo Processing Pipeline
 
-1. Fetch S3 OLCI products
+1. Fetch S3 OLCI & SLSTR products
 2. Process with SNAP
-3. Mosaic all scenes in a day to produce one Greenland-wide product
+3. Extract cloud ID from SLSTR granules
+4. Mosaic all scenes in a day to produce one Greenland-wide product
 
 In more detail:
 
-** Fetch S3 OLCI products
+** Fetch S3 OLCI & SLSTR products
 
-+ Fetch quicklook files for a given time period with [[./fetch_ql.sh]].
-+ Manually view and filter the quicklook files
-  + Generally the filter step means discarding scenes that are too cloudy
-+ Download OLCI EFR products with [[./fetch_scene_from_ql.sh]].
++ Download OLCI EFR and SLSTR RBT products for a specified day with [[./fetch_scene_from_date.sh]].
 
 ** Process with SNAP
 
 + This step is a combination of running GPT on [[./S3_proc.xml]] with [[./S3_proc.sh]].
++ This the processing can be sped up by ~10x by downscaling OLCI data to ~7 km resolution. This is done when using [[./S3_proc_fast.xml]] with [[./S3_proc.sh]].
 + Outputs: A folder for each OLCI scene
+
+** Data extraction from SLSTR products
++ [[./DEBUG_SLSTR.xml]] can be used with [[./S3_proc.sh]] to extract radiance and reflectances.
++ [[./DEBUG_SLSTR_cloud.xml]] can be used with [[./S3_proc.sh]] to extract SLSTR cloud ID.
 
 ** Mosaic
 
-+ As implemented in [[./dm.sh]] and [[./dm.grass]], for each day
++ As implemented in [[./dm.sh]] and [[./dm.grass.sh]], for each day
   + Reproject to EPSG:3413
   + Combine all the files from to form a mosaic using
   + When scenes overlap, selection criteria is "minumum SZA"
 
 * Debugging & Testing
-
-** Fetch scenes
-
-#+BEGIN_SRC sh :results verbatim
-./fetch_ql.sh --date 2017-08-15 ./quicklook
-./fetch_scene_from_ql.sh ./quicklook/ ./S3_dat
-#+END_SRC
-#+RESULTS:
 
 ** GPT one scene
 
@@ -53,7 +48,7 @@ PATH=~/local/snap/bin:${PATH}
 rm -fR tmp.out tmp.mosaic
 mkdir tmp.out
 S3=S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
-gpt DEBUG.xml -Ssource=./S3_dat/${S3}/xfdumanifest.xml -PtargetFolder=./tmp.out
+gpt DEBUG.xml -Ppathfile=./S3_dat/${S3}/xfdumanifest.xml -PtargetFolder=./tmp.out
 nth tmp.out
 #+END_SRC
 #+RESULTS:
@@ -117,22 +112,6 @@ exit
 trash Gtmp
 #+END_SRC
 #+RESULTS:
-
-** Fetch all QL scenes
-
-#+BEGIN_SRC sh :results verbatim :eval no-export
-for d in $(seq 1 365); do
-    ./fetch_ql.sh --date 2017-${d}
-done
-#+END_SRC
-
-Or, fetch JJA: June 1 to sep 1 = DOY 152 to 245
-
-#+BEGIN_SRC sh :results verbatim :eval no-export
-for d in $(seq 152 245); do
-    ./fetch_ql.sh --date 2017-${d}
-done
-#+END_SRC
 
 ** Per pixel geocoding options on CLI
 
