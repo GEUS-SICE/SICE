@@ -20,7 +20,7 @@ In more detail:
 + Outputs: A folder for each OLCI scene
 
 ** Data extraction from SLSTR products
-+ [[./DEBUG_SLSTR.xml]] can be used with [[./S3_proc.sh]] to extract radiance and reflectances.
++ [[./DEBUG_SLSTR.xml]] can be used with [[./S3_proc.sh]] to extract radiances and reflectances.
 + [[./DEBUG_SLSTR_cloud.xml]] can be used with [[./S3_proc.sh]] to extract SLSTR cloud ID.
 
 ** Mosaic
