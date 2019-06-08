@@ -76,18 +76,15 @@ for folder in $(ls ${INPATH}); do
     if [[ ${DEBUG} == 1 ]]; then
 		MSG_WARN "Using DEBUG.xml"
 		MSG_ERR "Not using per pixel geocoding for speed"
-		gpt DEBUG.xml -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=false -e
+		gpt DEBUG.xml -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=false -e
     elif [[ ! -z ${XML} ]]; then 
 		MSG_WARN "Using ${XML}"
 		MSG_OK "Per-pixel geocoding enabled"
-		gpt ${XML} -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true -e
-		echo "  "
-		echo "	gpt ${XML} -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true -e"
-		echo "  "
+		gpt ${XML} -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true -e
 	else
 		MSG_WARN "Using default XML: S3_proc.xml"
 		MSG_OK "Per-pixel geocoding enabled"
-		gpt S3_proc.xml -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true -e
+		gpt S3_proc.xml --Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml  Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml -PtargetFolder=${DEST} -Ds3tbx.reader.olci.pixelGeoCoding=true -e
     fi
     
     timing

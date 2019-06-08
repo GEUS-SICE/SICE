@@ -11,8 +11,9 @@ MSG_WARN() { printf "${ORANGE}WARNING: ${1}${NC}\n"; }
 MSG_ERR() { printf "${RED}ERROR: ${1}${NC}\n"; }
 
 POSITIONAL=()
-OUTFOLDER="./S3_scenes"
+OUTFOLDER="./out/S3_scenes"
 NAMEINSTRUMENT="OLCI"
+SATNAME = "all"
 
 while [[ $# -gt 0 ]]
 do
@@ -20,10 +21,11 @@ do
     
     case $key in
 	-h|--help)
-	    echo "./fetch_scene_from_date.sh --date [YYYY-MM-DD | YYYY-DOY] [-f lat,lon] [-o /path/to/output_folder] [-n name_instrument] "
+	    echo "./fetch_scene_from_date.sh --date [YYYY-MM-DD | YYYY-DOY] [-f lat,lon] [-o /path/to/output_folder] [-n name_instrument] [-s satellite]"
 	    echo "  [-f default: Greenland]"
 	    echo "  [-q default: ./S3_scenes]"
 	    echo "  [-n OLCI or SLSTR default: OLCI]"
+	    echo "  [-s S3A, S3B or all default: all]"
 	    exit 1
 	    ;;
 	-d|--date)
@@ -47,6 +49,13 @@ do
 	    shift # past argument
 	    shift # past value
 	    ;;
+
+	-s|--satellite)
+	    SATNAME="$2"
+	    shift # past argument
+	    shift # past value
+	    ;;
+
 	--debug)
 	    DEBUG=1
 	    shift
@@ -60,18 +69,31 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 # Defaults
-USER=s3guest
-PASS=s3guest
+#USER=s3guest
+#PASS=s3guest
 
-BASE="https://scihub.copernicus.eu/s3/search?start=0&rows=100&q="
+USER=baptistevdx
+PASS=geus1234
+
+URL="https://scihub.copernicus.eu/dhus"
+
+# URL="https://scihub.copernicus.eu/s3
+# URL="https://scihub.copernicus.eu/apihub"
+
+BASE="${URL}/search?start=0&rows=100&q="
 
 MISSION="platformname:Sentinel-3"
 INSTRUMENT="instrumentshortname:$NAMEINSTRUMENT"
+FILENAME="filename:*"
+# Check if a specific satellite is specified
+if [ "$SATNAME" != "all" ]; then
+    FILENAME="${FILENAME}${SATNAME}*"
+fi
 
-if test "$NAMEINSTRUMENT" = "OLCI"; then
-    FILENAME="filename:*EFR*"
+if [ "$NAMEINSTRUMENT" = "OLCI" ]; then
+    FILENAME="${FILENAME}EFR*"
 else
-    FILENAME="filename:*RBT*"
+    FILENAME="${FILENAME}RBT*"
 fi    
 MISC="orbitdirection:descending"
 
@@ -94,9 +116,13 @@ else
 fi
 
 if [ -z $FOOTPRINT ]; then
+echo " "
+
     echo "--footprint not set"
     echo "SEARCHING ALL OF GREENLAND"
     FOOTPRINT="footprint:\"Intersects(POLYGON((-53.656510998614 82.4951349654326,-59.9608997952054 82.1309669419302,-67.7892790605668 80.5602726884285,-67.9606014394374 80.0218479599442,-67.6072679271745 79.3014049647312,-72.7375435732184 78.589499923855,-73.5413877637147 78.1636943551527,-72.9428482239824 77.383771707567,-69.0700767925261 76.0128312085861,-66.6509837672326 75.7624371858398,-60.3956740146368 75.8231961720352,-58.4311886831941 74.885454496734,-55.1967975793182 69.6980961092145,-53.856542195614 68.836827126205,-54.2986423614971 67.0754091899264,-53.556230345375 65.610957996411,-52.3863139424116 64.7989541895734,-52.3228757389159 64.0074120108603,-50.207636158087 62.10102160819,-48.6300832525784 60.7381422112742,-45.052233335019 59.7674821385312,-43.2890274040171 59.6436933230826,-42.4957557404764 60.3093279369714,-41.8486807919329 61.5655162642218,-41.696971498891 62.648646023379,-40.1106185043429 63.5452982243944,-39.9111533763437 64.794417571311,-38.0777963367496 65.4068477012585,-36.9899016468925 65.1987069880844,-31.2165494022336 67.7166128864512,-25.8502840866575 68.6303659153185,-21.6517276244872 70.0839769825896,-20.9932063064242 70.7880484213637,-21.2829833867197 72.9254092162205,-16.9050363384979 74.9601702268335,-17.1213527989912 79.6158229046929,-10.2883304040514 81.4244115757783,-14.0398740460794 81.9745362690188,-17.8112945221629 82.0131368667592,-28.5252333238728 83.7013945514435,-40.1075150451371 83.6651081451092,-53.656510998614 82.4951349654326)))\""
+	echo " "
+
 elif [[ $FOOTPRINT =~ ^[-+]?[0-9]*\.?[0-9]+,([-+]?[0-9]*\.?[0-9]+)$ ]]; then
     arr=(${FOOTPRINT//,/ })
     x1=${arr[0]}
@@ -112,8 +138,8 @@ fi
 # Build search expression
 export QUERY="$BASE$MISSION AND $FILENAME AND  $INSTRUMENT AND $DATESTR AND $FOOTPRINT AND $MISC"
 
-
-wget --no-check-certificate --user="$USER" --password="$PASS" --output-document=query_results.xml "$QUERY"
+wget -nv --no-check-certificate --user="$USER" --password="$PASS" --output-document=query_results.xml "$QUERY"
+    echo " "
 
 # Print human readable results to screen and save the list of images and their id to a file in the script directory
 N=$(grep "total results." query_results.xml)
@@ -121,6 +147,7 @@ if [[ $N != "" ]]; then
     echo "More than 100 results. Use a smaller date range"
     exit 1
 fi
+echo " "
 
 # filename and ID, then merge
 grep -n "<title>" query_results.xml | tail -n +2 | cut -d'>' -f2- | cut -d'<' -f1 > tmp.filename.txt
@@ -130,40 +157,46 @@ rm tmp.filename.txt tmp.id.txt
 
 # Find unique filenames based on collection time. For the first of each one, download a QL image
 mkdir -p $OUTFOLDER
+count=0
+if [[ -d ${OUTFOLDER}/${PRODUCT_NAME}.SEN3 ]]; then
+MSG_WARN "Skipping: ${PRODUCT_NAME}"
+fi
 for entry in $(cut -c1-31 product_IDs.txt | sort); do
-	echo " "
-	echo ${entry}
-    echo " "
+    count=$((count+1))	
+
 	# first of the unique filenames
     filename=$(grep ${entry} product_IDs.txt | head -n1 | cut -d" " -f1)
     filename_clean=$(echo $filename | cut -c17-31)
     # first of the quicklook IDs
     id=$(grep ${entry} product_IDs.txt | head -n1 | cut -d" " -f2)
     
-    PRODUCTURL="https://scihub.copernicus.eu/s3/odata/v1/Products('${id}')/"
-    # wget "${PRODUCTURL}" --user=s3guest --password=s3guest -nc -c -nd -O ${OUT}/${id}.xml
-    curl --silent -u s3guest:s3guest -o ${OUTFOLDER}/${id}.xml "${PRODUCTURL}"
+    PRODUCTURL="${URL}/odata/v1/Products('${id}')/"
+		
+	# wget registration issue now usin curl
+	# wget "${PRODUCTURL}" --user=s3guest --password=s3guest -nc -c -nd -O ${OUT}/${id}.xml
+	curl --silent -u ${USER}:${PASS} -o ${OUTFOLDER}/${id}.xml "${PRODUCTURL}"
     PRODUCT_NAME=$(grep -o "<d:Name>.*" ${OUTFOLDER}/${id}.xml | cut -d">" -f2 | cut -d"<" -f1)
     rm ${OUTFOLDER}/${id}.xml
+	echo "${count}  ${PRODUCT_NAME}"
 
-	echo " ################"
-	echo ${OUTFOLDER}
-	echo " ################ "
-
-    # wget "${PRODUCTURL}\$value" --user=s3guest --password=s3guest -nc -O ${OUT}/${PRODUCT_NAME}.zip    #--continue
-    if [[ -d ${OUTFOLDER}/${PRODUCT_NAME}.SEN3 ]]; then
-	MSG_WARN "Skipping: ${PRODUCT_NAME}"
-    else	
-	MSG_OK "Fetching: ${PRODUCT_NAME}"
-	curl -o ${OUTFOLDER}/${PRODUCT_NAME}.zip -u s3guest:s3guest "${PRODUCTURL}\$value"
-	(cd ${OUTFOLDER}; unzip ${PRODUCT_NAME}.zip)
-	rm ${OUTFOLDER}/${PRODUCT_NAME}.zip
-    fi
+	# echo $DEBUG
+	if [[ -z $DEBUG ]]; then
+		# wget registration issue now usin curl
+		# wget "${PRODUCTURL}\$value" --user=s3guest --password=s3guest -nc -O ${OUT}/${PRODUCT_NAME}.zip    #--continue
+		if [[ -d ${OUTFOLDER}/${PRODUCT_NAME}.SEN3 ]]; then
+		MSG_WARN "Skipping: ${PRODUCT_NAME}"
+		else	
+		MSG_OK "Fetching: ${PRODUCT_NAME}"
+		curl -o ${OUTFOLDER}/${PRODUCT_NAME}.zip -u ${USER}:${PASS} "${PRODUCTURL}\$value"
+		(cd ${OUTFOLDER}; unzip ${PRODUCT_NAME}.zip)
+		rm ${OUTFOLDER}/${PRODUCT_NAME}.zip
+		fi
+	fi
 done
+echo " "
+echo "${count} files found"
+echo " "
 
-if [[ -z $DEBUG ]]; then
-    rm product_IDs.txt
-    rm query_results.xml
-fi
+
 	end=`date +%s`
 	echo Execution time was `expr $end - $start` seconds.

@@ -24,7 +24,9 @@
     </sources>
     <parameters>
       <targetWidth>1000</targetWidth>
-      <targetHeight>840</targetHeight>     
+      <targetHeight>840</targetHeight>
+      <!--<targetResolution>5000</targetResolution>-->
+      <!--Error: [NodeId: Resample] Use of targetResolution is only possible for products with crs geo-coding.-->
       <upsampling>Nearest</upsampling>
       <downsampling>First</downsampling>
       <flagDownsampling>First</flagDownsampling>
