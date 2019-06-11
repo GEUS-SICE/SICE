@@ -13,7 +13,7 @@ MSG_ERR() { printf "${RED}ERROR: ${1}${NC}\n"; }
 POSITIONAL=()
 OUTFOLDER="./out/S3_scenes"
 NAMEINSTRUMENT="OLCI"
-SATNAME = "all"
+SATNAME="all"
 
 while [[ $# -gt 0 ]]
 do
@@ -69,18 +69,12 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 # Defaults
-#USER=s3guest
-#PASS=s3guest
+
 
 USER=baptistevdx
 PASS=geus1234
 
 URL="https://scihub.copernicus.eu/dhus"
-
-# URL="https://scihub.copernicus.eu/s3
-# URL="https://scihub.copernicus.eu/apihub"
-
-BASE="${URL}/search?start=0&rows=100&q="
 
 MISSION="platformname:Sentinel-3"
 INSTRUMENT="instrumentshortname:$NAMEINSTRUMENT"
@@ -136,6 +130,8 @@ else
 fi
 
 # Build search expression
+BASE="${URL}/search?start=0&rows=100&q="
+
 export QUERY="$BASE$MISSION AND $FILENAME AND  $INSTRUMENT AND $DATESTR AND $FOOTPRINT AND $MISC"
 
 wget -nv --no-check-certificate --user="$USER" --password="$PASS" --output-document=query_results.xml "$QUERY"
@@ -147,6 +143,42 @@ if [[ $N != "" ]]; then
     echo "More than 100 results. Use a smaller date range"
     exit 1
 fi
+echo " "
+echo $N
+echo " "
+
+if [ -z "$N" ]; then
+	MSG_WARN "Could not find files on: ${URL}"
+	URL="https://scihub.copernicus.eu/s3"
+	MSG_WARN "Using ${URL} instead"
+	USER=s3guest
+	PASS=s3guest
+	
+	BASE="${URL}/search?start=0&rows=100&q="
+	export QUERY="$BASE$MISSION AND $FILENAME AND  $INSTRUMENT AND $DATESTR AND $FOOTPRINT AND $MISC"
+	wget -nv --no-check-certificate --user="$USER" --password="$PASS" --output-document=query_results.xml "$QUERY"
+	
+	N=$(grep "total results." query_results.xml)
+fi
+echo " "
+echo "$N"
+echo " "
+
+if [ -z "$N" ]; then
+	MSG_WARN "Could not find files on: ${URL}"
+	URL="https://scihub.copernicus.eu/apihub"
+	MSG_WARN "Using ${URL} instead"
+	USER=s3guest
+	PASS=s3guest
+	
+	BASE="${URL}/search?start=0&rows=100&q="
+	export QUERY="$BASE$MISSION AND $FILENAME AND  $INSTRUMENT AND $DATESTR AND $FOOTPRINT AND $MISC"
+	wget -nv --no-check-certificate --user="$USER" --password="$PASS" --output-document=query_results.xml "$QUERY"
+	
+	N=$(grep "total results." query_results.xml)
+fi
+echo " "
+echo "$N"
 echo " "
 
 # filename and ID, then merge
