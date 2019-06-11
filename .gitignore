@@ -1,6 +1,6 @@
 out
 product_IDs.txt
-query_results.xml
+query_results*
 *.aux.xml
 SnowProcessor
 2018-06

@@ -2,6 +2,8 @@
 start=`date +%s`
 OUTFOLDER="."
 SATNAME="all"
+NAMEINSTRUMENT="OLCI"
+
 while [[ $# -gt 0 ]]
 do
     key="$1"

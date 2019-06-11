@@ -69,8 +69,6 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 # Defaults
-
-
 USER=baptistevdx
 PASS=geus1234
 
@@ -154,6 +152,7 @@ if [ -z "$N" ]; then
 	USER=s3guest
 	PASS=s3guest
 	
+	cp query_results.xml query_results_dhus.xml
 	BASE="${URL}/search?start=0&rows=100&q="
 	export QUERY="$BASE$MISSION AND $FILENAME AND  $INSTRUMENT AND $DATESTR AND $FOOTPRINT AND $MISC"
 	wget -nv --no-check-certificate --user="$USER" --password="$PASS" --output-document=query_results.xml "$QUERY"
@@ -168,9 +167,11 @@ if [ -z "$N" ]; then
 	MSG_WARN "Could not find files on: ${URL}"
 	URL="https://scihub.copernicus.eu/apihub"
 	MSG_WARN "Using ${URL} instead"
-	USER=s3guest
-	PASS=s3guest
+USER=baptistevdx
+PASS=geus1234
 	
+		cp query_results.xml query_results_s3.xml
+
 	BASE="${URL}/search?start=0&rows=100&q="
 	export QUERY="$BASE$MISSION AND $FILENAME AND  $INSTRUMENT AND $DATESTR AND $FOOTPRINT AND $MISC"
 	wget -nv --no-check-certificate --user="$USER" --password="$PASS" --output-document=query_results.xml "$QUERY"
