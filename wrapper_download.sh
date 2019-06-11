@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 start=`date +%s`
 OUTFOLDER="."
+SATNAME="all"
 while [[ $# -gt 0 ]]
 do
     key="$1"
@@ -8,6 +9,7 @@ do
     case $key in
 	-h|--help)
 	    echo "./wrapper.sh --date [YYYY-MM] -n name-instrument [-o /path/to/output_folder]"
+	    echo "  [-s S3A, S3B or all default: all]"
 	    exit 1
 	    ;;
 	-d|--date)
@@ -25,7 +27,12 @@ do
 	    shift # past argument
 	    shift # past value
 	    ;;
-    esac
+	-s|--satellite)
+	    SATNAME="$2"
+	    shift # past argument
+	    shift # past value
+	    ;;
+		esac
 done
 
 for DD in {1..31}
@@ -36,7 +43,7 @@ do
         else
 			DAY="${DATE}-$DD"
         fi
-bash ./fetch_scene_from_date.sh --date $DAY -o ${OUTFOLDER}/${DATE}/$DAY -n $NAMEINSTRUMENT
+bash ./fetch_scene_from_date.sh --date $DAY -o ${OUTFOLDER}/${DATE}/$DAY -n $NAMEINSTRUMENT -s $SATNAME
 done
 	end=`date +%s`
 	echo Execution time was `expr $end - $start` seconds.
