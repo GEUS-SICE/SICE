@@ -17,6 +17,7 @@ In more detail:
 
 + This step is a combination of running GPT on [[./S3_proc.xml]] with [[./S3_proc.sh]].
 + This the processing can be sped up by ~10x by downscaling OLCI data to ~7 km resolution. This is done when using [[./S3_proc_fast.xml]] with [[./S3_proc.sh]].
++ The latest code version "sice.f" can be obtained from members of the SICE team, compiled and placed in a "SnowProcessor" folder. It can then be used a low resolution calling: bash s3_proc.sh -i in_folder -o out_folder -X xml/SICE_preproc.xml -csv
 + Outputs: A folder for each OLCI scene
 
 ** Data extraction from SLSTR products

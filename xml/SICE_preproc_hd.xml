@@ -1,0 +1,615 @@
+<graph id="S3_proc">
+  <version>1.0</version>
+
+  <!--
+      This script runs the radiance to reflectance and outputs:
+      reflectance: 1,2,4,5,6,7,8,9,13,14,15,17,21
+      other: SZA, SAA, OZA, OAA
+      in csv format
+  -->
+  <node id="Read">
+    <operator>Read</operator>
+    <parameters>
+      <file>${pathfile}</file>
+      <formatName>Sen3</formatName>
+      <!--Sen3 ensures that SLSTR is read as multisize-->
+    </parameters>
+  </node>
+  
+  <!--<node id="Resample">
+    <operator>Resample</operator>
+    <sources>
+      <sourceProduct refid="Read"/>
+    </sources>
+    <parameters>
+      <targetWidth>1000</targetWidth>
+      <targetHeight>840</targetHeight>
+      <referenceBand/>
+      <targetResolution/>
+      <upsampling>Nearest</upsampling>
+      <downsampling>First</downsampling>
+      <flagDownsampling>First</flagDownsampling>
+      <resampleOnPyramidLevels>true</resampleOnPyramidLevels>
+    </parameters>
+  </node>-->
+
+  <node id="Rad2Refl">
+    <operator>Rad2Refl</operator>
+    <sources>
+      <source>Read</source>
+    </sources>
+    <parameters>
+      <sensor>OLCI</sensor>
+      <copyTiePointGrids>true</copyTiePointGrids>
+      <copyFlagBandsAndMasks>true</copyFlagBandsAndMasks>
+      <copyNonSpectralBands>true</copyNonSpectralBands>
+    </parameters>
+  </node>
+
+   <node id="Reproject">
+    <operator>Reproject</operator>
+    <sources>
+      <source>Rad2Refl</source>
+    </sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>
+  
+  <!--<node id="CloudID">
+    <operator>Snap.Idepix.Olci.S3Snow</operator>
+    <sources>
+      <sourceProduct>Reproject</sourceProduct>
+    </sources>
+  </node>-->
+  
+  <!--
+      By here, everything is "processed".
+      The rest is just selecting and writing out individual bands
+  -->
+
+  <node id="BandSelect_ozone">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>total_ozone</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_ozone">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_ozone</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/ozone_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_altitude">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>altitude</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_altitude">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_altitude</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/altitude_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+  
+  
+  <node id="BandSelect_lat">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>latitude</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_lat">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_lat</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/latitude_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_lon">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>longitude</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_lon">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_lon</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/longitude_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_01">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa01_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_01">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_01</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa01_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_02">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa02_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_02">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_02</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa02_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_03">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa03_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_03">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_03</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa03_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_04">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject</source></sources>
+    <parameters><sourceBands>Oa04_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_04">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_04</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa04_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_05">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject</source></sources>
+    <parameters><sourceBands>Oa05_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_05">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_05</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa05_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_06">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa06_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_06">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_06</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa06_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_07">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa07_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_07">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_07</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa07_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_08">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject</source></sources>
+    <parameters><sourceBands>Oa08_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_08">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_08</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa08_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_09">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject</source></sources>
+    <parameters><sourceBands>Oa09_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_09">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_09</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa09_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_10">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa10_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_10">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_10</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa10_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_11">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa11_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_11">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_11</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa11_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_12">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa12_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_12">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_12</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa12_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_13">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa13_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_13">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_13</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa13_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_14">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject</source></sources>
+    <parameters><sourceBands>Oa14_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_14">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_14</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa14_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_15">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject</source></sources>
+    <parameters><sourceBands>Oa15_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_15">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_15</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa15_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_16">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa16_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_16">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_16</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa16_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_17">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa17_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_17">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_17</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa17_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_18">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa18_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_18">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_18</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa18_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_19">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa19_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_19">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_19</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa19_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_20">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>Oa20_reflectance</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_20">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_20</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa20_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_21">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject</source></sources>
+    <parameters><sourceBands>Oa21_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_21">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_21</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa21_reflectance_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+
+  <!--
+      SZA, SAA, OZA, OAA
+  -->
+  <node id="SZA_invalid">
+    <operator>BandMaths</operator>
+    <sources>
+      <sourceProducts>Reproject</sourceProducts>
+    </sources>
+    <parameters>
+      <targetBands>
+        <targetBand>
+          <name>sun_zenith</name>
+          <type>float32</type>
+          <expression>quality_flags.invalid ? NaN : SZA</expression>
+        </targetBand>
+      </targetBands>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_SZA">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>SZA_invalid</source>
+    </sources>
+    <parameters>
+      <sourceBands>sun_zenith</sourceBands>
+    </parameters>
+  </node>
+  <node id="Write_SZA">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_SZA</sourceProduct>
+    </sources>
+    <parameters>
+      <deleteOutputOnFailure>True</deleteOutputOnFailure>
+      <file>${targetFolder}/SZA_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OZA">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject</source></sources>
+    <parameters><sourceBands>OZA</sourceBands></parameters>
+  </node>
+  <node id="Write_OZA">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OZA</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/OZA_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_SAA">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject</source></sources>
+    <parameters><sourceBands>SAA</sourceBands></parameters>
+  </node>
+  <node id="Write_SAA">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_SAA</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/SAA_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_OAA">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject</source></sources>
+    <parameters><sourceBands>OAA</sourceBands></parameters>
+  </node>
+  <node id="Write_OAA">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OAA</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/OAA_x.csv</file>
+      <formatName>CSV</formatName>
+    </parameters>
+  </node>
+</graph>

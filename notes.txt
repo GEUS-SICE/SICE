@@ -15,3 +15,8 @@ HD one day all bands ~10h
 S3_fast one day 1637 = ~ 30 min
 
 Copy one day from ice ~20min
+
+
+With sice.f on resampled data
+1583 sec = 26 min
+

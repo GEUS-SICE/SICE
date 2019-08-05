@@ -83,7 +83,7 @@ if [ "$SATNAME" != "all" ]; then
 fi
 
 if [ "$NAMEINSTRUMENT" = "OLCI" ]; then
-    FILENAME="${FILENAME}EFR*"
+    FILENAME="${FILENAME}NRT*"
 else
     FILENAME="${FILENAME}RBT*"
 fi    
@@ -147,12 +147,13 @@ echo " "
 
 if [ -z "$N" ]; then
 	MSG_WARN "Could not find files on: ${URL}"
-	URL="https://scihub.copernicus.eu/s3"
+	URL="https://scihub.copernicus.eu/apihub"
 	MSG_WARN "Using ${URL} instead"
-	USER=s3guest
-	PASS=s3guest
+USER=baptistevdx
+PASS=geus1234
 	
-	cp query_results.xml query_results_dhus.xml
+		cp query_results.xml query_results_s3.xml
+
 	BASE="${URL}/search?start=0&rows=100&q="
 	export QUERY="$BASE$MISSION AND $FILENAME AND  $INSTRUMENT AND $DATESTR AND $FOOTPRINT AND $MISC"
 	wget -nv --no-check-certificate --user="$USER" --password="$PASS" --output-document=query_results.xml "$QUERY"
@@ -165,13 +166,12 @@ echo " "
 
 if [ -z "$N" ]; then
 	MSG_WARN "Could not find files on: ${URL}"
-	URL="https://scihub.copernicus.eu/apihub"
+	URL="https://coda.eumetsat.int/#/home"
 	MSG_WARN "Using ${URL} instead"
-USER=baptistevdx
-PASS=geus1234
+	USER=BaptisteV
+	PASS=geus1234
 	
-		cp query_results.xml query_results_s3.xml
-
+	cp query_results.xml query_results_dhus.xml
 	BASE="${URL}/search?start=0&rows=100&q="
 	export QUERY="$BASE$MISSION AND $FILENAME AND  $INSTRUMENT AND $DATESTR AND $FOOTPRINT AND $MISC"
 	wget -nv --no-check-certificate --user="$USER" --password="$PASS" --output-document=query_results.xml "$QUERY"

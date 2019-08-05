@@ -46,6 +46,10 @@
       <writeAdditionalSnowPollutionParms>true</writeAdditionalSnowPollutionParms>
       <writeUncertaintiesOfAdditionalSnowPollutionParms>true</writeUncertaintiesOfAdditionalSnowPollutionParms>
       <computePPA>true</computePPA>
+      <olciGainBand1>1.0</olciGainBand1>
+      <olciGainBand5>1.0</olciGainBand5>
+      <olciGainBand17>1.0</olciGainBand17>
+      <olciGainBand21>1.0</olciGainBand21>
     </parameters>
   </node>
 

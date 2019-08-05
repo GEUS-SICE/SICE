@@ -16,9 +16,14 @@ for ASCENE in $(cd $INFOLDER; find . -maxdepth 1 -type d -name "${DATE}T??????")
     g.mapset -c ${SCENE} --quiet
     for file in $(ls ${INFOLDER}/${SCENE}/*.tif); do
         echo "Importing $file"
+		gdalinfo ${file}
+		cp ${file} "tmp.tif"
+		gdalwarp -s_srs EPSG:3413 -s_srs EPSG:3413 -srcnodata -999 "tmp.tif" ${file}
+		# rm tmp.tif
+
         band=$(echo $(basename ${file} .tif))
 	# r.external source=${file} output=${band} --quiet
-	r.in.gdal input=${file} output=${band} --quiet
+	r.in.gdal input=${file} output=${band} # --quiet
 	r.null map=${band} setnull=-999.9
     done
 done

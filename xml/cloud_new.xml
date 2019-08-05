@@ -1,0 +1,47 @@
+<graph id="cloud">
+  <version>1.0</version>
+
+  
+  <node id="CloudID">
+    <operator>Snap.Idepix.Olci.S3Snow</operator>
+    <sources>
+      <sourceProduct>${source}</sourceProduct>
+    </sources>
+  </node>
+
+  <node id="Reproject">
+    <operator>Reproject</operator>
+    <sources>
+      <source>CloudID</source>
+    </sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_cloud01">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject</source>
+    </sources>
+    <parameters>
+      <sourceBands>cloud_over_snow</sourceBands>
+    </parameters>
+  </node>
+  
+  <node id="Write_cloud01">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_cloud01</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/cloud_over_snow_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  
+</graph>

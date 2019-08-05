@@ -16,27 +16,28 @@
       <!--Sen3 ensures that SLSTR is read as multisize-->
     </parameters>
   </node>
-  
-  <!--<node id="Resample">
+
+  <node id="Resample">
     <operator>Resample</operator>
     <sources>
       <sourceProduct refid="Read"/>
     </sources>
     <parameters>
-      --><!--<targetWidth>1000</targetWidth>
-      <targetHeight>840</targetHeight>--><!--
-      <referenceBand>Oa01_radiance</referenceBand>
+      <targetWidth>1000</targetWidth>
+      <targetHeight>840</targetHeight>
+      <!--<targetResolution>5000</targetResolution>-->
+      <!--Error: [NodeId: Resample] Use of targetResolution is only possible for products with crs geo-coding.-->
       <upsampling>Nearest</upsampling>
       <downsampling>First</downsampling>
       <flagDownsampling>First</flagDownsampling>
       <resampleOnPyramidLevels>true</resampleOnPyramidLevels>
     </parameters>
-  </node>-->
-  
+  </node>
+
   <node id="Rad2Refl">
     <operator>Rad2Refl</operator>
     <sources>
-      <source>Read</source>
+      <source>Resample</source>
     </sources>
     <parameters>
       <sensor>OLCI</sensor>
@@ -62,7 +63,7 @@
   <node id="OLCI.SnowProperties">
     <operator>OLCI.SnowProperties</operator>
     <sources>
-      <sourceProduct refid="Read"/>
+      <sourceProduct refid="Resample"/>
     </sources>
     <parameters>
       <spectralAlbedoTargetBands>Oa01 (400 nm),Oa02 (412.5 nm),Oa05 (510 nm),Oa06 (560 nm),Oa08 (665 nm),Oa09 (673.75 nm),Oa17 (865 nm),Oa21 (1020 nm)</spectralAlbedoTargetBands>
@@ -72,6 +73,10 @@
       <writeAdditionalSnowPollutionParms>true</writeAdditionalSnowPollutionParms>
       <!--writeUncertaintiesOfAdditionalSnowPollutionParms>true</writeUncertaintiesOfAdditionalSnowPollutionParms-->
       <computePPA>true</computePPA>
+      <olciGainBand1>1.0</olciGainBand1>
+      <olciGainBand5>1.0</olciGainBand5>
+      <olciGainBand17>1.0</olciGainBand17>
+      <olciGainBand21>1.0</olciGainBand21>
     </parameters>
   </node>
 
@@ -113,10 +118,10 @@
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
-
+  <!--
   <node id="BandSelect_02">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>Rad2Refl</source></sources>
     <parameters><sourceBands>Oa02_reflectance</sourceBands></parameters>
   </node>
   <node id="Write_02">
@@ -144,7 +149,7 @@
 
   <node id="BandSelect_05">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>Rad2Refl</source></sources>
     <parameters><sourceBands>Oa05_reflectance</sourceBands></parameters>
   </node>
   <node id="Write_05">
@@ -186,7 +191,7 @@
 
   <node id="BandSelect_09">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>Rad2Refl</source></sources>
     <parameters><sourceBands>Oa09_reflectance</sourceBands></parameters>
   </node>
   <node id="Write_09">
@@ -200,7 +205,7 @@
 
   <node id="BandSelect_13">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>Rad2Refl</source></sources>
     <parameters><sourceBands>Oa13_reflectance</sourceBands></parameters>
   </node>
   <node id="Write_13">
@@ -214,7 +219,7 @@
 
   <node id="BandSelect_14">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>Rad2Refl</source></sources>
     <parameters><sourceBands>Oa14_reflectance</sourceBands></parameters>
   </node>
   <node id="Write_14">
@@ -228,7 +233,7 @@
 
   <node id="BandSelect_15">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>Rad2Refl</source></sources>
     <parameters><sourceBands>Oa15_reflectance</sourceBands></parameters>
   </node>
   <node id="Write_15">
@@ -242,7 +247,7 @@
 
   <node id="BandSelect_17">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>Rad2Refl</source></sources>
     <parameters><sourceBands>Oa17_reflectance</sourceBands></parameters>
   </node>
   <node id="Write_17">
@@ -253,7 +258,7 @@
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
-
+-->
   <node id="BandSelect_21">
     <operator>BandSelect</operator>
     <sources><source>Reproject</source></sources>
@@ -355,9 +360,9 @@
   <!--
       rBRR: 1,2,5,6,8,9,17,21
   -->
-  <node id="BandSelect_rBRR_01">
+  <!--<node id="BandSelect_rBRR_01">
     <operator>BandSelect</operator>	
-    <sources><source>OLCI.Reproject</source></sources>	
+    <sources><source>OLCI.SnowProperties</source></sources>	
     <parameters><sourceBands>rBRR_01</sourceBands></parameters>	
   </node>	
   <node id="Write_rBRR_01">
@@ -371,7 +376,7 @@
 
   <node id="BandSelect_rBRR_02"> 
     <operator>BandSelect</operator>	
-    <sources><source>OLCI.Reproject</source></sources>	
+    <sources><source>OLCI.SnowProperties</source></sources>	
     <parameters><sourceBands>rBRR_02</sourceBands></parameters>	
   </node>	
   <node id="Write_rBRR_02">
@@ -385,7 +390,7 @@
 
   <node id="BandSelect_rBRR_05"> 
     <operator>BandSelect</operator>	
-    <sources><source>OLCI.Reproject</source></sources>	
+    <sources><source>OLCI.SnowProperties</source></sources>	
     <parameters><sourceBands>rBRR_05</sourceBands></parameters>	
   </node>	
   <node id="Write_rBRR_05">
@@ -399,7 +404,7 @@
 
   <node id="BandSelect_rBRR_06"> 
     <operator>BandSelect</operator>	
-    <sources><source>OLCI.Reproject</source></sources>	
+    <sources><source>OLCI.SnowProperties</source></sources>	
     <parameters><sourceBands>rBRR_06</sourceBands></parameters>	
   </node>	
   <node id="Write_rBRR_06">
@@ -413,7 +418,7 @@
 
   <node id="BandSelect_rBRR_08"> 
     <operator>BandSelect</operator>	
-    <sources><source>OLCI.Reproject</source></sources>	
+    <sources><source>OLCI.SnowProperties</source></sources>	
     <parameters><sourceBands>rBRR_08</sourceBands></parameters>	
   </node>	
   <node id="Write_rBRR_08">
@@ -427,7 +432,7 @@
 
   <node id="BandSelect_rBRR_09"> 
     <operator>BandSelect</operator>	
-    <sources><source>OLCI.Reproject</source></sources>	
+    <sources><source>OLCI.SnowProperties</source></sources>	
     <parameters><sourceBands>rBRR_09</sourceBands></parameters>	
   </node>	
   <node id="Write_rBRR_09">
@@ -441,7 +446,7 @@
 
   <node id="BandSelect_rBRR_17"> 
     <operator>BandSelect</operator>	
-    <sources><source>OLCI.Reproject</source></sources>	
+    <sources><source>OLCI.SnowProperties</source></sources>	
     <parameters><sourceBands>rBRR_17</sourceBands></parameters>	
   </node>	
   <node id="Write_rBRR_17">
@@ -455,7 +460,7 @@
 
   <node id="BandSelect_rBRR_21"> 
     <operator>BandSelect</operator>	
-    <sources><source>OLCI.Reproject</source></sources>	
+    <sources><source>OLCI.SnowProperties</source></sources>	
     <parameters><sourceBands>rBRR_21</sourceBands></parameters>	
   </node>	
   <node id="Write_rBRR_21">
@@ -465,7 +470,7 @@
       <file>${targetFolder}/rBRR_21_x.tif</file>	
       <formatName>GeoTIFF</formatName>	
     </parameters>	
-  </node>
+  </node>-->
 
 
   <!--
