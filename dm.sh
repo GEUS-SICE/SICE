@@ -9,12 +9,11 @@ DATE=$1      # YYYYMMDD
 INFOLDER=$2  # ./tmp ?
 OUTFOLDER=$3 # ./mosaic ?
 
-## Work in /tmp/tmpG
-BASE=/tmp
-LOC=tmpG
+## Work in ./G_mosaic
+BASE=./
+LOC=G_mosaic
 
 rm -fR ${BASE}/${LOC}
 grass -e -c mask.tif ${BASE}/${LOC}
 
 grass ${BASE}/${LOC}/PERMANENT --exec ./dm.grass.sh $DATE $INFOLDER $OUTFOLDER
-

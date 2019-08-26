@@ -12,20 +12,21 @@ mkdir -p $OUTFOLDER/${DATE}
 
 # load all the data
 for ASCENE in $(cd $INFOLDER; find . -maxdepth 1 -type d -name "${DATE}T??????"); do
-    SCENE=$(echo $ASCENE | cut -c3-)
-    g.mapset -c ${SCENE} --quiet
-    for file in $(ls ${INFOLDER}/${SCENE}/*.tif); do
-        echo "Importing $file"
-		gdalinfo ${file}
-		cp ${file} "tmp.tif"
-		gdalwarp -s_srs EPSG:3413 -s_srs EPSG:3413 -srcnodata -999 "tmp.tif" ${file}
-		# rm tmp.tif
+  SCENE=$(echo $ASCENE | cut -c3-)
+  g.mapset -c ${SCENE} --quiet
+  for file in $(ls ${INFOLDER}/${SCENE}/*.tif); do
+    echo "Importing $file"
+    # gdalinfo ${file}
+    cp ${file} "tmp.tif"
+    # gdalwarp -s_srs EPSG:3413 -s_srs EPSG:3413 -srcnodata -999 "tmp.tif" ${file}
+    gdalwarp -srcnodata -999 "tmp.tif" ${file}
+    rm tmp.tif
 
-        band=$(echo $(basename ${file} .tif))
-	# r.external source=${file} output=${band} --quiet
-	r.in.gdal input=${file} output=${band} # --quiet
-	r.null map=${band} setnull=-999.9
-    done
+    band=$(echo $(basename ${file} .tif))
+    r.external source=${file} output=${band} --quiet
+    # r.in.gdal input=${file} output=${band} # --quiet
+    # r.null map=${band} setnull=-999.9
+  done
 done
 
 # The target bands. For example, Oa01_reflectance or SZA.
@@ -78,11 +79,11 @@ echo "Writing out RGB and SZA_LUT"
 
 # gdaldem color-relief $(g.list type=raster | head -n1)  col.txt ${OUTFOLDER}/${DATE}/thumb.jpeg -of JPEG -s 0.05
 
-# r.composite -d -c blue=$(g.list type=raster pattern=Oa04_r* | head -n1) green=$(g.list type=raster pattern=Oa06_r* | head -n1) red=$(g.list type=raster pattern=Oa08_r* | head -n1) output=RGB --o
-# r.out.gdal -m -c input=RGB output=${OUTFOLDER}/${DATE}/RGB.tif ${TIFOPTS}
-# r.out.png input=RGB output=${OUTFOLDER}/${DATE}/RGB.png --o
-# r.out.gdal -m -c input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.tif ${TIFOPTS}
-# r.colors map=SZA_LUT color=random
-# r.out.png input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.png --o
+r.composite -d -c blue=$(g.list type=raster pattern=Oa04_r* | head -n1) green=$(g.list type=raster pattern=Oa06_r* | head -n1) red=$(g.list type=raster pattern=Oa08_r* | head -n1) output=RGB --o
+r.out.gdal -m -c input=RGB output=${OUTFOLDER}/${DATE}/RGB.tif ${TIFOPTS}
+r.out.png input=RGB output=${OUTFOLDER}/${DATE}/RGB.png --o
+r.out.gdal -m -c input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.tif ${TIFOPTS}
+r.colors map=SZA_LUT color=random
+r.out.png input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.png --o
 
-rm -fR /tmp/tmpG
+# rm -fR /tmp/tmpG
