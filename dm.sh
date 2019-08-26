@@ -9,11 +9,7 @@ DATE=$1      # YYYYMMDD
 INFOLDER=$2  # ./tmp ?
 OUTFOLDER=$3 # ./mosaic ?
 
-## Work in ./G_mosaic
-BASE=./
-LOC=G_mosaic
+grass -e -c mask.tif ./G_mosaic_$$ # work in ./G_mosaic_<PSEUDO_RANDOM>
+grass ./G_mosaic_$$/PERMANENT --exec ./dm.grass.sh $DATE $INFOLDER $OUTFOLDER
+# rm -fR ./G_mosaic_$$ # cleanup
 
-rm -fR ${BASE}/${LOC}
-grass -e -c mask.tif ${BASE}/${LOC}
-
-grass ${BASE}/${LOC}/PERMANENT --exec ./dm.grass.sh $DATE $INFOLDER $OUTFOLDER

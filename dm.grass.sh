@@ -9,24 +9,18 @@ if ! [ -e "$INFOLDER" ]; then
   exit 1
 fi
 mkdir -p $OUTFOLDER/${DATE}
+mkdir -p tmp
 
 # load all the data
-for ASCENE in $(cd $INFOLDER; find . -maxdepth 1 -type d -name "${DATE}T??????"); do
-  SCENE=$(echo $ASCENE | cut -c3-)
-  g.mapset -c ${SCENE} --quiet
-  for file in $(ls ${INFOLDER}/${SCENE}/*.tif); do
-    echo "Importing $file"
-    # gdalinfo ${file}
-    cp ${file} "tmp.tif"
-    # gdalwarp -s_srs EPSG:3413 -s_srs EPSG:3413 -srcnodata -999 "tmp.tif" ${file}
-    gdalwarp -srcnodata -999 "tmp.tif" ${file}
-    rm tmp.tif
-
-    band=$(echo $(basename ${file} .tif))
-    r.external source=${file} output=${band} --quiet
-    # r.in.gdal input=${file} output=${band} # --quiet
-    # r.null map=${band} setnull=-999.9
-  done
+SCENES=$(cd $INFOLDER; ls | grep -E "${DATE}T??????")
+SCENE=$(echo ${SCENES}|tr ' ' '\n' | head -n1) # DEBUG
+for SCENE in ${SCENES}; do
+    g.mapset -c ${SCENE} --quiet
+    FILES=$(ls ${INFOLDER}/${SCENE}/*.tif)
+    echo "Fixing NODATA values for ${SCENE}"
+    parallel --bar "gdalwarp -q -srcnodata -999 {} ./tmp/{%}.tif; mv ./tmp/{%}.tif {}" ::: ${FILES}
+    echo "Importing data for ${SCENE}"
+    parallel "r.external source={} output={/.} --quiet --o" ::: ${FILES}
 done
 
 # The target bands. For example, Oa01_reflectance or SZA.
@@ -54,36 +48,43 @@ echo ${SZA_list} | tr ',' '\n' | cut -d@ -f2 > ${OUTFOLDER}/${DATE}/SZA_LUT.txt
 SZA_LUT_idxs=$(r.stats -n -l SZA_LUT)
 n_imgs=$(echo $SZA_LUT_idxs |wc -w)
 
-# Patch each BAND based on the minimum SZA_LUT
-for B in $(echo $BANDS); do
-    # this band in all of the sub-mapsets (with a T (timestamp) in the mapset name)
-    B_arr=($(g.list type=raster pattern=${B} mapset=* | grep "@.*T"))
-    r.mapcalc "${B} = null()" --o --q
-    for i in $SZA_LUT_idxs; do
-        echo "patching ${B} from ${B_arr[${i}]} [$i]"
-        r.mapcalc "${B} = if(SZA_LUT == ${i}, ${B_arr[${i}]}, ${B})" --o --q
-    done
+# generate a raster of nulls that we can then patch into
+echo "Initializing mosaic scenes..."
+parallel --bar "r.mapcalc \"{} = null()\" --o --q" ::: ${BANDS}
+
+### REFERENCE LOOP VERSION
+# # Patch each BAND based on the minimum SZA_LUT
+# for B in $(echo $BANDS); do
+#     # this band in all of the sub-mapsets (with a T (timestamp) in the mapset name)
+#     B_arr=($(g.list type=raster pattern=${B} mapset=* | grep "@.*T"))
+#     for i in $SZA_LUT_idxs; do
+#         echo "patching ${B} from ${B_arr[${i}]} [$i]"
+#         r.mapcalc "${B} = if(SZA_LUT == ${i}, ${B_arr[${i}]}, ${B})" --o --q
+#     done
+# done
+
+# PARALLEL?
+echo "Patching bands based on minmum SZA_LUT"
+doit() {
+    B_arr=($(g.list type=raster pattern=${2} mapset=* | grep "@.*T"))
+    r.mapcalc "${2} = if(SZA_LUT == ${1}, ${B_arr[${1}]}, ${2})" --o --q
+}
+export -f doit
+for i in $SZA_LUT_idxs; do
+    parallel --bar doit ${i} ::: ${BANDS}
 done
 
-# save everything to disk
+
+echo "Writing mosaics to disk..."
 TIFOPTS='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
-for B in $(echo ${BANDS}); do
-    echo "Writing ${B} to ${OUTFOLDER}/${DATE}/${B}.tif"
-    r.colors map=${B} color=grey --q
-    r.null map=${B} setnull=inf --quiet
-    r.out.gdal -m -c input=${B} output=${OUTFOLDER}/${DATE}/${B}.tif ${TIFOPTS}
-done
+parallel "r.colors map={} color=grey --q" ::: ${BANDS} # grayscale
+parallel --bar "r.null map={} setnull=inf --q" ::: ${BANDS}  # set inf to null
+parallel --bar "r.out.gdal -m -c input={} output=${OUTFOLDER}/${DATE}/{}.tif ${TIFOPTS}" ::: ${BANDS}
 
 # combine bands to make RGB
 echo "Writing out RGB and SZA_LUT"
 
 # gdaldem color-relief $(g.list type=raster | head -n1)  col.txt ${OUTFOLDER}/${DATE}/thumb.jpeg -of JPEG -s 0.05
-
-r.composite -d -c blue=$(g.list type=raster pattern=Oa04_r* | head -n1) green=$(g.list type=raster pattern=Oa06_r* | head -n1) red=$(g.list type=raster pattern=Oa08_r* | head -n1) output=RGB --o
-r.out.gdal -m -c input=RGB output=${OUTFOLDER}/${DATE}/RGB.tif ${TIFOPTS}
-r.out.png input=RGB output=${OUTFOLDER}/${DATE}/RGB.png --o
-r.out.gdal -m -c input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.tif ${TIFOPTS}
-r.colors map=SZA_LUT color=random
-r.out.png input=SZA_LUT output=${OUTFOLDER}/${DATE}/SZA_LUT.png --o
-
-# rm -fR /tmp/tmpG
+# r.composite -d -c blue=Oa04_reflectance green=Oa06_reflectance red=Oa08_reflectance output=RGB --o
+# r.out.gdal -m -c input=RGB output=${OUTFOLDER}/${DATE}/RGB.tif ${TIFOPTS}
+# r.out.png input=RGB output=${OUTFOLDER}/${DATE}/RGB.png --o
