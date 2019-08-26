@@ -21,6 +21,10 @@ for SCENE in ${SCENES}; do
     parallel --bar "gdalwarp -q -srcnodata -999 {} ./tmp/{%}.tif; mv ./tmp/{%}.tif {}" ::: ${FILES}
     echo "Importing data for ${SCENE}"
     parallel "r.external source={} output={/.} --quiet --o" ::: ${FILES}
+
+    # SZA cloud masked (CM)
+    echo "Masking clouds in SZA rasters"
+    r.mapcalc "SZA_CM = if(idepix_cloud_ambiguous == 255, null(), SZA)" --o --q
 done
 
 # The target bands. For example, Oa01_reflectance or SZA.
@@ -39,8 +43,8 @@ r.mask raster=MASK@PERMANENT --o # mask to Greenland ice+land
 
 # find the array index with the minimum SZA
 # Array for indexing, list for using in GRASS
-SZA_arr=($(g.list type=raster pattern=SZA mapset=*))
-SZA_list=$(g.list type=raster pattern=SZA mapset=* separator=comma)
+SZA_arr=($(g.list type=raster pattern=SZA_CM mapset=*))
+SZA_list=$(g.list type=raster pattern=SZA_CM mapset=* separator=comma)
 r.series input=${SZA_list} method=min_raster output=SZA_LUT --o
 echo ${SZA_list} | tr ',' '\n' | cut -d@ -f2 > ${OUTFOLDER}/${DATE}/SZA_LUT.txt
 
