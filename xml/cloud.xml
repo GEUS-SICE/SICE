@@ -11,7 +11,7 @@
   -->
   
   <node id="CloudID">
-    <operator>Idepix.Olci</operator>
+    <operator>Snap.Idepix.Olci.S3Snow</operator>
     <sources>
       <sourceProduct>${source}</sourceProduct>
     </sources>

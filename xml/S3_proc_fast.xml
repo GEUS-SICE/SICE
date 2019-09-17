@@ -118,7 +118,49 @@
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
+  <!--
+  <node id="BandSelect_02">
+    <operator>BandSelect</operator>
+    <sources><source>Rad2Refl</source></sources>
+    <parameters><sourceBands>Oa02_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_02">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_02</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa02_reflectance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
   
+  <node id="BandSelect_04">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject</source></sources>
+    <parameters><sourceBands>Oa04_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_04">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_04</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa04_reflectance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_05">
+    <operator>BandSelect</operator>
+    <sources><source>Rad2Refl</source></sources>
+    <parameters><sourceBands>Oa05_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_05">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_05</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa05_reflectance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
   <node id="BandSelect_06">
     <operator>BandSelect</operator>
     <sources><source>Reproject</source></sources>
@@ -132,40 +174,80 @@
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
-  
 
-  <node id="BandSelect_10">
+  <node id="BandSelect_08">
     <operator>BandSelect</operator>
     <sources><source>Reproject</source></sources>
-    <parameters><sourceBands>Oa10_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa08_reflectance</sourceBands></parameters>
   </node>
-  <node id="Write_10">
+  <node id="Write_08">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_10</sourceProduct></sources>
+    <sources><sourceProduct>BandSelect_08</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/Oa10_reflectance_x.tif</file>
+      <file>${targetFolder}/Oa08_reflectance_x.tif</file>
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_11">
+  <node id="BandSelect_09">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
-    <parameters><sourceBands>Oa11_reflectance</sourceBands></parameters>
+    <sources><source>Rad2Refl</source></sources>
+    <parameters><sourceBands>Oa09_reflectance</sourceBands></parameters>
   </node>
-  <node id="Write_11">
+  <node id="Write_09">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_11</sourceProduct></sources>
+    <sources><sourceProduct>BandSelect_09</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/Oa11_reflectance_x.tif</file>
+      <file>${targetFolder}/Oa09_reflectance_x.tif</file>
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
-  
-  
+
+  <node id="BandSelect_13">
+    <operator>BandSelect</operator>
+    <sources><source>Rad2Refl</source></sources>
+    <parameters><sourceBands>Oa13_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_13">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_13</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa13_reflectance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_14">
+    <operator>BandSelect</operator>
+    <sources><source>Rad2Refl</source></sources>
+    <parameters><sourceBands>Oa14_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_14">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_14</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa14_reflectance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_15">
+    <operator>BandSelect</operator>
+    <sources><source>Rad2Refl</source></sources>
+    <parameters><sourceBands>Oa15_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_15">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_15</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/Oa15_reflectance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
   <node id="BandSelect_17">
     <operator>BandSelect</operator>
-    <sources><source>Reproject</source></sources>
+    <sources><source>Rad2Refl</source></sources>
     <parameters><sourceBands>Oa17_reflectance</sourceBands></parameters>
   </node>
   <node id="Write_17">
@@ -176,7 +258,7 @@
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
-
+-->
   <node id="BandSelect_21">
     <operator>BandSelect</operator>
     <sources><source>Reproject</source></sources>

@@ -1,36 +1,18 @@
-<graph id="Graph">
+<graph id="cloud">
   <version>1.0</version>
-  <node id="Read">
-    <operator>Read</operator>
-    <sources/>
-    <parameters >
-      <file>${pathfile}</file>
-      <formatName>Sen3</formatName>
-    </parameters>
-  </node>
 
-  <node id="Idepix.Olci">
-    <operator>Idepix.Olci</operator>
+  
+  <node id="CloudID">
+    <operator>Snap.Idepix.Olci.S3Snow</operator>
     <sources>
-      <sourceProduct refid="Read"/>
+      <sourceProduct>${source}</sourceProduct>
     </sources>
-    <parameters >
-      <radianceBandsToCopy/>
-      <reflBandsToCopy/>
-      <outputSchillerNNValue>false</outputSchillerNNValue>
-      <computeCloudShadow>true</computeCloudShadow>
-      <alternativeNNDirPath/>
-      <outputCtp>false</outputCtp>
-      <computeCloudBuffer>true</computeCloudBuffer>
-      <cloudBufferWidth>2</cloudBufferWidth>
-      <useSrtmLandWaterMask>false</useSrtmLandWaterMask>
-    </parameters>
   </node>
 
   <node id="Reproject">
     <operator>Reproject</operator>
     <sources>
-      <sourceProduct refid="Idepix.Olci"/>
+      <source>CloudID</source>
     </sources>
     <parameters>
       <crs>EPSG:3413</crs>
@@ -40,37 +22,26 @@
     </parameters>
   </node>
 
-  <node id="BandMaths">
-    <operator>BandMaths</operator>
+  <node id="BandSelect_cloud01">
+    <operator>BandSelect</operator>
     <sources>
-      <sourceProduct refid="Reproject"/>
-    </sources>
-    <parameters >
-      <targetBands>
-        <targetBand>
-          <name>newBand</name>
-          <type>float32</type>
-          <expression>IDEPIX_CLOUD</expression>
-          <description/>
-          <unit/>
-          <noDataValue>-999.0</noDataValue>
-        </targetBand>
-      </targetBands>
-      <variables/>
-    </parameters>
-  </node>
-
-
-  <node id="Write_CloudID">
-    <operator>Write</operator>
-    <sources>
-      <sourceProduct>BandMaths</sourceProduct>
+      <source>Reproject</source>
     </sources>
     <parameters>
-      <file>${targetFolder}/idepix_cloud.tif</file>
+      <sourceBands>cloud_over_snow</sourceBands>
+    </parameters>
+  </node>
+  
+  <node id="Write_cloud01">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_cloud01</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/cloud_over_snow_x.tif</file>
       <formatName>GeoTIFF</formatName>
     </parameters>
   </node>
-
-
+  
+  
 </graph>
