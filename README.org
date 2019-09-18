@@ -30,6 +30,13 @@ In more detail:
   + Reproject to EPSG:3413
   + Combine all the files from to form a mosaic using
   + When scenes overlap, selection criteria is "minumum SZA"
+<<<<<<< Updated upstream
+=======
+The GNU parallel function (Tange, 2011): will be needed. Install it with the command:
+#+BEGIN_SRC sh :results verbatim :exports both
+sudo apt install parallel
+#+END_SRC
+>>>>>>> Stashed changes
 
 * Debugging & Testing
 
