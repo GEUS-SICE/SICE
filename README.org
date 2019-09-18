@@ -30,8 +30,12 @@ In more detail:
   + Reproject to EPSG:3413
   + Combine all the files from to form a mosaic using
   + When scenes overlap, selection criteria is "minumum SZA"
-The GNU parallel function will be needed. Install it with the command (Tange (2011): GNU Parallel - The Command-Line Power Tool;login: The USENIX Magazine, February 2011:42-47.)
-sudo apt install parallel
+
+The GNU parallel function will be needed (Tange (2011): GNU Parallel - The Command-Line Power Tool;login: The USENIX Magazine, February 2011:42-47.). Install it with the command: 
+
+#+BEGIN_SRC sh
+sudo apt install parallel#+END_SRC
+#+END_SRC
 
 * Debugging & Testing
 
