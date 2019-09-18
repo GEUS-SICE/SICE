@@ -171,6 +171,17 @@
       <formatName>CSV</formatName>
     </parameters>
   </node>
+  
+    <node id="Write_01_tif">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_01</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa01_reflectance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
 
   <node id="BandSelect_02">
     <operator>BandSelect</operator>
@@ -260,6 +271,17 @@
     </parameters>
   </node>
 
+  <node id="Write_06_tif">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_06</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa06_reflectance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+    
   <node id="BandSelect_07">
     <operator>BandSelect</operator>
     <sources>
@@ -445,6 +467,7 @@
       <sourceBands>Oa17_reflectance</sourceBands>
     </parameters>
   </node>
+  
   <node id="Write_17">
     <operator>Write</operator>
     <sources>
@@ -455,7 +478,18 @@
       <formatName>CSV</formatName>
     </parameters>
   </node>
-
+  
+    <node id="Write_17_tif">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_17</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa17_reflectance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
   <node id="BandSelect_18">
     <operator>BandSelect</operator>
     <sources>
@@ -530,6 +564,16 @@
     </parameters>
   </node>
 
+  <node id="Write_21_tif">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct>BandSelect_21</sourceProduct>
+    </sources>
+    <parameters>
+      <file>${targetFolder}/Oa21_reflectance_x.tif</file>
+      <formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
 
   <!--
       SZA, SAA, OZA, OAA
