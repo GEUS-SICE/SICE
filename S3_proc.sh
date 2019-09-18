@@ -94,14 +94,17 @@ for folder in $(ls ${INPATH}); do
     MSG_OK "renaming..."
     for f in $(ls ${DEST}/*_x*); do mv ${f} "${f//_x}"; done
 
+	MSG_OK "Compressing: Start"
+	for f in $(ls ${DEST}); do
+	echo $f
+		gdal_translate -co "COMPRESS=DEFLATE" ${DEST}/${f} ${DEST}/${f}_tmp.tif
+		mv  ${DEST}/${f}_tmp.tif ${DEST}/${f}
+	done
+
     timing
 	if [ -z $CSV ]; then
-	    MSG_OK "Compressing: Start"
-		for f in $(ls ${DEST}); do
-    		echo $f
-    		gdal_translate -co "COMPRESS=DEFLATE" ${DEST}/${f} ${DEST}/${f}_tmp.tif
-    		mv  ${DEST}/${f}_tmp.tif ${DEST}/${f}
-		done
+		MSG_OK "generating tiffs"
+
 	else
 		# input for sice
 		# ns,alat,alon,sza,vza,saa,vaa,height,(toa(iks),iks=1,21)

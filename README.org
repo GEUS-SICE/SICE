@@ -30,6 +30,8 @@ In more detail:
   + Reproject to EPSG:3413
   + Combine all the files from to form a mosaic using
   + When scenes overlap, selection criteria is "minumum SZA"
+The GNU parallel function will be needed. Install it with the command (Tange (2011): GNU Parallel - The Command-Line Power Tool;login: The USENIX Magazine, February 2011:42-47.)
+sudo apt install parallel
 
 * Debugging & Testing
 
@@ -493,4 +495,23 @@ org.esa.s1tbx.s1tbx.op.calibration                 7.0.0.0  Enabled
 org.netbeans.libs.jsr223                           1.35.1   Installed
 -------------------------------------------------- -------- ---------
 #+end_example
+
+
+Reference:
+@article{Tange2011a,
+  title = {GNU Parallel - The Command-Line Power Tool},
+  author = {O. Tange},
+  address = {Frederiksberg, Denmark},
+  journal = {;login: The USENIX Magazine},
+  month = {Feb},
+  number = {1},
+  volume = {36},
+  url = {http://www.gnu.org/s/parallel},
+  year = {2011},
+  pages = {42-47},
+  doi = {http://dx.doi.org/10.5281/zenodo.16303}
+}
+If you send a copy of your published article to tange@gnu.org, it will be
+mentioned in the release notes of next version of GNU Parallel.
+
 
