@@ -3,9 +3,9 @@
 Forked from Ken Mankoff's scripts: https://github.com/mankoff/SICE
 
 1. Fetch S3 OLCI & SLSTR products
-2. Process with SNAP
-3. Extract cloud ID from SLSTR granules
-4. Mosaic all scenes in a day to produce one Greenland-wide product
+2. Process OLCI & SLSTR using SNAP
+3. Extract cloud ID from SLSTR and OLCI granules
+4. Build Greenland daily mosaic of SICE retrievals using multiple scenes
 
 In more detail:
 
