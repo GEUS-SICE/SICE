@@ -54,6 +54,7 @@ do
 	    shift;;
 	-v)
 	    VERBOSE=1
+	    set -x    # print commands to STDOUT before running them
 	    shift;;
 	-t)
 	    TIMING=1
@@ -67,6 +68,7 @@ if [ -z $INPATH ] || [ -z $OUTPATH ];then
     $0 -h
     exit 1
 fi
+
 for folder in $(ls ${INPATH}); do
     S3FOLDER=$(basename ${folder})
     OUTFOLDER=$(echo $S3FOLDER | rev | cut -d_ -f11 | rev)
@@ -149,8 +151,8 @@ for folder in $(ls ${INPATH}); do
 	cp ${DEST}/olci_toa.txt  ${DEST}/olci_toa_tmp.dat
 	rm ${DEST}/olci_toa.txt 
 	
-	grid_width=$(echo "$(head -n 1 ${DEST}/latitude.csv)" | grep -o -E '[0-9]+')
-	grid_height=$(($(echo "$(wc -l ${DEST}/latitude.csv| awk '{print $1} ')" | grep -o -E '[0-9]+') / $grid_width))
+        grid_width=$(echo "$(head -n 1 ${DEST}/latitude.csv)" | grep -o -E '[0-9]+')
+        grid_height=$(($(echo "$(wc -l ${DEST}/latitude.csv| awk '{print $1} ')" | grep -o -E '[0-9]+') / $grid_width))
 	
 	if [[ ! $grid_height =~ ^-?[0-9]+$ ]]; then
 	    echo $grid_width
@@ -197,6 +199,7 @@ for folder in $(ls ${INPATH}); do
 	./sice.exe
 	MSG_OK "Running sice.exe: END"
 	timing
+	continue
 	# =========== translating output =========================
 	# 
 	# Output description:
@@ -210,104 +213,39 @@ for folder in $(ls ${INPATH}); do
 	# notsnow.dat				ns,ndate(3),alat,alon,icloud,iice
 	# notsnow.dat lists the lines which are not processed bacause they have clouds (first index=1) or bare ice (second index=1)
 
-	# converting files into csv
-	MSG_OK "Converting bba.dat olci_toa.dat size.dat into tif"
-	awk -F$'\t'  'BEGIN{print "ns,alat,alon,sza,vza,saa,vaa,height,toa1,toa2,toa3,toa4,toa5,toa6,toa7,toa8,toa9,toa10,toa11,toa12,toa13,toa14,toa15,toa16,toa17,toa18,toa19,toa20,toa21"}; {for(i=1;i<=NF;i++){if (i==NF) { printf "%s", $i } else { printf "%s,", $i }}; printf "\n"}' olci_toa.dat > olci_toa.csv
-	
-	awk  'BEGIN{print "ns,ndate,alat,alon,D,area,al,r0,andsi,andbi,indexs,indexi,indexd,isnow,icloud,iice"}; {for(i=1;i<=NF;i++){printf "%s,", $i};printf "-999,-999\n"}' size.dat > size_tmp.csv
-	
-	awk 'BEGIN{print "ns,ndate,alat,alon,rp3,rp1,rp2,rs3,rs1,rs2,isnow,icloud,iice"}; {for(i=1;i<=NF;i++){printf "%s,", $i};printf "-999,-999\n"}' bba.dat > bba_tmp.csv
-	
-	awk '{for(i=1;i<=NF;i++){if (i==NF) { printf "%s", $i } else { printf "%s,", $i }}; printf "\n"}' notsnow.dat > notsnow_tmp.csv
-	
-	# appending the not snow data to the csvs
-	awk -F$',' '{print $1 "," $2 "," $3 "," $4 ",-999,-999,-999,-999,-999,-999,-999," $5 "," $6}'  notsnow_tmp.csv > notsnow_for_bba.csv
-	awk -F$',' '{print $1 "," $2 "," $3 "," $4 ",-999,-999,-999,-999,-999,-999,-999,-999,-999,-999," $5 "," $6}'  notsnow_tmp.csv > notsnow_for_size.csv
-	
-	cat bba_tmp.csv notsnow_for_bba.csv > bba.csv
-	cat size_tmp.csv notsnow_for_size.csv > size.csv
-	
-	# adding header
-	awk 'BEGIN{print "ns,ndate,alat,alon,icloud,iice"}; {print}; END{print "END"}' notsnow_tmp.csv > notsnow.csv
-	
-	rm *_tmp.csv
-	rm notsnow_for_bba.csv notsnow_for_size.csv
-	
-	# declare -a outfiles=("spherical_albedo" "planar_albedo" "size" "impurity" "bba" "bba_alex_reduced")
-	declare -a outfiles=("bba" "size" "olci_toa")
-	
-	for f in "${outfiles[@]}"; do
-	    if [ ! -f ${f}.vrt ]; then
-		cat <<-EOF > ${f}.vrt
-<OGRVRTDataSource>  
-<OGRVRTLayer name="${f}">
-<SrcDataSource>${f}.csv</SrcDataSource>
-<GeometryType>wkbPoint</GeometryType>
-<GeometryField encoding="PointFromColumns" x="alon" y="alat"/>
-</OGRVRTLayer>
-</OGRVRTDataSource>
-EOF
-fi
+	# # converting files into csv
+        MSG_OK "Converting bba.dat olci_toa.dat size.dat to GeoTIFF"
+	# bba.dat: ,_,_,lat,lon,rp3,rp1,rp2,rs3,rs1,rs2,isnow
+	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,6|grep -v NaN > bba_rp3.csv
+	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,7|grep -v NaN > bba_rp1.csv
+	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,8|grep -v NaN > bba_rp2.csv
+	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,9|grep -v NaN > bba_rs3.csv
+	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,10|grep -v NaN > bba_rs1.csv
+	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,11|grep -v NaN > bba_rs2.csv
+	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,12|grep -v NaN > bba_isnow.csv
+        parallel --bar --verbose "cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,{1}|grep -v NaN > bba_{2}.csv" ::: $(seq 6 12) :::+ rp3 rp1 rp2 rs3 rs1 rs2 isnow
 
-if [ ! -f ${f}_3413.vrt ]; then
-cat <<-EOF > ${f}_3413.vrt
-<OGRVRTDataSource>
-<OGRVRTLayer name="${f}_3413">
-<SrcDataSource>${f}_3413.csv</SrcDataSource>
-<GeometryType>wkbPoint</GeometryType>
-<GeometryField encoding="PointFromColumns" x="X" y="Y"/>
-</OGRVRTLayer>
-</OGRVRTDataSource>
-EOF
-fi
-done
+	# size.dat: ,_,_,lat,lon,D,area,al,r0,andsi,andbi,indexs,indexi,indexd,isnow
+        parallel --bar --verbose "cat size.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,{1}|grep -v NaN > size_{2}.csv" ::: $(seq 6 15) :::+ D area al r0 andsi andbi indexs indexi indexd isnow
 
-	# now loop through the above array
-	for f in "${outfiles[@]}"; do
-	    echo "$f"
-	    if [ $f == "bba" ]; then
-		declare -a var=("rp3" "rp1" "rp2" "rs3" "rs1" "rs2" "isnow" "icloud" "iice")
-		echo "${var[@]}"
-	    fi
-	    if [ $f == "size" ]; then
-		declare -a var=("D" "area" "al" "r0" "andsi" "andbi" "indexs" "indexi" "indexd")
-		echo "${var[@]}"
-	    fi
-	    if [ $f == "olci_toa" ]; then
-		declare -a var=("sza" "vza" "saa" "vaa" "height" "toa1" "toa21")
-		echo "${var[@]}"
-	    fi
-	    
-	    # reprojecting
-	    ogr2ogr -f CSV -t_srs EPSG:3413 -s_srs EPSG:4326 -lco GEOMETRY=AS_XY -nln ${f}_3413 ${f}_3413.csv ${f}.vrt
-	    
-	    #converting to tiff			
-	    # if [ ! -f scene_extent.tif ]; then
-	    gdal_grid -q -a count:radius1=10000:radius2=10000  -outsize ${grid_width} ${grid_height}  -a_srs EPSG:3413 -l ${f}_3413 ${f}_3413.vrt  concavehull_${f}_tmp.tif		
-	    gdal_calc.py  --quiet --NoDataValue=-999 -A concavehull_${f}_tmp.tif --calc="A>1" --outfile scene_extent.tif
-	    # fi
-	    
-	    for ii in "${var[@]}"; do
-		gdal_grid -q -l ${f}_3413 -zfield "$ii" -outsize ${grid_width} ${grid_height} -a_srs EPSG:3413 -a nearest:radius1:5000:radius2:5000:nodata=-999  ${f}_3413.vrt ${ii}_tmp.tif
-		gdal_calc.py --quiet -A ${ii}_tmp.tif -B scene_extent.tif --outfile="${ii}_clipped".tif --calc="A*(B==1) -999*(B==0)" --NoDataValue=-999
-	    done
-	    rm *_tmp.tif
-	done
-	
+        parallel --bar --verbose "cat olci_toa.dat | sed 's/\t/,/g' | cut -d, -f4,5,{1}|grep -v NaN > olci_toa_{2}.csv" ::: $(seq 6 31) :::+ sza vza saa vaa height toa1 toa2 toa3 toa4 toa5 toa6 toa7 toa8 toa9 toa10 toa11 toa12 toa13 toa14 toa15 toa16 toa17 toa18 toa19 toa20 toa21
+
+	grass -e -c ../mask.tif ./G_CSV_ll_2_GeoTIFF_xy
+	grass ./G_CSV_ll_2_GeoTIFF_xy/PERMANENT/ --exec ../CSV2GeoTIFF_xy2ll.sh $(ls *.csv)
+
 	cd ..
-	cp -r ./SnowProcessor/*.tif					${DEST}/
+	cp -r ./SnowProcessor/*.tif ${DEST}/
 	rm -r ./SnowProcessor/*.csv
-	# rm -r ./SnowProcessor/*.vrt
-	cp ./SnowProcessor/bba_alex_reduced.dat		${DEST}/bba_alex_reduced.dat
-	cp ./SnowProcessor/bba.dat					${DEST}/bba.dat
-	cp ./SnowProcessor/boar.dat					${DEST}/boar.dat
-	cp ./SnowProcessor/planar_albedo.dat			${DEST}/planar_albedo.dat
-	cp ./SnowProcessor/spherical_albedo.dat		${DEST}/spherical_albedo.dat
-	cp ./SnowProcessor/impurity.dat				${DEST}/impurity.dat
-	cp ./SnowProcessor/nlines.dat				${DEST}/nlines.dat
-	cp ./SnowProcessor/notsnow.dat				${DEST}/notsnow.dat
-	cp ./SnowProcessor/size.dat					${DEST}/size.dat
-	cp ./SnowProcessor/interm.dat				${DEST}/interm.dat
+	cp ./SnowProcessor/bba_alex_reduced.dat ${DEST}/bba_alex_reduced.dat
+	cp ./SnowProcessor/bba.dat ${DEST}/bba.dat
+	cp ./SnowProcessor/boar.dat ${DEST}/boar.dat
+	cp ./SnowProcessor/planar_albedo.dat ${DEST}/planar_albedo.dat
+	cp ./SnowProcessor/spherical_albedo.dat ${DEST}/spherical_albedo.dat
+	cp ./SnowProcessor/impurity.dat ${DEST}/impurity.dat
+	cp ./SnowProcessor/nlines.dat ${DEST}/nlines.dat
+	cp ./SnowProcessor/notsnow.dat ${DEST}/notsnow.dat
+	cp ./SnowProcessor/size.dat ${DEST}/size.dat
+	cp ./SnowProcessor/interm.dat ${DEST}/interm.dat
 	
 	rm ./SnowProcessor/*.tif
 	rm ./SnowProcessor/*.csv
@@ -328,5 +266,4 @@ done
 
 MSG_OK "Finished: ${folder}"
 timing
-
 	
