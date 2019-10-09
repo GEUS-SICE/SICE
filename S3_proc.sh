@@ -139,59 +139,41 @@ for folder in $(ls ${INPATH}); do
 	
 	timing
 	MSG_OK "Preparing SICE input files"
-	
-	paste ${DEST}/latitude.csv ${DEST}/longitude.csv ${DEST}/SZA.csv ${DEST}/OZA.csv ${DEST}/SAA.csv ${DEST}/OAA.csv ${DEST}/altitude.csv ${DEST}/Oa*_reflectance.csv > ${DEST}/tmp.txt
-	
-	awk '{print $1 "\t" $2 "\t" $4 "\t" $6 "\t" $8 "\t" $10 "\t" $12 "\t" $14 "\t" $16 "\t" $18 "\t" $20 "\t" $22 "\t" $24 "\t" $26 "\t" $28 "\t" $30 "\t" $32 "\t" $34"\t" $36 "\t" $38 "\t" $40 "\t" $42 "\t" $44 "\t" $46 "\t" $48 "\t" $50 "\t" $52 "\t" $54"\t" $56}'  ${DEST}/tmp.txt > ${DEST}/olci_toa.txt
-	
-	rm ${DEST}/tmp.txt
-	
-	# MSG_OK "Cutting header"
-	sed -i '1,2d' ${DEST}/olci_toa.txt > ${DEST}/olci_toa.dat
-	cp ${DEST}/olci_toa.txt  ${DEST}/olci_toa_tmp.dat
-	rm ${DEST}/olci_toa.txt 
-	
-        grid_width=$(echo "$(head -n 1 ${DEST}/latitude.csv)" | grep -o -E '[0-9]+')
-        grid_height=$(($(echo "$(wc -l ${DEST}/latitude.csv| awk '{print $1} ')" | grep -o -E '[0-9]+') / $grid_width))
-	
-	if [[ ! $grid_height =~ ^-?[0-9]+$ ]]; then
-	    echo $grid_width
-	    echo $grid_height
+
+        grid_width=$(head -n 1 ${DEST}/latitude.csv | grep -o -E '[0-9]+')
+        grid_height=$(( $(wc -l ${DEST}/latitude.csv| awk '{print $1} ') / $grid_width ))
+	if [[ ! $grid_height =~ ^-?[0-9]+$ ]]; then 
+	    MSG_WARN "Grid width: ${grid_width}"
+	    MSG_WARN "Grid height: ${grid_height}"
 	    MSG_ERR "Width or height of csv files not integer"
+	    exit 1
 	fi
+
+	# Combine all these files, select every 2nd field cut header, and remove NaNs
+	paste ${DEST}/{latitude,longitude,SZA,OZA,SAA,OAA,altitude,Oa*_reflectance}.csv \
+	    | cut -d$'\t' -f1,$(seq -s "," 2 2 56) \
+	    | tail -n +3 \
+	    | awk '$2 != "NaN"' \
+	    | awk '$3 != "NaN"' \
+		   > ./${DEST}/olci_toa.dat
 	
-	
-	# MSG_OK "Removing NaN"
-	awk '$2 != "NaN"' ${DEST}/olci_toa_tmp.dat > ${DEST}/olci_toa_tmp2.dat
-	awk '$3 != "NaN"' ${DEST}/olci_toa_tmp2.dat > ${DEST}/olci_toa.dat
-	rm ${DEST}/olci_toa_tmp.dat
-	rm ${DEST}/olci_toa_tmp2.dat
-	
-	# MSG_OK "Writting line number"
-	wc -l < ${DEST}/olci_toa.dat > ${DEST}/nlines.dat
+	# MSG_OK "Writing line number"
+	wc -l ${DEST}/olci_toa.dat > ${DEST}/nlines.dat
 	
 	# MSG_OK "Creating ozone file"
-	paste ${DEST}/latitude.csv ${DEST}/longitude.csv ${DEST}/ozone.csv  > ${DEST}/tmp1.txt
-	
-	awk '{print $1 "\t" $2 "\t" $4 "\t" $6}'  ${DEST}/tmp1.txt > ${DEST}/tmp2.txt
-	
-	awk '$2 != "NaN"' ${DEST}/tmp2.txt > ${DEST}/tmp3.txt
-	awk '$3 != "NaN"' ${DEST}/tmp3.txt > ${DEST}/tmp4.txt
-	
-	awk '{print $4}'  ${DEST}/tmp4.txt > ${DEST}/ozone.dat
-	sed -i '1,2d' ${DEST}/ozone.dat
-	
-	rm ${DEST}/SZA.csv ${DEST}/OZA.csv ${DEST}/SAA.csv ${DEST}/OAA.csv ${DEST}/altitude.csv ${DEST}/Oa*_reflectance.csv 
-	rm ${DEST}/ozone.csv
-	rm ${DEST}/tmp1.txt
-	rm ${DEST}/tmp2.txt
-	rm ${DEST}/tmp3.txt
-	rm ${DEST}/tmp4.txt
+	paste ${DEST}/{latitude,longitude,ozone}.csv \
+	    | cut -d$'\t' -f1,2,4,6 \
+	    | tail -n +3 \
+	    | awk '$2 != "NaN"' \
+	    | awk '$3 != "NaN"' \
+	    | cut -d$'\t' -f4 \
+		   > ./${DEST}/ozone.dat
+
+	rm ${DEST}/{SZA,OZA,SAA,OAA,altitude,Oa*_reflectance,ozone}.csv
 	
 	# moving files to processor folder
-	cp ${DEST}/ozone.dat ./SnowProcessor/ozone.dat
-	cp ${DEST}/olci_toa.dat ./SnowProcessor/olci_toa.dat
-	cp ${DEST}/nlines.dat ./SnowProcessor/nlines.dat
+	cp ${DEST}/{ozone,olci_toa,nlines}.dat ./SnowProcessor/
+
 	# ===========  Running FORTRAN SICE ======================
 	timing
 	MSG_OK "Running sice.exe: BEGIN"
