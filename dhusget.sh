@@ -49,7 +49,7 @@
 #-------------------------------------------------------------------------------------------	#
 export VERSION=0.3.8
 
-WD=$HOME/dhusget_tmp
+WD=/tmp/dhusget_tmp
 PIDFILE=$WD/pid
 
 test -d $WD || mkdir -p $WD 
@@ -211,7 +211,7 @@ export OFFLINE_PRODUCT_LIST=offline_product_list.txt
 export TMP_OFFLINE_PRODUCT_LIST=offline_product_list.csv
 export OFFLINE_RETRY_ATTEMPTS_COUNTER=0
 
-export -f add_offline_product_to_list
+# export -f add_offline_product_to_list
 
 function download_product 
 {
@@ -818,7 +818,7 @@ fi
 /bin/rm -f $NAMEFILERESULTS
 ${WC} ${AUTH} ${TRIES} -c -O "${NAMEFILERESULTS}" "${QUERY_STATEMENT}"
 LASTDATE=`date -u +%Y-%m-%dT%H:%M:%S.%NZ`
-sleep 5
+sleep 2
 
 cat $PWD/"${NAMEFILERESULTS}" | grep '<id>' | tail -n +2 | cut -f2 -d'>' | cut -f1 -d'<' | cat -n > .product_id_list
 

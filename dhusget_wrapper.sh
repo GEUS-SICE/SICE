@@ -125,6 +125,7 @@ MSG_OK "***********************************************************"
 
 
 # If no local file path provided, then we download.
+mkdir -p ${OUTFOLDER}
 if [[ -z ${LOCALFILES} ]]; then
     # find files in products-list.csv that are not already in ${OUTFOLDER}
     for LINE in $(cat products-list.csv); do
