@@ -19,22 +19,29 @@ timing() {
 	t_last=$(date +%s)
     fi; }
 
+function print_usage() {
+    echo ""
+    echo "./S3_proc.sh -i inpath -o outpath [-D | -X file.xml] [-h -v -t]"
+    echo "  -i: Path to folder containing S3A_*_EFR_*_002.SEN3 (unzipped S3 EFR) files"
+    echo "  -o: Path where to store ouput"
+    echo "  -D: Use DEBUG.xml (fast, few bands)"
+    echo "  -X: Use non-default XML file [default: S3_proc.xml]"
+    echo "  -v: Print verbose messages during processing"
+    echo "  -t: Print timing messages during processing"
+    echo "  --SICE: Run SICE"
+    echo "  -h: print this help"
+    echo ""
+}
+
 while [[ $# -gt 0 ]]
 do
     key="$1"
     
     case $key in
 	-h|--help)
-	    echo "./S3_proc.sh -i inpath -o outpath [-D | -X file.xml] [-h -v -t]"
-	    echo "  -i: Path to folder containing S3A_*_EFR_*_002.SEN3 (unzipped S3 EFR) files"
-	    echo "  -o: Path where to store ouput"
-	    echo "  -D: Use DEBUG.xml (fast, few bands)"
-	    echo "  -X: Use non-default XML file [default: S3_proc.xml]"
-	    echo "  -v: Print verbose messages during processing"
-	    echo "  -t: Print timing messages during processing"
-	    echo "  --SICE: Run SICE"
-	    echo "  -h: print this help"
-	    exit 1;;
+	    print_usage
+	    exit 1
+	    ;;
 	-i)
 	    INPATH="$2"
 	    shift # past argument
@@ -62,12 +69,18 @@ do
     esac
 done
 
-if [ -z $INPATH ] || [ -z $OUTPATH ];then
-    echo "-i and -o option not set"
-    echo " "
-    $0 -h
-    exit 1
+PPGC_BOOL=true # per pixel geocoding
+if [ ${DEBUG} == 1 ]; then
+    MSG_WARN "DEBUG flag set"
+    MSG_OK "Using DEBUG.xml"
+    XML=DEBUG.xml
+    MSG_OK "Turning off per-pixel geocoding for speed"
+    PPGC_BOOL=false
 fi
+	   
+if [ -z ${INPATH} ]; then MSG_ERR "-i not set"; print_usage; exit 1; fi
+if [ -z ${OUTPATH} ]; then MSG_ERR "-o not set"; print_usage; exit 1; fi
+if [ -z ${XML} ]; then MSG_ERR "-X not set"; print_usage; exit 1; fi
 
 for folder in $(ls ${INPATH}); do
     S3FOLDER=$(basename ${folder})
@@ -85,34 +98,12 @@ for folder in $(ls ${INPATH}); do
 
     MSG_OK "GPT: Start"
     timing
-    if [[ ${DEBUG} == 1 ]]; then
-	MSG_WARN "Using DEBUG.xml"
-	MSG_ERR "Not using per pixel geocoding for speed"
-	gpt DEBUG.xml \
-	    -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml \
-	    -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml \
-	    -PtargetFolder=${DEST} \
-	    -Ds3tbx.reader.olci.pixelGeoCoding=false \
-	    -e
-    elif [[ ! -z ${XML} ]]; then 
-	MSG_WARN "Using ${XML}"
-	MSG_OK "Per-pixel geocoding enabled"
-	gpt ${XML} \
-	    -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml \
-	    -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml \
-	    -PtargetFolder=${DEST} \
-	    -Ds3tbx.reader.olci.pixelGeoCoding=true \
-	    -e
-    else
-	MSG_WARN "Using default XML: S3_proc.xml"
-	MSG_OK "Per-pixel geocoding enabled"
-	gpt S3_proc.xml \
-	    -Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml \
-	    -Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml \
-	    -PtargetFolder=${DEST} \
-	    -Ds3tbx.reader.olci.pixelGeoCoding=true \
-	    -e
-    fi
+    gpt ${XML} \
+	-Ssource=${INPATH}/${S3FOLDER}/xfdumanifest.xml \
+	-Ppathfile=${INPATH}/${S3FOLDER}/xfdumanifest.xml \
+	-PtargetFolder=${DEST} \
+	-Ds3tbx.reader.olci.pixelGeoCoding=${PPGC_BOOL} \
+	-e
     MSG_OK "GPT: Finished"
     timing
 
@@ -181,43 +172,49 @@ for folder in $(ls ${INPATH}); do
 	./sice.exe
 	MSG_OK "Running sice.exe: END"
 	timing
-	continue
 	# =========== translating output =========================
 	# 
 	# Output description:
-	# spherical_albedo.dat		ns,ndate(3),alat,alon,(answer(i),i=1,21),isnow
-	# lanar_albedo.dat			ns,ndate(3),alat,alon,(rp(i),i=1,21),isnow
-	# boar.dat					ns,ndate(3),alat,alon,(refl(i),i=1,21),isnow
-	# size.dat					ns,ndate(3),alat,alon,D,area,al,r0, andsi,andbi,indexs,indexi,indexd,isnow
-	# impurity.dat				ns,alat,alon,ntype,conc,bf,bm,thv,toa(1),isnow
-	# bba.dat					ns,ndate(3),alat,alon,rp3,rp1,rp2,rs3,rs1,rs2,isnow
-	# bba_alex_reduced.dat		ns,ndate(3),rp3,isnow
-	# notsnow.dat				ns,ndate(3),alat,alon,icloud,iice
-	# notsnow.dat lists the lines which are not processed bacause they have clouds (first index=1) or bare ice (second index=1)
+	# spherical_albedo.dat	ns,ndate(3),alat,alon,(answer(i),i=1,21),isnow
+	# lanar_albedo.dat	ns,ndate(3),alat,alon,(rp(i),i=1,21),isnow
+	# boar.dat		ns,ndate(3),alat,alon,(refl(i),i=1,21),isnow
+	# size.dat	      ns,ndate(3),alat,alon,D,area,al,r0, andsi,andbi,indexs,indexi,indexd,isnow
+	# impurity.dat		ns,alat,alon,ntype,conc,bf,bm,thv,toa(1),isnow
+	# bba.dat		ns,ndate(3),alat,alon,rp3,rp1,rp2,rs3,rs1,rs2,isnow
+	# bba_alex_reduced.dat	ns,ndate(3),rp3,isnow
+	# notsnow.dat		ns,ndate(3),alat,alon,icloud,iice
+	# notsnow.dat lists the lines which are not processed bacause they have clouds
+	#                   (first index=1) or bare ice (second index=1)
 
 	# # converting files into csv
         MSG_OK "Converting bba.dat olci_toa.dat size.dat to GeoTIFF"
-	# bba.dat: ,_,_,lat,lon,rp3,rp1,rp2,rs3,rs1,rs2,isnow
-	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,6|grep -v NaN > bba_rp3.csv
-	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,7|grep -v NaN > bba_rp1.csv
-	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,8|grep -v NaN > bba_rp2.csv
-	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,9|grep -v NaN > bba_rs3.csv
-	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,10|grep -v NaN > bba_rs1.csv
-	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,11|grep -v NaN > bba_rs2.csv
-	# cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,12|grep -v NaN > bba_isnow.csv
-        parallel --bar --verbose "cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,{1}|grep -v NaN > bba_{2}.csv" ::: $(seq 6 12) :::+ rp3 rp1 rp2 rs3 rs1 rs2 isnow
+
+	# head bba.dat | sed 's/\ \ */,/g'| head -n1|tr ',' '\n' | cat -n
+        parallel --bar --verbose \
+		 "cat bba.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,{1}|grep -v NaN > bba_{2}.csv" \
+		 ::: $(seq 6 12) \
+		 :::+ rp3 rp1 rp2 rs3 rs1 rs2 isnow
 
 	# size.dat: ,_,_,lat,lon,D,area,al,r0,andsi,andbi,indexs,indexi,indexd,isnow
-        parallel --bar --verbose "cat size.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,{1}|grep -v NaN > size_{2}.csv" ::: $(seq 6 15) :::+ D area al r0 andsi andbi indexs indexi indexd isnow
+        parallel --bar --verbose \
+		 "cat size.dat | sed 's/\ \ */,/g' | cut -d, -f4,5,{1}|grep -v NaN > size_{2}.csv" \
+		 ::: $(seq 6 15) \
+		 :::+ D area al r0 andsi andbi indexs indexi indexd isnow
 
-        parallel --bar --verbose "cat olci_toa.dat | sed 's/\t/,/g' | cut -d, -f4,5,{1}|grep -v NaN > olci_toa_{2}.csv" ::: $(seq 6 31) :::+ sza vza saa vaa height toa1 toa2 toa3 toa4 toa5 toa6 toa7 toa8 toa9 toa10 toa11 toa12 toa13 toa14 toa15 toa16 toa17 toa18 toa19 toa20 toa21
+	# head olci_toa.dat | sed 's/\t/,/g'| head -n1|tr ',' '\n' | cat -n
+        parallel --bar --verbose \
+		 "cat olci_toa.dat | sed 's/\t/,/g' | cut -d, -f2,3,{1}|grep -v NaN > olci_toa_{2}.csv" \
+		 ::: $(seq 4 29) \
+		 :::+ sza vza saa vaa height toa1 toa2 toa3 toa4 toa5 toa6 toa7 toa8 toa9 toa10 \
+		 toa11 toa12 toa13 toa14 toa15 toa16 toa17 toa18 toa19 toa20 toa21
 
-	grass -e -c ../mask.tif ./G_CSV_ll_2_GeoTIFF_xy
-	grass ./G_CSV_ll_2_GeoTIFF_xy/PERMANENT/ --exec ../CSV2GeoTIFF_xy2ll.sh $(ls *.csv)
+	grass -e -c ../mask.tif ./G_CSVll2GeoTIFFxy
+	grass ./G_CSVll2GeoTIFFxy/PERMANENT/ --exec ../CSVll2GeoTIFFxy.sh $(ls *.csv)
+	rm -fR ./G_CSVll2GeoTIFFxy
 
 	cd ..
 	cp -r ./SnowProcessor/*.tif ${DEST}/
-	rm -r ./SnowProcessor/*.csv
+	# rm -r ./SnowProcessor/*.csv
 	cp ./SnowProcessor/bba_alex_reduced.dat ${DEST}/bba_alex_reduced.dat
 	cp ./SnowProcessor/bba.dat ${DEST}/bba.dat
 	cp ./SnowProcessor/boar.dat ${DEST}/boar.dat
@@ -229,11 +226,8 @@ for folder in $(ls ${INPATH}); do
 	cp ./SnowProcessor/size.dat ${DEST}/size.dat
 	cp ./SnowProcessor/interm.dat ${DEST}/interm.dat
 	
-	rm ./SnowProcessor/*.tif
-	rm ./SnowProcessor/*.csv
-	rm ./SnowProcessor/bba_alex_reduced.dat 
-	rm ./SnowProcessor/bba.dat
-	rm ./SnowProcessor/boar.dat 
+	rm ./SnowProcessor/*.{tif,csv}
+	rm ./SnowProcessor/{bba_alex_reduced,bba,boar}.dat 
 	rm ./SnowProcessor/planar_albedo.dat
 	rm ./SnowProcessor/spherical_albedo.dat 
 	rm ./SnowProcessor/impurity.dat
