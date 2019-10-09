@@ -455,7 +455,7 @@ if [ -z $output_folder ];then
         export output_folder="PRODUCT"
 fi
 
-export WC="wget --no-check-certificate"
+export WC="wget --no-check-certificate --continue -nc"
 
 echo "LOGIN"
 
