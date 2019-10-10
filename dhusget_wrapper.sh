@@ -10,14 +10,25 @@ MSG_ERR() { echo -e "${RED}ERROR: ${@}${NC}"; }
 
 # Documnet usage options
 function print_usage() {
-    echo "./dhusget_wrapper.sh -u <username> -p <password> -d [YYYY-MM-DD | YYYY-DOY] -o <output_folder> [-f <footprint>] [--l <SEN3 folder locations>] [dhusget.sh options]"
+    echo "./dhusget_wrapper.sh "\
+	 "-d [YYYY-MM-DD | YYYY-DOY] "\
+	 "[-f <footprint>] "\
+	 "-i <instrument> "\
+	 "-l <local SEN3 folder locations> "\
+	 "-o <output_folder> "\
+	 "-p <password> "\
+	 "-u <username> "\
+	 "[dhusget.sh options]"
     echo ""
-    echo "  [-u|--user SciHub Username]"
-    echo "  [-p|--password SciHub Password]"
     echo "  [-d|--date YYYY-MM-DD or YYY-DOY]"
-    echo "  [-o|--output-folder /path/to/folder]"
     echo "  [-f|--footprint Greenland|Iceland|<footprint code> [DEFAULT: Greenland]]"
+    echo "  [-i|--instrument OLCI or SLSTR]"
     echo "  [-l|--local /path/for/local/SEN3 folders (e.g. /o3data/Sentinel-3)]"
+    echo "  [-o|--output-folder /path/to/folder]"
+    echo "  [-p|--password SciHub Password]"
+    echo "  [-u|--user SciHub Username]"
+    echo "  All other options passed to ./dhusget.sh."
+    echo "      see ./dhusget.sh --help for more information"
 }
 
 
@@ -36,35 +47,28 @@ do
     
     case $key in
 	-h|--help)
-	    print_usage
-	    exit 1
-	    ;;
-	-u|--user)
-	    USERNAME="$2"
+	    print_usage; exit 1;;
+	-d|--date)
+	    DATE="$2"
 	    shift # past argument
 	    shift # past value
 	    ;;
-	-p|--password)
-	    PASSWORD="$2"
-	    shift; shift;;
-	-d|--date)
-	    DATE="$2"
-	    shift; shift;;
 	-f|--footprint)
-	    FOOTPRINT="$2"
-	    shift; shift;;
+	    FOOTPRINT="$2"; shift; shift;;
+	-i|--instrument)
+	    INSTRUMENT="$2"; shift; shift;;
 	-l|--local)
-	    LOCALFILES="$2"
-	    shift; shift;;
+	    LOCALFILES="$2"; shift; shift;;
 	-o|--output-folder)
-	    OUTFOLDER="$2"
-	    shift; shift;;
+	    OUTFOLDER="$2"; shift; shift;;
+	-p|--password)
+	    PASSWORD="$2"; shift; shift;;
+	-u|--user)
+	    USERNAME="$2"; shift; shift;;
 	--debug)
-	    DEBUG=1
-	    shift;;
+	    DEBUG=1; shift;;
 	--verbose)
-	    set -x
-	    shift;;
+	    set -x; shift;;
 	*)    # unknown option
 	    POSITIONAL+=("$1") # save it in an array for later. Pass on to dhusget.sh
 	    shift;;
@@ -75,6 +79,7 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 # check inputs
 if [ -z $DATE ]; then MSG_ERR "--date not set"; print_usage; exit 1; fi
+if [ -z $INSTRUMENT ]; then MSG_ERR "--instrument not set"; print_usage; exit 1; fi
 if [ -z $OUTFOLDER ]; then MSG_ERR "--output-folder not set"; print_usage; exit 1; fi
 if [ -z $FOOTPRINT ]; then 
     FOOTPRINT=Greenland; MSG_WARN "Footprint not set. Setting to Greenland"
@@ -107,6 +112,10 @@ fi
 DEBUG "Footprint: ${FOOTPRINT}"
 
 
+if [[ ${INSTRUMENT} == "OLCI" ]]; then FILESTR=EFR; fi
+if [[ ${INSTRUMENT} == "SLSTR" ]]; then FILESTR=RBT; fi
+MSG_OK "Setting file regex to \"${FILESTR}\""
+break
 
 MSG_OK "***********************************************************"
 MSG_OK "***                                                     ***"
@@ -116,7 +125,7 @@ MSG_OK "***********************************************************"
 # Get the list of file names and product UUIDs
 # Could download (with "-o" and maybe "-D -O outfolder"), but what if we have them already?
 # For now, just get file list. We'll check if we have them and download missing files below.
-./dhusget.sh $@ -u ${USERNAME} -p ${PASSWORD} -m Sentinel-3 -i OLCI -S ${DATESTR0} -E ${DATESTR1} -l 100 -F 'filename:*EFR* AND orbitdirection:descending AND ( '"${FOOTPRINT}"' )'
+./dhusget.sh $@ -u ${USERNAME} -p ${PASSWORD} -m Sentinel-3 -i ${INSTRUMENT} -S ${DATESTR0} -E ${DATESTR1} -l 100 -F 'filename:*'${FILESTR}'* AND orbitdirection:descending AND ( '"${FOOTPRINT}"' )'
 MSG_OK "***********************************************************"
 MSG_OK "***                                                     ***"
 MSG_OK "***                DHUSGET.SH end                       ***"
