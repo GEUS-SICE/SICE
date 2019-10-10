@@ -39,33 +39,24 @@ do
     
     case $key in
 	-h|--help)
-	    print_usage
-	    exit 1
-	    ;;
+	    print_usage; exit 1;;
 	-i)
 	    INPATH="$2"
 	    shift # past argument
 	    shift # past value
 	    ;;
 	-o)
-	    OUTPATH="$2"
-	    shift; shift;;
+	    OUTPATH="$2"; shift; shift;;
 	-X)
-	    XML="$2"
-	    shift; shift;;
+	    XML="$2"; shift; shift;;
 	-D)
-	    DEBUG=1
-	    shift;;
+	    DEBUG=1; shift;;
 	--SICE)
-	    SICE=1
-	    shift;;
+	    SICE=1; shift;;
 	-v)
-	    VERBOSE=1
-	    set -x    # print commands to STDOUT before running them
-	    shift;;
+	    VERBOSE=1; set -x; shift;;
 	-t)
-	    TIMING=1
-	    shift;;
+	    TIMING=1; shift;;
     esac
 done
 
