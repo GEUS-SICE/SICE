@@ -18,13 +18,16 @@ for SCENE in ${SCENES}; do
     g.mapset -c ${SCENE} --quiet
     FILES=$(ls ${INFOLDER}/${SCENE}/*.tif)
     echo "Fixing NODATA values for ${SCENE}"
-    parallel  --bar "gdalwarp -q  -s_srs EPSG:3413 -srcnodata -999 {} ./tmp/{%}.tif; mv ./tmp/{%}.tif {}" ::: ${FILES}
+    parallel --bar --verbose \
+	     "gdalwarp -q  -s_srs EPSG:3413 -srcnodata -999 {} ./tmp/{%}.tif; mv ./tmp/{%}.tif {}" \
+	     ::: ${FILES}
     echo "Importing data for ${SCENE}"
     parallel  "r.external source={} output={/.} --quiet --o" ::: ${FILES}
 
     # SZA cloud masked (CM)
     echo "Masking clouds in SZA rasters"
     r.mapcalc "SZA_CM = SZA" --o --q
+    r.mapcalc "SZA_CM = olci_toa_sza" --o --q
     r.mapcalc "SZA_CM = if(idepix_cloud_ambiguous == 255, null(), SZA)" --o --q
 done
 
@@ -36,7 +39,7 @@ g.mapset PERMANENT --quiet
 r.in.gdal input=mask.tif output=MASK --quiet
 g.region raster=MASK
 g.region zoom=MASK
-g.region res=500 -a
+g.region res=10000 -a
 # g.region raster=$(g.list type=raster pattern=SZA separator=, mapset=*)
 g.region -s # save as default region
 g.mapset -c ${DATE} --quiet # create a new mapset for final product
@@ -85,21 +88,21 @@ parallel  "r.colors map={} color=grey --q" ::: ${BANDS} # grayscale
 parallel  --bar "r.null map={} setnull=inf --q" ::: ${BANDS}  # set inf to null
 parallel  --bar "r.out.gdal -m -c input={} output=${OUTFOLDER}/${DATE}/{}.tif ${TIFOPTS}" ::: ${BANDS}
 
-# Loading the mosaics
-r.external input=${OUTFOLDER}/${DATE}/Oa01_reflectance.tif output=Oa01_reflectance --o --quiet
-r.external input=${OUTFOLDER}/${DATE}/Oa06_reflectance.tif output=Oa06_reflectance --o --quiet
-r.external input=${OUTFOLDER}/${DATE}/Oa10_reflectance.tif output=Oa10_reflectance --o --quiet
-r.external input=${OUTFOLDER}/${DATE}/Oa11_reflectance.tif output=Oa11_reflectance --o --quiet
-r.external input=${OUTFOLDER}/${DATE}/Oa17_reflectance.tif output=Oa17_reflectance --o --quiet
-r.external input=${OUTFOLDER}/${DATE}/Oa21_reflectance.tif output=Oa21_reflectance --o --quiet
+# # Loading the mosaics
+# r.external input=${OUTFOLDER}/${DATE}/Oa01_reflectance.tif output=Oa01_reflectance --o --quiet
+# r.external input=${OUTFOLDER}/${DATE}/Oa06_reflectance.tif output=Oa06_reflectance --o --quiet
+# r.external input=${OUTFOLDER}/${DATE}/Oa10_reflectance.tif output=Oa10_reflectance --o --quiet
+# r.external input=${OUTFOLDER}/${DATE}/Oa11_reflectance.tif output=Oa11_reflectance --o --quiet
+# r.external input=${OUTFOLDER}/${DATE}/Oa17_reflectance.tif output=Oa17_reflectance --o --quiet
+# r.external input=${OUTFOLDER}/${DATE}/Oa21_reflectance.tif output=Oa21_reflectance --o --quiet
 
-# uses mosaic to calculate broadband albedo using empirical approach
-r.mapcalc "BBA_empirical = min((Oa01_reflectance + Oa06_reflectance + Oa17_reflectance + Oa21_reflectance) / 4.0 * 0.945 + 0.055,1)" --o 
-r.out.gdal --overwrite -m -c input=BBA_empirical output=${OUTFOLDER}/${DATE}/BBA_empirical.tif
+# # uses mosaic to calculate broadband albedo using empirical approach
+# r.mapcalc "BBA_empirical = min((Oa01_reflectance + Oa06_reflectance + Oa17_reflectance + Oa21_reflectance) / 4.0 * 0.945 + 0.055,1)" --o 
+# r.out.gdal --overwrite -m -c input=BBA_empirical output=${OUTFOLDER}/${DATE}/BBA_empirical.tif
 
-# uses mosaic to calculate algal cellcount using empirical approach
- r.mapcalc "C_algea_empirical = 10^7 * (log(Oa11_reflectance / Oa10_reflectance))^2" --o
- r.out.gdal --overwrite -m -c input=C_algea_empirical output=${OUTFOLDER}/${DATE}/C_algea_empirical.tif
+# # uses mosaic to calculate algal cellcount using empirical approach
+# r.mapcalc "C_algea_empirical = 10^7 * (log(Oa11_reflectance / Oa10_reflectance))^2" --o
+# r.out.gdal --overwrite -m -c input=C_algea_empirical output=${OUTFOLDER}/${DATE}/C_algea_empirical.tif
 
 # combine bands to make RGB
 # echo "Writing out RGB and SZA_LUT"
