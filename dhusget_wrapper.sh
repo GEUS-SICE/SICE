@@ -147,9 +147,15 @@ else
     # dhusget.sh command and search for the files at the provided.
     MSG_OK "Linking local files into ${OUTFOLDER}"
     mkdir -p ${OUTFOLDER}
+    YEAR=$(echo $DATESTR0 | cut -d"-" -f1)
+    MONTH=$(echo $DATESTR0 | cut -d"-" -f2)
+    DAY=$(echo $DATESTR0 | cut -d"-" -f3 | cut -d"T" -f1)
     for PRODUCT in $(cut -d, -f1 products-list.csv); do
-    	SEARCH=$(find "${LOCALFILES}" -type d -name "${PRODUCT}*")
-     	MSG_OK "Linking to ${SEARCH}"
-     	ln -s ${SEARCH} ${OUTFOLDER}/${PRODUCT}
+	if [[ -d ${LOCALFILES}/${YEAR}/${MONTH}/${DAY}/${PRODUCT}.SEN3 ]]; then
+     	    (cd ${OUTFOLDER}; ln -s ${LOCALFILES}/${YEAR}/${MONTH}/${DAY}/${PRODUCT}.SEN3)
+	    MSG_OK "Linking to ${OUTFOLDER}/${PRODUCT}.SEN3"
+	else
+	    MSG_ERR "Local folder Not Found"
+	fi
     done
 fi
