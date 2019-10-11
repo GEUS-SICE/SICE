@@ -112,6 +112,28 @@ exit
 trash Gtmp
 #+END_SRC
 #+RESULTS:
+*** Buffered ice mask
+#+BEGIN_SRC bash :results verbatim
+grass -c mask.tif ./Gtmp
+r.in.gdal input=mask.tif output=mask
+# 50 cells = 25 km @ 500 m
+r.mapcalc "ice = if(mask == 2, 1, null())"
+r.grow input=ice output=ice_grow radius=50 new=1
+
+r.null ice_grow null=100
+r.clump input=ice_grow output=clumps
+r.stats -c clumps sort=asc
+for ID in $(r.stats -c clumps sort=asc | head -n7 | cut -d" " -f1); do
+  r.mapcalc "ice_grow = if(clumps == ${ID}, 1, ice_grow)" --o
+done
+r.null ice_grow setnull=100
+
+r.out.gdal input=ice_grow output=ice_mask_buffer.tif format=GTiff type=Byte createopt="COMPRESS=DEFLATE"
+exit
+trash Gtmp
+#+END_SRC
+#+RESULTS:
+
 
 ** Per pixel geocoding options on CLI
 

@@ -734,28 +734,28 @@ fi
 
 echo "================================================================================================================"
 echo ""
-if [ ! -z $MISSION ];then
+if [[ ! -z $MISSION ]]; then
 	if [ ! -z $QUERY_STATEMENT_CHECK ]; then
 		export QUERY_STATEMENT="$QUERY_STATEMENT AND "	
 	fi
 	export QUERY_STATEMENT="$QUERY_STATEMENT platformname:$MISSION"
 	QUERY_STATEMENT_CHECK='OK'	
 fi 
-if [ ! -z $INSTRUMENT ];then
+if [[ ! -z $INSTRUMENT ]]; then
 	if [ ! -z $QUERY_STATEMENT_CHECK ]; then
 		export QUERY_STATEMENT="$QUERY_STATEMENT AND "	
 	fi
 	export QUERY_STATEMENT="$QUERY_STATEMENT instrumentshortname:$INSTRUMENT"
 	QUERY_STATEMENT_CHECK='OK'	
 fi 
-if [ ! -z $PRODUCT_TYPE ];then
+if [[ ! -z $PRODUCT_TYPE ]]; then
 	if [ ! -z $QUERY_STATEMENT_CHECK ]; then
 		export QUERY_STATEMENT="$QUERY_STATEMENT AND "	
 	fi
 	export QUERY_STATEMENT="$QUERY_STATEMENT producttype:$PRODUCT_TYPE"
 	QUERY_STATEMENT_CHECK='OK'	
 fi 
-if [ ! -z $TIME ];then
+if [[ ! -z $TIME ]]; then
 	if [ ! -z $QUERY_STATEMENT_CHECK ]; then
 		export QUERY_STATEMENT="$QUERY_STATEMENT AND "	
 	fi
@@ -763,7 +763,7 @@ if [ ! -z $TIME ];then
 	QUERY_STATEMENT_CHECK='OK'
 fi
 
-if [ ! -z $SENSING_TIME ];then
+if [[ ! -z $SENSING_TIME ]]; then
         if [ ! -z $QUERY_STATEMENT_CHECK ]; then
                 export QUERY_STATEMENT="$QUERY_STATEMENT AND "
         fi
@@ -771,7 +771,7 @@ if [ ! -z $SENSING_TIME ];then
 	QUERY_STATEMENT_CHECK='OK'
 fi
 
-if [ ! -z $TIMEFILE ];then
+if [[ ! -z $TIMEFILE ]]; then
         if [ ! -z $QUERY_STATEMENT_CHECK ]; then
                 export QUERY_STATEMENT="$QUERY_STATEMENT AND "
         fi
@@ -780,7 +780,7 @@ if [ ! -z $TIMEFILE ];then
 	QUERY_STATEMENT_CHECK='OK'
 fi
 
-if [ ! -z $FREE_SUBQUERY_CHECK ];then
+if [[ ! -z $FREE_SUBQUERY_CHECK ]]; then
         if [ ! -z $QUERY_STATEMENT_CHECK ]; then
                 export QUERY_STATEMENT="$QUERY_STATEMENT AND "
         fi
@@ -789,7 +789,7 @@ if [ ! -z $FREE_SUBQUERY_CHECK ];then
 fi
 
 #---- Prepare query polygon statement
-if [ ! -z $x1 ];then
+if [[ ! -z $x1 ]]; then
 	if [[ ! -z $QUERY_STATEMENT ]]; then
 		export QUERY_STATEMENT="$QUERY_STATEMENT AND "	
 	fi
@@ -799,11 +799,11 @@ else
 	export GEO_SUBQUERY=""
 fi
 #- ... append on query (without repl
-if [ -z $ROWS ];then
+if [[ -z $ROWS ]]; then
         export ROWS=25
 fi
 
-if [ -z $PAGE ];then
+if [[ -z $PAGE ]]; then
         export PAGE=1
 fi
 START=$((PAGE-1))

@@ -1,0 +1,416 @@
+<graph id="S3">
+  <version>1.0</version>
+
+  <!--
+      This script:
+      1) Converts OLCI radiance to reflectance
+      2) Reprojects to EPSG:3413
+      3) Writes out 
+         reflecance bands 1-21
+	 SZA
+      4) Same for SLSTR confidence_an and cloud_an
+  -->
+
+  <node id="Read_OLCI">
+    <operator>Read</operator>
+    <parameters>
+      <file>${OLCIsource}/xfdumanifest.xml</file>
+      <formatName>Sen3</formatName>
+      <!-- https://forum.step.esa.int/t/error-when-selecting-multiple-bands-from-slstr-file/15319 -->
+      <!-- Sen3 ensures that SLSTR is read as multisize -->
+    </parameters>
+  </node>
+  
+  <node id="Rad2Refl_OLCI">
+    <operator>Rad2Refl</operator>
+    <sources><source>Read_OLCI</source></sources>
+    <parameters>
+      <sensor>OLCI</sensor>
+      <copyTiePointGrids>true</copyTiePointGrids>
+      <copyFlagBandsAndMasks>true</copyFlagBandsAndMasks>
+      <copyNonSpectralBands>true</copyNonSpectralBands>
+    </parameters>
+  </node>
+  
+  <node id="Reproject_OLCI">
+    <operator>Reproject</operator>
+    <sources><source>Rad2Refl_OLCI</source></sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_OLCI_Oa01">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa01_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa01">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa01</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa01_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa02">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa02_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa02">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa02</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa02_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa03">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa03_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa03">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa03</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa03_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa04">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa04_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa04">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa04</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa04_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_OLCI_Oa05">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa05_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa05">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa05</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa05_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa06">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa06_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa06">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa06</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa06_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa07">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa07_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa07">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa07</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa07_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+  
+  <node id="BandSelect_OLCI_Oa08">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa08_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa08">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa08</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa08_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa09">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa09_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa09">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa09</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa09_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa10">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa10_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa10">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa10</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa10_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa11">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa11_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa11">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa11</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa11_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa12">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa12_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa12">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa12</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa12_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa13">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa13_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa13">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa13</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa13_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa14">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa14_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa14">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa14</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa14_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa15">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa15_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa15">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa15</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa15_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa16">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa16_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa16">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa16</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa16_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa17">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa17_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa17">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa17</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa17_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa18">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa18_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa18">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa18</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa18_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa19">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa19_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa19">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa19</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa19_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa20">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa20_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa20">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa20</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa20_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_OLCI_Oa21">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>Oa21_reflectance</sourceBands></parameters>
+  </node>
+  <node id="Write_OLCI_Oa21">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OLCI_Oa21</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/reflectance_Oa21_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <!-- SZA has some valid data where it shouldn't. NaN it away... -->
+  <node id="SZA_invalid">
+    <operator>BandMaths</operator>
+    <sources><sourceProducts>Reproject_OLCI</sourceProducts></sources>
+    <parameters>
+      <targetBands><targetBand>
+          <name>sun_zenith</name><type>float32</type>
+          <expression>quality_flags.invalid ? NaN : SZA</expression>
+        </targetBand></targetBands>
+    </parameters>
+  </node>
+  <node id="Write_SZA">
+    <operator>Write</operator>
+    <sources><sourceProduct>SZA_invalid</sourceProduct></sources>
+    <parameters><file>${targetFolder}/SZA_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+  </node>
+
+  <node id="Read_SLSTR">
+    <operator>Read</operator>
+    <parameters>
+      <file>${SLSTRsource}/xfdumanifest.xml</file>
+      <formatName>Sen3</formatName>
+      <!-- https://forum.step.esa.int/t/error-when-selecting-multiple-bands-from-slstr-file/15319 -->
+      <!-- Sen3 ensures that SLSTR is read as multisize -->
+    </parameters>
+  </node>
+  
+  <node id="Reproject_SLSTR">
+    <operator>Reproject</operator>
+    <sources><source>Read_SLSTR</source></sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>
+
+  <node id="BandSelect_SLSTR_cloud">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_SLSTR</source></sources>
+    <parameters><sourceBands>cloud_an</sourceBands></parameters>
+  </node>
+  <node id="Write_SLSTR_cloud">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_SLSTR_cloud</sourceProduct></sources>
+    <parameters><file>${targetFolder}/cloud_an_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+  </node>
+  
+  <node id="BandSelect_SLSTR_confidence">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_SLSTR</source></sources>
+    <parameters><sourceBands>confidence_an</sourceBands></parameters>
+  </node>
+  <node id="Write_SLSTR_confidence">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_SLSTR_confidence</sourceProduct></sources>
+    <parameters><file>${targetFolder}/confidence_an_x.tif</file>
+    <formatName>GeoTIFF</formatName></parameters>
+  </node>
+
+  <node id="BandMaths_cloud_137">
+    <operator>BandMaths</operator>
+    <sources><sourceProducts>Reproject_SLSTR</sourceProducts></sources>
+    <parameters>
+      <targetBands><targetBand>
+          <name>cloud_an_137</name><type>Int16</type>
+          <expression>cloud_an.1_37_threshold</expression>
+        </targetBand></targetBands>
+    </parameters>
+  </node>
+  <node id="Write_cloud_137">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandMaths_cloud_137</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/cloud_an_137_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+  <node id="BandMaths_confidence_cloud">
+    <operator>BandMaths</operator>
+    <sources><sourceProducts>Reproject_SLSTR</sourceProducts></sources>
+    <parameters>
+      <targetBands><targetBand>
+          <name>confidence_an_cloud</name><type>Int16</type>
+          <expression>confidence_an.summary_cloud</expression>
+        </targetBand></targetBands>
+    </parameters>
+  </node>
+  <node id="Write_confidence_cloud">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandMaths_confidence_cloud</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/confidence_an_cloud_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+</graph>

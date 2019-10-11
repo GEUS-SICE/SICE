@@ -5,10 +5,10 @@ if [ "$#" -ne 3 ]; then
   exit 1
 fi
 
-DATE=$1      # YYYYMMDD
-INFOLDER=$2  # ./tmp ?
-OUTFOLDER=$3 # ./mosaic ?
+date=$1      # YYYYMMDD
+infolder=$2  # ./tmp ?
+outfolder=$3 # ./mosaic ?
 
 grass -e -c mask.tif ~/G_mosaic_$$ # work in ./G_mosaic_<PSEUDO_RANDOM>
-grass ~/G_mosaic_$$/PERMANENT --exec ./dm.grass.sh $DATE $INFOLDER $OUTFOLDER
+grass ~/G_mosaic_$$/PERMANENT --exec ./dm.grass.sh ${date} ${infolder} ${outfolder}
 rm -fR ~/G_mosaic_$$ # cleanup
