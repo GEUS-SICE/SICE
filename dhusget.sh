@@ -566,7 +566,7 @@ else
         echo "'-m option' mission is set to $MISSION. "
         echo ""
 fi
-if [ -z $INSTRUMENT ]; then
+if [[ -z $INSTRUMENT ]]; then
 	echo "'-i option' not specified. Search is performed on all available instruments."
         echo ""
 else
