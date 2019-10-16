@@ -28,7 +28,8 @@ scene=$(echo ${scenes}|tr ' ' '\n' | head -n1) # DEBUG
 for scene in ${scenes}; do
   g.mapset -c ${scene} --quiet
   g.region res=1000 -a --quiet
-  files=$(ls ${infolder}/${scene}/*.tif)
+  files=$(ls ${infolder}/${scene}/*.tif || true)
+  if [[ -z ${files} ]]; then log_err "No files: ${scene}"; continue; fi
   log_info "Importing rasters: ${scene}"
   parallel  "r.external source={} output={/.} --q" ::: ${files}
   
