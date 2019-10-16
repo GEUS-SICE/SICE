@@ -60,6 +60,9 @@ while [[ $# -gt 0 ]]; do
       verbose=1; set -o xtrace; shift;;
     -t)
       timing=1; shift;;
+    *)    # unknown option
+      positional+=("$1") # save it in an array for later. Pass on to dhusget.sh
+      shift;;
   esac
 done
 
