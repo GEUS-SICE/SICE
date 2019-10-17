@@ -102,8 +102,14 @@ doit() {
 export -f doit
 parallel doit {1} {2} ::: ${sza_lut_idxs} ::: ${bands}
 
+# diagnostics
+r.series input=${sza_list} method=count output=num_scenes_cloudfree
+mapset_list=$(g.mapsets --q -l separator=newline | grep T | tr '\n' ','| sed 's/,*$//g')
+raster_list=$(g.list type=raster pattern=reflectance_Oa01 mapset=${mapset_list} separator=comma)
+r.series input=${raster_list} method=count output=num_scenes
+
 bandsFloat32=$(g.list type=raster pattern="reflectance_*")
-bandsInt16="sza_lut cloud_an confidence_an"
+bandsInt16="sza_lut cloud_an confidence_an num_scenes num_scenes_cloudfree"
 log_info "Writing mosaics to disk..."
 
 tifopts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
