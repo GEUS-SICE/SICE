@@ -42,13 +42,21 @@ for scene in ${scenes}; do
   r.in.gdal input=${infolder}/${scene}/confidence_an.tif output=confidence_an --q --o
   r.null map=cloud_an setnull=0 --q
   r.null map=confidence_an setnull=0 --q
-  # SZA cloud masked (CM)
+
+  # SZA_CM is SZA but Cloud Masked
   log_info "Masking clouds in SZA raster"
   # r.mapcalc "cloud_flag = if((cloud_an & 2), null(), 1)" --q
   r.mapcalc "cloud_flag = 1" --q
   r.mapcalc "conf_flag = if((confidence_an & 16384), null(), 1)" --q
   # SZA only valid where all flags are equal to 1
   r.mapcalc "SZA_CM = if((cloud_flag && conf_flag), SZA)" --q
+
+  # remove small clusters of isolated pixels
+  # frink "(1000 m)^2 -> hectares" 100 hectares per pixel, so value=10000 -> 10 pixels
+  r.mapcalc "SZA_CM_mask = if(SZA_CM)" --q
+  r.clump -d input=SZA_CM_mask output=SZA_CM_clump --q
+  r.reclass.area -c input=SZA_CM_clump output=SZA_CM_area value=10000 mode=greater --q
+  r.mapcalc "SZA_CM_rmarea = if(SZA_CM_area, SZA_CM)" --q
 done
 
 # The target bands. For example, Oa01_reflectance or SZA.
@@ -67,8 +75,8 @@ r.mask raster=MASK@PERMANENT --o # mask to Greenland ice+land
 
 # find the array index with the minimum SZA
 # Array for indexing, list for using in GRASS
-sza_arr=($(g.list type=raster pattern=SZA_CM mapset=*))
-sza_list=$(g.list type=raster pattern=SZA_CM mapset=* separator=comma)
+sza_arr=($(g.list type=raster pattern=SZA_CM_rmarea mapset=*))
+sza_list=$(g.list type=raster pattern=SZA_CM_rmarea mapset=* separator=comma)
 r.series input=${sza_list} method=min_raster output=sza_lut --o
 # echo ${SZA_list} | tr ',' '\n' | cut -d@ -f2 > ${OUTFOLDER}/${DATE}/SZA_LUT.txt
 
