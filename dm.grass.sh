@@ -46,8 +46,10 @@ for scene in ${scenes}; do
   # SZA_CM is SZA but Cloud Masked
   log_info "Masking clouds in SZA raster"
   # r.mapcalc "cloud_flag = if((cloud_an & 2), null(), 1)" --q
+  # r.mapcalc "cloud_flag = if(cloud_an_137 == 1, null(), 1)" --q
   r.mapcalc "cloud_flag = 1" --q
-  r.mapcalc "conf_flag = if((confidence_an & 16384), null(), 1)" --q
+  # r.mapcalc "conf_flag = if((confidence_an & 16384), null(), 1)" --q
+  r.mapcalc "conf_flag = if(confidence_an_cloud == 1, null(), 1)" --q
   # SZA only valid where all flags are equal to 1
   r.mapcalc "SZA_CM = if((cloud_flag && conf_flag), SZA)" --q
 
@@ -117,7 +119,7 @@ raster_list=$(g.list type=raster pattern=reflectance_Oa01 mapset=${mapset_list} 
 r.series input=${raster_list} method=count output=num_scenes
 
 bandsFloat32=$(g.list type=raster pattern="reflectance_*")
-bandsInt16="sza_lut cloud_an confidence_an num_scenes num_scenes_cloudfree"
+bandsInt16="sza_lut cloud_an cloud_an_137 confidence_an confidence_an_cloud num_scenes num_scenes_cloudfree"
 log_info "Writing mosaics to disk..."
 
 tifopts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
