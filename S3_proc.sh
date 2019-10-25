@@ -98,18 +98,29 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
       -Ds3tbx.reader.olci.pixelGeoCoding=true \
       -e || (log_err "gpt error"; exit 1)
   log_info "gpt: Finished"
-  
+
   log_info "Renaming..."
   # GPT bug means we can't write out band.tif, but have to use some other name.
   # I chose "band_x.tif". Here we work around that bug.
   for f in $(ls ${dest}/*_x*); do mv ${f} "${f//_x}"; done
+  
+  log_info "Aligning SLSTR to OLCI..."
+  extent=$(gdalinfo ${dest}/SZA.tif \
+	     | awk '/(Upper Left)|(Lower Right)/' \
+	     | awk '{gsub(/,|\)|\(/," ");print $3 " " $4}' \
+	     | sed ':a;N;$!ba;s/\n/ /g' \
+	     | awk '{print $1 " " $4 " " $3 " " $2}')
+  pixsize=$(gdalinfo ${dest}/SZA.tif |grep "Pixel Size"| cut -d"(" -f2| tr ')' ' ' | tr ',' ' ')
+  parallel "gdalwarp -te ${extent} -te_srs EPSG:3413 -tr ${pixsize} ${dest}/{}.tif ${dest}/{%}.tif; " \
+	   "mv ${dest}/{%}.tif ${dest}/{}.tif" \
+	   ::: cloud_an cloud_an_137 confidence_an confidence_an_cloud
   
   log_info "Compressing..."
   for f in $(cd ${dest}; ls *.tif); do
   	gdal_translate -q -co "COMPRESS=DEFLATE" ${dest}/${f} ${dest}/${f}_tmp.tif
   	mv  ${dest}/${f}_tmp.tif ${dest}/${f}
   done
-  
+
   # log_info "Begin sice..."
   # timing
   # ./sice.py ${dest}
