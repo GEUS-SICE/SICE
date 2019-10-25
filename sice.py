@@ -120,12 +120,13 @@ import rasterio as rio
 import time
 start_time = time.time()
 
-InputFolder = '../out/Tedstone_test2/20170715T135846/'
+import sys
+InputFolder = sys.argv[1] + '/'
 
 #%% ========= input tif ================
 print("Reading input ")
 
-Oa01 = rio.open(InputFolder+'Oa01_reflectance.tif')
+Oa01 = rio.open(InputFolder+'reflectance_Oa01.tif')
 meta = Oa01.meta
 
 def WriteOutput(var,var_name,in_folder):
@@ -146,29 +147,21 @@ def WriteOutput(var,var_name,in_folder):
 olci_data = np.tile(Oa01.read(1).flatten()*np.nan, (21,1)).transpose()
 
 for i in range(21):
-    dat = rio.open((InputFolder+'Oa'+str(i+1).zfill(2)+'_reflectance.tif'))
+    dat = rio.open((InputFolder+'reflectance_Oa'+str(i+1).zfill(2)+'.tif'))
     olci_data[:,i] = dat.read(1).flatten()
     
-ozone_dat = rio.open(InputFolder+'ozone.tif')
-ozone = ozone_dat.read(1).flatten()
-water_dat = rio.open(InputFolder+'water.tif')
-water = water_dat.read(1).flatten()
-ozone = ozone_dat.read(1).flatten()
-sza_dat = rio.open(InputFolder+'SZA.tif')
-sza = sza_dat.read(1).flatten()
-saa_dat = rio.open(InputFolder+'SAA.tif')
-saa = saa_dat.read(1).flatten()
-vza_dat = rio.open(InputFolder+'OZA.tif')
-vza = vza_dat.read(1).flatten()
-vaa_dat = rio.open(InputFolder+'OAA.tif')
-vaa = vaa_dat.read(1).flatten()
-height_dat = rio.open(InputFolder+'height.tif')
-height = height_dat.read(1).flatten()
+ozone = rio.open(InputFolder+'ozone.tif').read(1).flatten()
+water = rio.open(InputFolder+'water.tif').read(1).flatten()
+sza = rio.open(InputFolder+'SZA.tif').read(1).flatten()
+saa = rio.open(InputFolder+'SAA.tif').read(1).flatten()
+vza = rio.open(InputFolder+'OZA.tif').read(1).flatten()
+vaa = rio.open(InputFolder+'OAA.tif').read(1).flatten()
+height = rio.open(InputFolder+'height.tif').read(1).flatten()
 
-water_vod = genfromtxt('../SnowProcessor/2.2/tg_water_vod.dat', delimiter='   ')
+water_vod = genfromtxt('./tg_water_vod.dat', delimiter='   ')
 voda = water_vod[range(21),1]
 
-ozone_vod = genfromtxt('../SnowProcessor/2.2/tg_vod.dat', delimiter='   ',skip_header=2)
+ozone_vod = genfromtxt('./tg_vod.dat', delimiter='   ',skip_header=2)
 tozon = ozone_vod[range(21),1]
 aot = 0.1
    

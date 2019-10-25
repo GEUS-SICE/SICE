@@ -9,6 +9,9 @@
          reflecance bands 1-21
 	 SZA
       4) Same for SLSTR confidence_an and cloud_an
+
+      GPT bug means we can't write out band.tif, but have to use some other name.
+      I chose "band_x.tif".
   -->
 
   <node id="Read_OLCI">
@@ -333,6 +336,74 @@
     <parameters><file>${targetFolder}/SZA_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
+  <node id="BandSelect_OZA">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>OZA</sourceBands></parameters>
+  </node>
+  <node id="Write_OZA">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OZA</sourceProduct></sources>
+    <parameters><file>${targetFolder}/OZA_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+  </node>
+  
+  <node id="BandSelect_SAA">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>SAA</sourceBands></parameters>
+  </node>
+  <node id="Write_SAA">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_SAA</sourceProduct></sources>
+    <parameters><file>${targetFolder}/SAA_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+  </node>
+  
+  <node id="BandSelect_OAA">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>OAA</sourceBands></parameters>
+  </node>
+  <node id="Write_OAA">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_OAA</sourceProduct></sources>
+    <parameters><file>${targetFolder}/OAA_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+  </node>
+
+  <node id="BandSelect_ozone">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>total_ozone</sourceBands></parameters>
+  </node>
+  <node id="Write_ozone">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_ozone</sourceProduct></sources>
+    <parameters><file>${targetFolder}/ozone_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+  </node>
+
+  <node id="BandSelect_water">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>total_columnar_water_vapour</sourceBands></parameters>
+  </node>
+  <node id="Write_water">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_water</sourceProduct></sources>
+    <parameters><file>${targetFolder}/water_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+  </node>
+
+  <node id="BandSelect_altitude">
+    <operator>BandSelect</operator>
+    <sources><source>Reproject_OLCI</source></sources>
+    <parameters><sourceBands>altitude</sourceBands></parameters>
+  </node>
+  <node id="Write_altitude">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_altitude</sourceProduct></sources>
+    <parameters><file>${targetFolder}/height_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+  </node>
+
+
+  
   <node id="Read_SLSTR">
     <operator>Read</operator>
     <parameters>
