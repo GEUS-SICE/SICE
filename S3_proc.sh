@@ -85,7 +85,7 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   log_info "${olci_folder}"
   log_info "${slstr_folder}"
   
-  log_info "Generating ${outpath}/${olci_dts}"
+  log_info "Generating ${dest}"
   mkdir -p "${dest}"
   
   log_info "gpt: Start"
@@ -96,28 +96,24 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
       -PSLSTRsource="${inpath}/${slstr_folder}" \
       -PtargetFolder="${dest}" \
       -Ds3tbx.reader.olci.pixelGeoCoding=true \
+      -Dsnap.log.level=ERROR \
       -e || (log_err "gpt error"; exit 1)
   log_info "gpt: Finished"
 
   log_info "Resampling to 1000 m resolution..."
   log_info "Aligning SLSTR to OLCI..."
   # SZA first, then everything else matches SZA
-  gdalwarp -q -tr 1000 -1000 ${dest}/SZA_x.tif ${dest}/SZA.tif && rm ${dest}/SZA_x.tif
+  [[ -e ${dest}/SZA.tif ]] && rm ${dest}/SZA.tif
+  gdalwarp -q -s_srs EPSG:3413 -t_srs EPSG:3413 -tr 1000 -1000 ${dest}/SZA_x.tif ${dest}/SZA.tif
   extent=$(gdalinfo ${dest}/SZA.tif \
 	     | awk '/(Upper Left)|(Lower Right)/' \
 	     | awk '{gsub(/,|\)|\(/," ");print $3 " " $4}' \
 	     | sed ':a;N;$!ba;s/\n/ /g' \
 	     | awk '{print $1 " " $4 " " $3 " " $2}')
   pixsize=$(gdalinfo ${dest}/SZA.tif |grep "Pixel Size"| cut -d"(" -f2| tr ')' ' ' | tr ',' ' ')
-  GDALOPTS="-q -te ${extent} -te_srs EPSG:3413 -tr ${pixsize} -co COMPRESS=DEFLATE"
-  parallel "gdalwarp ${GDALOPTS} {.}_x.tif {}" ::: $(ls ${dest}/*_x.tif | sed 's/\_x//')
+  GDALOPTS="-q -s_srs EPSG:3413 -te ${extent} -te_srs EPSG:3413 -tr ${pixsize} -co COMPRESS=DEFLATE"
+  parallel "[[ -e {} ]] || gdalwarp ${GDALOPTS} {.}_x.tif {}" ::: $(ls ${dest}/*_x.tif | sed 's/\_x//')
   (cd ${dest} && rm *_x.tif)
-  
-  log_info "Begin sice..."
-  timing
-  python ./sice.py ${dest}
-  timing
-  log_info "End sice"
 done
 
 log_info "Finished: ${folder}"

@@ -23,8 +23,10 @@ debug() { if [[ ${debug:-} == 1 ]]; then log_warn "debug:"; echo $@; fi; }
 mkdir -p "${outfolder}/${date}"
 
 # load all the data
-scenes=$(cd "${infolder}"; ls | grep -E "${date}T??????")
+yyyymmdd=${date:0:4}${date:5:2}${date:8:2}
+scenes=$(cd "${infolder}"; ls | grep -E "${yyyymmdd}T??????")
 scene=$(echo ${scenes}|tr ' ' '\n' | head -n1) # DEBUG
+
 for scene in ${scenes}; do
   g.mapset -c ${scene} --quiet
   g.region res=1000 -a --quiet
@@ -73,17 +75,17 @@ g.region res=1000 -a
 # g.region raster=$(g.list type=raster pattern=SZA separator=, mapset=*)
 g.region -s # save as default region
 g.mapset -c ${date} --quiet # create a new mapset for final product
-r.mask raster=MASK@PERMANENT --o # mask to Greenland ice+land
+r.mask raster=MASK@PERMANENT --o --q # mask to Greenland ice+land
 
 # find the array index with the minimum SZA
 # Array for indexing, list for using in GRASS
 sza_arr=($(g.list type=raster pattern=SZA_CM_rmarea mapset=*))
 sza_list=$(g.list type=raster pattern=SZA_CM_rmarea mapset=* separator=comma)
-r.series input=${sza_list} method=min_raster output=sza_lut --o
-# echo ${SZA_list} | tr ',' '\n' | cut -d@ -f2 > ${OUTFOLDER}/${DATE}/SZA_LUT.txt
+r.series input=${sza_list} method=min_raster output=sza_lut --o --q
+# echo ${SZA_list} | tr ',' '\n' | cut -d@ -f2 > ${outfolder}/${date}/SZA_LUT.txt
 
 # find the indices used. It is possible one scene is never used
-sza_lut_idxs=$(r.stats -n -l sza_lut)
+sza_lut_idxs=$(r.stats --q -n -l sza_lut)
 n_imgs=$(echo $sza_lut_idxs |wc -w)
 
 # generate a raster of nulls that we can then patch into
@@ -110,13 +112,14 @@ doit() {
   r.mapcalc "${band} = if((sza_lut == ${idx}), ${b_arr[${idx}]}, ${band})" --o --q
 }
 export -f doit
+
 parallel doit {1} {2} ::: ${sza_lut_idxs} ::: ${bands}
 
 # diagnostics
-r.series input=${sza_list} method=count output=num_scenes_cloudfree
+r.series input=${sza_list} method=count output=num_scenes_cloudfree --q
 mapset_list=$(g.mapsets --q -l separator=newline | grep T | tr '\n' ','| sed 's/,*$//g')
 raster_list=$(g.list type=raster pattern=reflectance_Oa01 mapset=${mapset_list} separator=comma)
-r.series input=${raster_list} method=count output=num_scenes
+r.series input=${raster_list} method=count output=num_scenes --q
 
 bandsFloat32=$(g.list type=raster pattern="reflectance_*")
 bandsInt16="sza_lut cloud_an cloud_an_137 confidence_an confidence_an_cloud num_scenes num_scenes_cloudfree"

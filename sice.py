@@ -196,7 +196,7 @@ WriteOutput(rs1,'rs1_py',InputFolder)
 WriteOutput(r0,'r0_py',InputFolder)
 WriteOutput(BXXX,'O3_py',InputFolder)
 
-print("Writing output --- %s seconds ---" % (time.time() - start_time))
+print("Writing %s --- %s seconds ---" % (InputFolder, time.time() - start_time))
 start_time = time.time()
 
 
