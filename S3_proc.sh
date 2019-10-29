@@ -114,6 +114,7 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   pixsize=$(gdalinfo ${dest}/SZA.tif |grep "Pixel Size"| cut -d"(" -f2| tr ')' ' ' | tr ',' ' ')
   GDALOPTS="-q -s_srs EPSG:3413 -te ${extent} -te_srs EPSG:3413 -tr ${pixsize} -co COMPRESS=DEFLATE"
   parallel "[[ -e {} ]] || gdalwarp ${GDALOPTS} {.}_x.tif {}" ::: $(ls ${dest}/*_x.tif | sed 's/\_x//')
+  [[ -e ${dest}/mask.tif ]] || gdalwarp ${GDALOPTS} ./mask.tif ${dest}/mask.tif
   (cd ${dest} && rm *_x.tif)
 done
 
