@@ -16,6 +16,9 @@ log_err() { echo -e "${red}[$(date --iso-8601=seconds)] [ERR] ${@}${nc}" 1>&2; }
 trap ctrl_c INT # trap ctrl-c and call ctrl_c()
 ctrl_c() { log_err "CTRL-C. Cleaning up"; }
 
+trap err_exit ERR
+err_exit() { log_err "CLEANUP HERE"; }
+
 debug() { if [[ ${debug:-} == 1 ]]; then log_warn "debug:"; echo $@; fi; }
 
 [[ -d "${infolder}" ]] || (log_err "${infolder} not found"; exit 1)
@@ -59,7 +62,9 @@ for scene in ${scenes}; do
   # frink "(1000 m)^2 -> hectares" 100 hectares per pixel, so value=10000 -> 10 pixels
   r.mapcalc "SZA_CM_mask = if(SZA_CM)" --q
   r.clump -d input=SZA_CM_mask output=SZA_CM_clump --q
-  r.reclass.area -c input=SZA_CM_clump output=SZA_CM_area value=10000 mode=greater --q
+  # this sometimes fails. Force success (||true) and check for failure on next line.
+  r.reclass.area -c input=SZA_CM_clump output=SZA_CM_area value=10000 mode=greater --q || true
+  [[ "" == $(g.list type=raster pattern=SZA_CM_area) ]] && r.mapcalc "SZA_CM_area = null()" --q
   r.mapcalc "SZA_CM_rmarea = if(SZA_CM_area, SZA_CM)" --q
 done
 
