@@ -157,6 +157,11 @@ saa = rio.open(InputFolder+'SAA.tif').read(1).flatten()
 vza = rio.open(InputFolder+'OZA.tif').read(1).flatten()
 vaa = rio.open(InputFolder+'OAA.tif').read(1).flatten()
 height = rio.open(InputFolder+'height.tif').read(1).flatten()
+mask = rio.open(InputFolder+'mask.tif').read(1).flatten()
+
+cloud_an_137 = ri.open(InputFolder+'cloud_an_137.tif').read(1).flatten()
+cloud_an_gross = ri.open(InputFolder+'cloud_an_gross.tif').read(1).flatten()
+cloud_an_thin_cirrus = ri.open(InputFolder+'cloud_an_thin_cirrus.tif').read(1).flatten()
 
 water_vod = genfromtxt('./tg_water_vod.dat', delimiter='   ')
 voda = water_vod[range(21),1]
@@ -175,26 +180,37 @@ alb_sph, rp,refl =  olci_data*np.nan, olci_data*np.nan, olci_data*np.nan
 from tqdm import tqdm
 
 for i in  tqdm(range(len(vaa))):
-    if(olci_data[i][20]<0.1):
+    if (mask[i] != 2): continue
+    if ((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1)): continue
+    if (sza[i] > 75): continue
+    if (olci_data[i][20] > 0.76):
+        isnow[i] = 8
+        continue
+    if (olci_data[i][20] < 0.1):
         isnow[i] = 4
         continue
     if np.any(np.isnan(olci_data[i])):
         continue
 
-    BXXX[i], D[i], area[i], al[i], r0[i], isnow[i], conc[i], ntype[i],alb_sph[i,:], rp[i,:],refl[i,:], rp1[i], rp2[i], rp3[i], rs1[i], rs2[i], rs3[i] = \
-    sl.pySICE(sza[i],vza[i],saa[i],vaa[i],height[i],olci_data[i],ozone[i],water[i],voda,tozon,aot)
+    BXXX[i], D[i], area[i], al[i], r0[i], isnow[i], conc[i], ntype[i], alb_sph[i,:], \
+        rp[i,:],refl[i,:], rp1[i], rp2[i], rp3[i], rs1[i], rs2[i], rs3[i] \
+        = sl.pySICE( sza[i], vza[i], saa[i], vaa[i], height[i], olci_data[i], ozone[i],\
+                     water[i], voda, tozon, aot)
     
-#%% Output generation
-# pick the variable you want to output
-
-WriteOutput(rp1,'rp1_py',InputFolder)
-WriteOutput(rp2,'rp2_py',InputFolder)
-WriteOutput(isnow,'isnow_py',InputFolder)
-WriteOutput(rs1,'rs1_py',InputFolder)
-WriteOutput(rs2,'rs2_py',InputFolder)
-WriteOutput(rs1,'rs1_py',InputFolder)
-WriteOutput(r0,'r0_py',InputFolder)
-WriteOutput(BXXX,'O3_py',InputFolder)
+WriteOutput(BXXX,    '03_py',   InputFolder)
+WriteOutput(D,       'D_py',InputFolder)
+WriteOutput(area,    'area_py', InputFolder)
+WriteOutput(al,      'al_py',     InputFolder)
+WriteOutput(r0,      'r0_py',InputFolder)
+WriteOutput(isnow,   'isnow_py',InputFolder)
+WriteOutput(conc,    'conc_py',InputFolder)
+WriteOutput(ntype,   'ntype_py',InputFolder)
+WriteOutput(rp1,     'rp1_py',InputFolder)
+WriteOutput(rp2,     'rp2_py',InputFolder)
+WriteOutput(rp3,     'rp3_py',InputFolder)
+WriteOutput(rs1,     'rs1_py',InputFolder)
+WriteOutput(rs2,     'rs2_py',InputFolder)
+WriteOutput(rs3,     'rs3_py',InputFolder)
 
 print("Writing %s --- %s seconds ---" % (InputFolder, time.time() - start_time))
 start_time = time.time()

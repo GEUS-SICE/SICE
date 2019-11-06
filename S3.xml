@@ -466,6 +466,42 @@
     </parameters>
   </node>
 
+  <node id="BandMaths_cloud_gross">
+    <operator>BandMaths</operator>
+    <sources><sourceProducts>Reproject_SLSTR</sourceProducts></sources>
+    <parameters>
+      <targetBands><targetBand>
+          <name>cloud_an_gross</name><type>Int16</type>
+          <expression>cloud_an_gross_cloud</expression>
+        </targetBand></targetBands>
+    </parameters>
+  </node>
+  <node id="Write_cloud_137">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandMaths_cloud_gross</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/cloud_an_gross_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
+    <node id="BandMaths_cloud_thin_cirrus">
+    <operator>BandMaths</operator>
+    <sources><sourceProducts>Reproject_SLSTR</sourceProducts></sources>
+    <parameters>
+      <targetBands><targetBand>
+          <name>cloud_an_cirrus</name><type>Int16</type>
+          <expression>cloud_an_thin_cirrus</expression>
+        </targetBand></targetBands>
+    </parameters>
+  </node>
+  <node id="Write_cloud_thin_cirrus">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandMaths_cloud_thin_cirrus</sourceProduct></sources>
+    <parameters>
+      <file>${targetFolder}/cloud_an_thin_cirrus_x.tif</file><formatName>GeoTIFF</formatName>
+    </parameters>
+  </node>
+
   <node id="BandMaths_confidence_cloud">
     <operator>BandMaths</operator>
     <sources><sourceProducts>Reproject_SLSTR</sourceProducts></sources>

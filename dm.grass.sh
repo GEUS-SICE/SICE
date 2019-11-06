@@ -28,7 +28,7 @@ mkdir -p "${outfolder}/${date}"
 # load all the data
 yyyymmdd=${date:0:4}${date:5:2}${date:8:2}
 scenes=$(cd "${infolder}"; ls | grep -E "${yyyymmdd}T??????")
-scene=$(echo ${scenes}|tr ' ' '\n' | head -n1) # DEBUG
+scene=$(echo ${scenes}|tr ' ' '\n' | head -n3|tail -n1) # DEBUG
 
 for scene in ${scenes}; do
   g.mapset -c ${scene} --quiet
@@ -41,22 +41,17 @@ for scene in ${scenes}; do
   # # UNCOMMENT to turn on SZA-only mosaic (no cloud-criteria)
   # r.mapcalc "SZA_CM = SZA" --q
 
-  # these need to be imported, not external, so we can tweak the null mask
-  g.remove -f type=raster name=cloud_an,confidence_an --q
-  r.in.gdal input=${infolder}/${scene}/cloud_an.tif output=cloud_an --q --o
-  r.in.gdal input=${infolder}/${scene}/confidence_an.tif output=confidence_an --q --o
-  r.null map=cloud_an setnull=0 --q
-  r.null map=confidence_an setnull=0 --q
+  # # these need to be imported, not external, so we can tweak the null mask
+  # g.remove -f type=raster name=cloud_an,confidence_an --q
+  # r.in.gdal input=${infolder}/${scene}/cloud_an.tif output=cloud_an --q --o
+  # r.in.gdal input=${infolder}/${scene}/confidence_an.tif output=confidence_an --q --o
+  # r.null map=cloud_an setnull=0 --q
+  # r.null map=confidence_an setnull=0 --q
 
   # SZA_CM is SZA but Cloud Masked
   log_info "Masking clouds in SZA raster"
-  # r.mapcalc "cloud_flag = if((cloud_an & 2), null(), 1)" --q
-  # r.mapcalc "cloud_flag = if(cloud_an_137 == 1, null(), 1)" --q
-  r.mapcalc "cloud_flag = 1" --q
-  # r.mapcalc "conf_flag = if((confidence_an & 16384), null(), 1)" --q
-  r.mapcalc "conf_flag = if(confidence_an_cloud == 1, null(), 1)" --q
-  # SZA only valid where all flags are equal to 1
-  r.mapcalc "SZA_CM = if((cloud_flag && conf_flag), SZA)" --q
+  r.mapcalc "cloud_flag = if((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1) || (reflectance_Oa21 > 0.76), null(), 1)" --q
+  r.mapcalc "SZA_CM = if(cloud_flag, SZA)" --q
 
   # remove small clusters of isolated pixels
   # frink "(1000 m)^2 -> hectares" 100 hectares per pixel, so value=10000 -> 10 pixels
@@ -98,7 +93,7 @@ log_info "Initializing mosaic scenes..."
 parallel "r.mapcalc \"{} = null()\" --o --q" ::: ${bands}
 
 ### REFERENCE LOOP VERSION
-# # Patch each BAND based on the minimum SZA_LUT
+# Patch each BAND based on the minimum SZA_LUT
 # for b in $(echo $bands); do
 #     # this band in all of the sub-mapsets (with a T (timestamp) in the mapset name)
 #     b_arr=($(g.list type=raster pattern=${b} mapset=* | grep "@.*T"))
@@ -131,7 +126,7 @@ bandsInt16="sza_lut cloud_an cloud_an_137 confidence_an confidence_an_cloud num_
 log_info "Writing mosaics to disk..."
 
 tifopts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
-parallel "r.colors map={} color=grey --q" ::: ${bandsFloat32} # grayscale
+parallel -j 1 "r.colors map={} color=grey --q" ::: ${bandsFloat32} # grayscale
 parallel "r.null map={} setnull=inf --q" ::: ${bandsFloat32}  # set inf to null
 parallel "r.out.gdal -m -c input={} output=${outfolder}/${date}/{}.tif ${tifopts}" ::: ${bandsFloat32}
 
