@@ -105,7 +105,7 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   log_info "Aligning SLSTR to OLCI..."
   # SZA first, then everything else matches SZA
   [[ -e ${dest}/SZA.tif ]] && rm ${dest}/SZA.tif
-  gdalwarp -q -s_srs EPSG:3413 -t_srs EPSG:3413 -tr 1000 -1000 ${dest}/SZA_x.tif ${dest}/SZA.tif
+  gdalwarp -q -s_srs EPSG:3413 -t_srs EPSG:3413 -tr 5000 -5000 ${dest}/SZA_x.tif ${dest}/SZA.tif
   extent=$(gdalinfo ${dest}/SZA.tif \
 	     | awk '/(Upper Left)|(Lower Right)/' \
 	     | awk '{gsub(/,|\)|\(/," ");print $3 " " $4}' \
