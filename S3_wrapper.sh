@@ -45,21 +45,21 @@ for year in 2017 2018; do
     ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
 
     # Extra
-#    tmpdir=./G_$$
-#     grass -c ${mosaic_root}/${date}/SZA.tif ${tmpdir} --exec <<EOF
-# r.external input=rflectance_Oa01.tif output=r01
-# r.external input=rflectance_Oa06.tif output=r06
-# r.external input=rflectance_Oa17.tif output=r17
-# r.external input=rflectance_Oa21.tif output=r21
-# r.mapcalc "andsi = (r17-r21)/(r17+r21)"
-# r.mapcalc "andbi = (r01-r21)/(r01+r21)"
-# r.mapcalc "bba = (r01 + r06 + r17 + r21) / (4.0 * 0.945 + 0.055"
-# gdal_opts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q'
-# r.out.gdal -m -c input=andsi output=${mosaic_root}/${date}/ANDSI.tif ${tifopts}
-# r.out.gdal -m -c input=andbi output=${mosaic_root}/${date}/ANDBI.tif ${tifopts}
-# r.out.gdal -m -c input=bba output=${mosaic_root}/${date}/BBA.tif ${tifopts}
-# EOF
-#     rm -fR ${tmpdir}
+   tmpdir=./G_$$
+    grass -c ${mosaic_root}/${date}/SZA.tif ${tmpdir} --exec <<EOF
+r.external input=r_TOA_01.tif output=r01
+r.external input=r_TOA_06.tif output=r06
+r.external input=r_TOA_16.tif output=r16
+r.external input=r_TOA_21.tif output=r21
+r.mapcalc "ndsi = (r16-r21)/(r16+r21)"
+r.mapcalc "ndbi = (r01-r21)/(r01+r21)"
+r.mapcalc "bba_emp = (r01 + r06 + r17 + r21) / (4.0 * 0.945 + 0.055)"
+gdal_opts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q'
+r.out.gdal -m -c input=ndsi output=${mosaic_root}/${date}/NDSI.tif ${tifopts}
+r.out.gdal -m -c input=ndbi output=${mosaic_root}/${date}/NDBI.tif ${tifopts}
+r.out.gdal -m -c input=bba_emp output=${mosaic_root}/${date}/BBA_emp.tif ${tifopts}
+EOF
+    rm -fR ${tmpdir}
 
   done
 done
