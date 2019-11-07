@@ -55,7 +55,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa01</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa01_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_01_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -68,7 +68,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa02</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa02_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_02_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -81,7 +81,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa03</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa03_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_03_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -94,7 +94,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa04</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa04_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_04_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
   
@@ -107,7 +107,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa05</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa05_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_05_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -120,7 +120,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa06</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa06_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_06_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -133,7 +133,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa07</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa07_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_07_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
   
@@ -146,7 +146,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa08</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa08_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_08_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -159,7 +159,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa09</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa09_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_09_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -172,7 +172,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa10</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa10_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_10_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -185,7 +185,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa11</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa11_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_11_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -198,7 +198,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa12</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa12_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_12_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -211,7 +211,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa13</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa13_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_13_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -224,7 +224,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa14</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa14_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_14_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -237,7 +237,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa15</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa15_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_15_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -250,7 +250,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa16</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa16_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_16_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -263,7 +263,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa17</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa17_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_17_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -276,7 +276,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa18</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa18_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_18_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -289,7 +289,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa19</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa19_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_19_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -302,7 +302,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa20</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa20_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_20_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -315,7 +315,7 @@
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_OLCI_Oa21</sourceProduct></sources>
     <parameters>
-      <file>${targetFolder}/reflectance_Oa21_x.tif</file><formatName>GeoTIFF</formatName>
+      <file>${targetFolder}/r_TOA_21_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
@@ -377,7 +377,7 @@
   <node id="Write_ozone">
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_ozone</sourceProduct></sources>
-    <parameters><file>${targetFolder}/ozone_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+    <parameters><file>${targetFolder}/O3_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
   <node id="BandSelect_water">
@@ -388,7 +388,7 @@
   <node id="Write_water">
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_water</sourceProduct></sources>
-    <parameters><file>${targetFolder}/water_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+    <parameters><file>${targetFolder}/WV_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
   <node id="BandSelect_altitude">

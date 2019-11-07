@@ -50,7 +50,7 @@ for scene in ${scenes}; do
 
   # SZA_CM is SZA but Cloud Masked
   log_info "Masking clouds in SZA raster"
-  r.mapcalc "cloud_flag = if((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1) || (reflectance_Oa21 > 0.76), null(), 1)" --q
+  r.mapcalc "cloud_flag = if((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1) || (r_TOA_21 > 0.76), null(), 1)" --q
   r.mapcalc "SZA_CM = if(cloud_flag, SZA)" --q
 
   # remove small clusters of isolated pixels
@@ -63,7 +63,7 @@ for scene in ${scenes}; do
   r.mapcalc "SZA_CM_rmarea = if(SZA_CM_area, SZA_CM)" --q
 done
 
-# The target bands. For example, Oa01_reflectance or SZA.
+# The target bands. For example, R_TOA_01 or SZA.
 bands=$(g.list type=raster mapset=* | cut -d"@" -f1 | sort | uniq)
 
 # Mask and zoom to Greenland ice+land
@@ -118,11 +118,11 @@ parallel doit {1} {2} ::: ${sza_lut_idxs} ::: ${bands}
 # diagnostics
 r.series input=${sza_list} method=count output=num_scenes_cloudfree --q
 mapset_list=$(g.mapsets --q -l separator=newline | grep T | tr '\n' ','| sed 's/,*$//g')
-raster_list=$(g.list type=raster pattern=reflectance_Oa01 mapset=${mapset_list} separator=comma)
+raster_list=$(g.list type=raster pattern=r_TOA_01 mapset=${mapset_list} separator=comma)
 r.series input=${raster_list} method=count output=num_scenes --q
 
-bandsFloat32=$(g.list type=raster pattern="reflectance_*")
-bandsInt16="sza_lut cloud_an cloud_an_137 confidence_an confidence_an_cloud num_scenes num_scenes_cloudfree"
+bandsFloat32="$(g.list type=raster pattern="r_TOA_*") SZA SAA OZA OAA WV 03"
+bandsInt16="sza_lut num_scenes num_scenes_cloudfree"
 log_info "Writing mosaics to disk..."
 
 tifopts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'

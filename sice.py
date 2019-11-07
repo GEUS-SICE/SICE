@@ -126,7 +126,7 @@ InputFolder = sys.argv[1] + '/'
 #%% ========= input tif ================
 print("Reading input ")
 
-Oa01 = rio.open(InputFolder+'reflectance_Oa01.tif')
+Oa01 = rio.open(InputFolder+'r_TOA_01.tif')
 meta = Oa01.meta
 
 def WriteOutput(var,var_name,in_folder):
@@ -147,11 +147,11 @@ def WriteOutput(var,var_name,in_folder):
 olci_data = np.tile(Oa01.read(1).flatten()*np.nan, (21,1)).transpose()
 
 for i in range(21):
-    dat = rio.open((InputFolder+'reflectance_Oa'+str(i+1).zfill(2)+'.tif'))
+    dat = rio.open((InputFolder+'r_TOA_'+str(i+1).zfill(2)+'.tif'))
     olci_data[:,i] = dat.read(1).flatten()
     
-ozone = rio.open(InputFolder+'ozone.tif').read(1).flatten()
-water = rio.open(InputFolder+'water.tif').read(1).flatten()
+ozone = rio.open(InputFolder+'O3.tif').read(1).flatten()
+water = rio.open(InputFolder+'WV.tif').read(1).flatten()
 sza = rio.open(InputFolder+'SZA.tif').read(1).flatten()
 saa = rio.open(InputFolder+'SAA.tif').read(1).flatten()
 vza = rio.open(InputFolder+'OZA.tif').read(1).flatten()
@@ -197,20 +197,21 @@ for i in  tqdm(range(len(vaa))):
         = sl.pySICE( sza[i], vza[i], saa[i], vaa[i], height[i], olci_data[i], ozone[i],\
                      water[i], voda, tozon, aot)
     
-WriteOutput(BXXX,    '03_py',   InputFolder)
-WriteOutput(D,       'D_py',InputFolder)
-WriteOutput(area,    'area_py', InputFolder)
-WriteOutput(al,      'al_py',     InputFolder)
-WriteOutput(r0,      'r0_py',InputFolder)
-WriteOutput(isnow,   'isnow_py',InputFolder)
-WriteOutput(conc,    'conc_py',InputFolder)
-WriteOutput(ntype,   'ntype_py',InputFolder)
-WriteOutput(rp1,     'rp1_py',InputFolder)
-WriteOutput(rp2,     'rp2_py',InputFolder)
-WriteOutput(rp3,     'rp3_py',InputFolder)
-WriteOutput(rs1,     'rs1_py',InputFolder)
-WriteOutput(rs2,     'rs2_py',InputFolder)
-WriteOutput(rs3,     'rs3_py',InputFolder)
+WriteOutput(BXXX,   '03_SICE',   InputFolder)
+WriteOutput(D,      'D',InputFolder)
+WriteOutput(area,   'area', InputFolder)
+# WriteOutput(al,   'al_py',     InputFolder)
+# WriteOutput(r0,   'r0_py',InputFolder)
+# WriteOutput(isnow,'isnow_py',InputFolder)
+# WriteOutput(conc, 'conc_py',InputFolder)
+# WriteOutput(ntype,'ntype_py',InputFolder)
+# WriteOutput(rp1,  'rp1_py',InputFolder)
+# WriteOutput(rp2,  'rp2_py',InputFolder)
+WriteOutput(rp3,    'SnBBA',InputFolder)
+# WriteOutput(rs1,  'rs1_py',InputFolder)
+# WriteOutput(rs2,  'rs2_py',InputFolder)
+# WriteOutput(rs3,  'rs3_py',InputFolder)
+# for i in np.arange(21): WriteOutput(refl[:,i],    'r_BOA_'+str(i), InputFolder)
 
 print("Writing %s --- %s seconds ---" % (InputFolder, time.time() - start_time))
 start_time = time.time()
