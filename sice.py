@@ -159,9 +159,9 @@ vaa = rio.open(InputFolder+'OAA.tif').read(1).flatten()
 height = rio.open(InputFolder+'height.tif').read(1).flatten()
 mask = rio.open(InputFolder+'mask.tif').read(1).flatten()
 
-cloud_an_137 = ri.open(InputFolder+'cloud_an_137.tif').read(1).flatten()
-cloud_an_gross = ri.open(InputFolder+'cloud_an_gross.tif').read(1).flatten()
-cloud_an_thin_cirrus = ri.open(InputFolder+'cloud_an_thin_cirrus.tif').read(1).flatten()
+cloud_an_137 = rio.open(InputFolder+'cloud_an_137.tif').read(1).flatten()
+cloud_an_gross = rio.open(InputFolder+'cloud_an_gross.tif').read(1).flatten()
+cloud_an_thin_cirrus = rio.open(InputFolder+'cloud_an_thin_cirrus.tif').read(1).flatten()
 
 water_vod = genfromtxt('./tg_water_vod.dat', delimiter='   ')
 voda = water_vod[range(21),1]
@@ -181,7 +181,7 @@ from tqdm import tqdm
 
 for i in  tqdm(range(len(vaa))):
     if (mask[i] != 2): continue
-    if ((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1)): continue
+    if ((cloud_an_gross[i] == 1) or (cloud_an_137[i] == 1) or (cloud_an_thin_cirrus[i] == 1)): continue
     if (sza[i] > 75): continue
     if (olci_data[i][20] > 0.76):
         isnow[i] = 8
@@ -208,9 +208,9 @@ WriteOutput(area,   'area', InputFolder)
 # WriteOutput(rp1,  'rp1_py',InputFolder)
 # WriteOutput(rp2,  'rp2_py',InputFolder)
 WriteOutput(rp3,    'SnBBA',InputFolder)
-# WriteOutput(rs1,  'rs1_py',InputFolder)
-# WriteOutput(rs2,  'rs2_py',InputFolder)
-# WriteOutput(rs3,  'rs3_py',InputFolder)
+WriteOutput(rs1,  'rs1',InputFolder)
+WriteOutput(rs2,  'rs2',InputFolder)
+WriteOutput(rs3,  'rs3',InputFolder)
 # for i in np.arange(21): WriteOutput(refl[:,i],    'r_BOA_'+str(i), InputFolder)
 
 print("Writing %s --- %s seconds ---" % (InputFolder, time.time() - start_time))
