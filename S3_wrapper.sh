@@ -37,7 +37,7 @@ for year in 2017 2018; do
     ./S3_proc.sh -i ${dest_root}/${year}/${date} -o ${proc_root}/${date} -X S3.xml -t
 
     # SICE
-    parallel --verbose --lb -j 3 \
+    parallel --verbose --lb -j 5 \
     	     python ./sice.py ${proc_root}/${date}/{} \
     	     ::: $(ls ${proc_root}/${date}/)
 
