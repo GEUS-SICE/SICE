@@ -1,17 +1,17 @@
 
 # 2017 & 2018
-# 15 March (047) - 30 Sep (274)
+# 15 March (074) - 30 Sep (274)
 
-# CREODAS
+# CREODIAS
 SEN3_source=/eodata/Sentinel-3
-dest_root=/s3-data/S3
-proc_root=/s3-data/proc
-mosaic_root=/s3-data/mosaic
+dest_root=/sice-data/SICE/S3
+proc_root=/sice-data/SICE/proc
+mosaic_root=/sice-data/SICE/mosaic
 
-# dev
-dest_root=./SEN3
-proc_root=./out
-mosaic_root=./mosaic
+# # dev
+# dest_root=./SEN3
+# proc_root=./out
+# mosaic_root=./mosaic
 
 set -o errexit
 set -o nounset
@@ -19,12 +19,12 @@ set -o pipefail
 
 LD_LIBRARY_PATH=. # SNAP requirement
 
-for year in 2017 2018; do
-  for doy in $(seq -w 47 274); do
+for year in 2018 2017; do
+  for doy in $(seq -w 74 274); do
 
-    ## DEBUG
+#     ## DEBUG
 # for year in 2017; do
-#   for doy in 227; do  # 2017-08-15
+#   for doy in 227 180; do  # 2017-08-15=227
 
     date=$(date -d "${year}-01-01 +$(( 10#${doy}-1 )) days" "+%Y-%m-%d")
 

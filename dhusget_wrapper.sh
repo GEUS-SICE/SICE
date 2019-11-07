@@ -166,7 +166,6 @@ else
     [[ ${product:4:8} == "SL_1_RBT" ]] && local_subfolder="SLSTR/SL_1_RBT"
     
     local_fullpath=${local_files}/${local_subfolder}/${year}/${month}/${day}/${product}.SEN3
-    [[ -z ${local_fullpath} ]] || log_err "Not found: ${local_fullpath}"
     (cd ${outfolder}; ln -fs ${local_fullpath})
   done
 fi
