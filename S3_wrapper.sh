@@ -41,22 +41,26 @@ for year in 2018 2017; do
     fi
     
     # SICE
-    if [[ $(ls ${proc_root}/${date}/* | grep SnBBA.tif) == "" ]]; then
+    # Does SnBBA exist already in every folder?
+    if [[ $(cd ${proc_root}/${date}; ls) \
+	    != $(cd ${proc_root}/${date}; ls */SnBBA.tif | parallel dirname) ]]; then
       parallel --verbose --lb -j 5 \
     	       python ./sice.py ${proc_root}/${date}/{} \
     	       ::: $(ls ${proc_root}/${date}/)
     fi
     
     # Mosaic
-    if [[ ! -d "${mosaic_root}/${date}" ]]; then
+    if [[ ! -f "${mosaic_root}/${date}/SZA.tif" ]]; then
       ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
     fi
 
     # Extra
-    gdal_opts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q'
-    cd ${mosaic_root}/${date}/
-    tmpdir=./G_$$
-    grass -c SZA.tif ${tmpdir} --exec <<EOF
+    if [[ $(ls ${mosaic_root}/${date}/* | grep BBA_emp.tif) == "" ]]; then
+      gdal_opts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q'
+      _cwd=$(pwd)
+      cd ${mosaic_root}/${date}/
+      tmpdir=./G_$$
+      grass -c SZA.tif ${tmpdir} --exec <<EOF
 r.external input=r_TOA_01.tif output=r01
 r.external input=r_TOA_06.tif output=r06
 r.external input=r_TOA_17.tif output=r17
@@ -64,12 +68,13 @@ r.external input=r_TOA_21.tif output=r21
 r.mapcalc "ndsi = (r17-r21)/(r17+r21)"
 r.mapcalc "ndbi = (r01-r21)/(r01+r21)"
 r.mapcalc "bba_emp = (r01 + r06 + r17 + r21) / (4.0 * 0.945 + 0.055)"
-r.out.gdal -m -c input=ndsi output=NDSI.tif ${gdal_opts}
-r.out.gdal -m -c input=ndbi output=NDBI.tif ${gdal_opts}
-r.out.gdal -m -c input=bba_emp output=BBA_emp.tif ${gdal_opts}
+r.out.gdal -f -m -c input=ndsi output=NDSI.tif ${gdal_opts}
+r.out.gdal -f -m -c input=ndbi output=NDBI.tif ${gdal_opts}
+r.out.gdal -f -m -c input=bba_emp output=BBA_emp.tif ${gdal_opts}
 EOF
-    rm -fR ${tmpdir}
-    cd ../../
+      rm -fR ${tmpdir}
+      cd ${_cwd}
+    fi
 
   done
 done

@@ -118,6 +118,6 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   (cd ${dest} && rm *_x.tif)
 done
 
-log_info "Finished: ${folder}"
+log_info "Finished: ${outpath}"
 timing
 
