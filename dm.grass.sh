@@ -36,7 +36,7 @@ for scene in ${scenes}; do
   files=$(ls ${infolder}/${scene}/*.tif || true)
   if [[ -z ${files} ]]; then log_err "No files: ${scene}"; continue; fi
   log_info "Importing rasters: ${scene}"
-  parallel  "r.external source={} output={/.} --q" ::: ${files}
+  parallel -j 1 "r.external source={} output={/.} --q" ::: ${files}
   
   # # UNCOMMENT to turn on SZA-only mosaic (no cloud-criteria)
   # r.mapcalc "SZA_CM = SZA" --q
