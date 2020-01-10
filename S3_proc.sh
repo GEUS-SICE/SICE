@@ -80,7 +80,8 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   olci_time=${olci_dts:9:4}
   olci_time1=$(date -d "${olci_date} ${olci_time} + 1 minute" "+%H%M")
   fileroot="S3._SL_1_RBT____........T" # grep for acquisition not ingest time
-  slstr_folder=$(ls ${inpath} | grep -E "${fileroot}${olci_time}|${fileroot}${olci_time1}" || true)
+  # pick first nearby slstr
+  slstr_folder=$(ls ${inpath} | grep -E "${fileroot}${olci_time}|${fileroot}${olci_time1}" |head -n1 || true)
   if [[ -z ${slstr_folder} ]]; then log_err "No nearby SLSTR scene found"; continue; fi
   log_info "${olci_folder}"
   log_info "${slstr_folder}"
