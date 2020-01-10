@@ -90,7 +90,7 @@ n_imgs=$(echo $sza_lut_idxs |wc -w)
 
 # generate a raster of nulls that we can then patch into
 log_info "Initializing mosaic scenes..."
-parallel "r.mapcalc \"{} = null()\" --o --q" ::: ${bands}
+parallel -j 1 "r.mapcalc \"{} = null()\" --o --q" ::: ${bands}
 
 ### REFERENCE LOOP VERSION
 # Patch each BAND based on the minimum SZA_LUT
@@ -113,7 +113,7 @@ doit() {
 }
 export -f doit
 
-parallel doit {1} {2} ::: ${sza_lut_idxs} ::: ${bands}
+parallel -j 1 doit {1} {2} ::: ${sza_lut_idxs} ::: ${bands}
 
 # diagnostics
 r.series input=${sza_list} method=count output=num_scenes_cloudfree --q
@@ -127,7 +127,7 @@ log_info "Writing mosaics to disk..."
 
 tifopts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
 parallel -j 1 "r.colors map={} color=grey --q" ::: ${bandsFloat32} # grayscale
-parallel "r.null map={} setnull=inf --q" ::: ${bandsFloat32}  # set inf to null
+parallel -j 1 "r.null map={} setnull=inf --q" ::: ${bandsFloat32}  # set inf to null
 parallel "r.out.gdal -m -c input={} output=${outfolder}/${date}/{}.tif ${tifopts}" ::: ${bandsFloat32}
 
 tifopts='type=Int16 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
