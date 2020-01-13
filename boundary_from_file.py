@@ -23,6 +23,7 @@ def boundary_from_file(file):
         with open(file,encoding='utf8') as f:
             data = json.load(f)
             coordinates=data['features'][0]['geometry']['coordinates']
+            #check for different coordinates organisation
             if len(np.shape(coordinates))!=2:
                 coordinates=data['features'][0]['geometry']['coordinates'][0]
                 if len(np.shape(coordinates))!=2:
