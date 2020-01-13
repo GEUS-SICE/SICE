@@ -23,7 +23,12 @@ def boundary_from_file(file):
         with open(file,encoding='utf8') as f:
             data = json.load(f)
             coordinates=data['features'][0]['geometry']['coordinates']
-    if extension=='csv':
+            if len(np.shape(coordinates))!=2:
+                coordinates=data['features'][0]['geometry']['coordinates'][0]
+                if len(np.shape(coordinates))!=2:
+                    coordinates=data['features'][0]['geometry']['coordinates'][0][0]
+                
+    elif extension=='csv':
         coordinates=pd.read_csv(file)
     else:
         print('ERROR: %s extension not implemented' %extension)
@@ -32,12 +37,6 @@ def boundary_from_file(file):
     #boundary initialisation
     boundary=''
      
-    #coordinates reassignment if geojson file has a different organisation
-    try:
-        boundary=boundary+str(coordinates[0][0])+' '+str(coordinates[0][1])+','
-    except IndexError:
-        coordinates=data['features'][0]['geometry']['coordinates'][0][0]
-        
     #boundary creation out of coordinates
     if extension=='geojson':
         for i in range(0,np.shape(coordinates)[0]): 
