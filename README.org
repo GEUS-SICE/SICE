@@ -67,9 +67,19 @@ bash --version
 : There is NO WARRANTY, to the extent permitted by law.
 
 ** Python
+
+
 #+BEGIN_SRC sh :results verbatim :tangle environment.yml :async :session none
 conda env export --name SICE
 #+END_SRC
+
+Take the lines below, put into a file named =environment.yml= and then run the following in order to set up an identical Anaconda Python environment.
+
+#+BEGIN_SRC bash :results verbatim
+conda env create -f environment.yml
+#+END_SRC
+
+And then run =conda activate SICE= to activate the SICE environment.
 
 #+RESULTS:
 #+begin_example
