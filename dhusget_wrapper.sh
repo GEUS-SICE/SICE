@@ -121,6 +121,9 @@ else
 fi
 debug "Footprint: ${footprint}"
 
+log_warn "Setting mask.tif to masks/${footprint}.tif"
+rm mask.tif
+ln -s ./masks/${footprint}.tif mask.tif 
 
 log_info "***********************************************************"
 log_info "***                                                     ***"
