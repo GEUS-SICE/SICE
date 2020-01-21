@@ -49,7 +49,7 @@
 #-------------------------------------------------------------------------------------------	#
 export VERSION=0.3.8
 
-WD=${HOME}/tmp/dhusget_tmp
+WD=dhusget_tmp
 PIDFILE=$WD/pid
 
 test -d $WD || mkdir -p $WD 
