@@ -80,8 +80,9 @@ r.mask raster=MASK@PERMANENT --o --q # mask to Greenland ice+land
 
 # find the array index with the minimum SZA
 # Array for indexing, list for using in GRASS
-sza_arr=($(g.list type=raster pattern=SZA_CM_rmarea mapset=*))
-sza_list=$(g.list type=raster pattern=SZA_CM_rmarea mapset=* separator=comma)
+sza_arr=($(g.list -m type=raster pattern=SZA_CM_rmarea mapset=*))
+sza_list=$(g.list -m type=raster pattern=SZA_CM_rmarea mapset=* separator=comma)
+
 r.series input=${sza_list} method=min_raster output=sza_lut --o --q
 # echo ${SZA_list} | tr ',' '\n' | cut -d@ -f2 > ${outfolder}/${date}/SZA_LUT.txt
 
