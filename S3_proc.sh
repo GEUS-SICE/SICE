@@ -93,14 +93,14 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   log_info "gpt: Start"
   timing
   [[ $(which gpt) ]] || (log_err "gpt not found"; exit 1)
-  gpt ${xml} \
-      -POLCIsource="${inpath}/${olci_folder}" \
-      -PSLSTRsource="${inpath}/${slstr_folder}" \
-      -PtargetFolder="${dest}" \
-      -Ds3tbx.reader.olci.pixelGeoCoding=true \
-      -Ds3tbx.reader.slstrl1b.pixelGeoCodings=true \
-      -Dsnap.log.level=ERROR \
-      -e || (log_err "gpt error"; exit 1)
+  LD_LIBRARY_PATH=. gpt ${xml} \
+		 -POLCIsource="${inpath}/${olci_folder}" \
+		 -PSLSTRsource="${inpath}/${slstr_folder}" \
+		 -PtargetFolder="${dest}" \
+		 -Ds3tbx.reader.olci.pixelGeoCoding=true \
+		 -Ds3tbx.reader.slstrl1b.pixelGeoCodings=true \
+		 -Dsnap.log.level=ERROR \
+		 -e || (log_err "gpt error"; exit 1)
   log_info "gpt: Finished"
 
   resize=5000
