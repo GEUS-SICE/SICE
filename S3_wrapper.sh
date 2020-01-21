@@ -3,15 +3,15 @@
 # 15 March (074) - 30 Sep (274)
 
 # CREODIAS
-SEN3_source=/eodata/Sentinel-3
-dest_root=/sice-data/SICE/S3
+SEN3_local=/eodata/Sentinel-3
+SEN3_root=/sice-data/SICE/S3
 proc_root=/sice-data/SICE/proc
 mosaic_root=/sice-data/SICE/mosaic
 
 # # dev
-# dest_root=./SEN3
-# proc_root=./out
-# mosaic_root=./mosaic
+SEN3_root=./SEN3
+proc_root=./out
+mosaic_root=./mosaic
 
 set -o errexit
 set -o nounset
@@ -29,15 +29,15 @@ for year in 2018 2017; do
     date=$(date -d "${year}-01-01 +$(( 10#${doy}-1 )) days" "+%Y-%m-%d")
 
     # # # Fetch one day of OLCI & SLSTR scenes over Greenland
-    if [[ ! -d "${dest_root}/${year}/${date}" ]]; then
-      mkdir -p ${dest_root}/${year}/${date}
-      # ./dhusget_wrapper.sh -d ${date} -l ${SEN3_source} -o ${dest_root}/${year}/${date}
-      ./dhusget_wrapper.sh -d ${date} -o ${dest_root}/${year}/${date}
+    if [[ ! -d "${SEN3_root}/${year}/${date}" ]]; then
+      mkdir -p ${SEN3_root}/${year}/${date}
+      # ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_root}/${year}/${date}
+      ./dhusget_wrapper.sh -d ${date} -o ${SEN3_root}/${year}/${date}
     fi
     
     # SNAP: Reproject, calculate reflectance, extract bands, etc.
     if [[ ! -d "${proc_root}/${date}" ]]; then
-      ./S3_proc.sh -i ${dest_root}/${year}/${date} -o ${proc_root}/${date} -X S3.xml -t
+      ./S3_proc.sh -i ${SEN3_root}/${year}/${date} -o ${proc_root}/${date} -X S3.xml -t
     fi
     
     # SICE
