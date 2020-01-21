@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 if [ "$#" -ne 3 ]; then
   echo "Usage: $0 <yyyy-mm-dd> <infolder> <outfolder>" >&2
   exit 1
