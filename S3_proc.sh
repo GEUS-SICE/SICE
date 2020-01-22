@@ -75,6 +75,8 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   olci_folder=$(basename "${folder}")
   olci_dts=$(echo "${olci_folder}" | rev | cut -d_ -f11 | rev)
   dest=${outpath}/${olci_dts}
+
+  # if [[ -d "${dest}" ]]; then continue; fi
   
   # find nearest SLSTR folder. Timestamp is same or next minute.
   olci_date=${olci_dts:0:8}
@@ -102,6 +104,10 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
 		 -Dsnap.log.level=ERROR \
 		 -e || (log_err "gpt error"; exit 1)
   log_info "gpt: Finished"
+
+  # # Discard out bad folders (defined as size > 10 GB)
+  (cd ${dest}/../; du -sm * | awk '$1 > 10000 {print $2}' | xargs rm -fr)
+  if [[ ! -d "${dest}" ]]; then continue; fi # if we removed the directory, break out of the loop
 
   resize=5000
   log_info "Resampling to ${resize} m resolution..."
