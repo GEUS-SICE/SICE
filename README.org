@@ -1,4 +1,23 @@
 
+
+* Table of Contents                               :toc_2:noexport:
+- [[#sentinel-3-s3-albedo-processing-pipeline][Sentinel-3 (S3) Albedo Processing Pipeline]]
+  - [[#fetch-s3-olci--slstr-products][Fetch S3 OLCI & SLSTR products]]
+  - [[#process-with-snap][Process with SNAP]]
+  - [[#pysice][pySICE]]
+  - [[#mosaic][Mosaic]]
+- [[#debugging--testing][Debugging & Testing]]
+- [[#development-environment][Development Environment]]
+  - [[#bash][Bash]]
+  - [[#python][Python]]
+  - [[#parallel][Parallel]]
+  - [[#grass][GRASS]]
+  - [[#gpt][GPT]]
+  - [[#snap][SNAP]]
+- [[#misc-notes--code-snippets][Misc Notes & Code Snippets]]
+  - [[#generate-ice-mask][Generate ice mask]]
+  - [[#footprint][Footprint]]
+
 * Sentinel-3 (S3) Albedo Processing Pipeline
 
 1. Fetch S3 OLCI & SLSTR products
