@@ -26,7 +26,7 @@ trap ctrl_c INT # trap ctrl-c and call ctrl_c()
 ctrl_c() {
   log_err "CTRL-C caught"
   log_err "Removing gpt progress..."
-  [[ -d ${dest} ]] && rm ${dest}/*_x.tif
+  [[ -d ${dest} ]] && (cd ${dest}; rm *_x.tif)
 }
 
 debug() { if [[ ${debug:-} == 1 ]]; then log_warn "debug:"; echo $@; fi; }
