@@ -1,6 +1,16 @@
+#!/usr/bin/env bash
 
-# 2017 & 2018
-# 15 March (074) - 30 Sep (274)
+# Wrapper for running SICE pipeline
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -x
+
+red='\033[0;31m'; orange='\033[0;33m'; green='\033[0;32m'; nc='\033[0m' # No Color
+log_info() { echo -e "${green}[$(date --iso-8601=seconds)] [INFO] ${@}${nc}"; }
+log_warn() { echo -e "${orange}[$(date --iso-8601=seconds)] [WARN] ${@}${nc}"; }
+log_err() { echo -e "${red}[$(date --iso-8601=seconds)] [ERR] ${@}${nc}" 1>&2; }
 
 # CREODIAS
 SEN3_local=/eodata/Sentinel-3
@@ -8,7 +18,7 @@ SEN3_source=/sice-data/SICE/S3
 proc_root=/sice-data/SICE/proc
 mosaic_root=/sice-data/SICE/mosaic
 
-# # dev
+### dev
 # SEN3_source=./SEN3
 # proc_root=./out
 # mosaic_root=./mosaic
@@ -19,49 +29,45 @@ set -o pipefail
 
 LD_LIBRARY_PATH=. # SNAP requirement
 
-for year in 2018 2017; do
+for year in 2018 2019; do
   for doy in $(seq -w 74 274); do
 
-#     ## DEBUG
-# for year in 2017; do
-#   for doy in 227 180; do  # 2017-08-15=227
+### DEBUG
+# for year in 2018; do
+#   for doy in 227; do  # 2017-08-15=227
 
     date=$(date -d "${year}-01-01 +$(( 10#${doy}-1 )) days" "+%Y-%m-%d")
     
     if [[ -d "${mosaic_root}/${date}" ]]; then
-      echo "${mosaic_root}/${date} already exists, date skipped"
+      log_warn "${mosaic_root}/${date} already exists, date skipped"
       continue
     fi
     
-    # # # Fetch one day of OLCI & SLSTR scenes over Greenland
-    mkdir -p ${SEN3_source}/${year}/${date}
-    # ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date}
-    ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date}
+    ### Fetch one day of OLCI & SLSTR scenes over Greenland
+    ## Use local files (PTEP, DIAS, etc.)
+    # ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} \
+    # 			 -f Svalbard -u <user> -p <password>
+    ## Download files
+    # ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
+    # 			 -f Svalbard -u <user> -p <password>
     
     # SNAP: Reproject, calculate reflectance, extract bands, etc.
     ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X S3.xml -t
     
     # SICE
-    # Does SnBBA exist already in every folder?
-    if [[ $(cd ${proc_root}/${date}; ls) \
-	    != $(cd ${proc_root}/${date}; ls */SnBBA.tif | parallel dirname) ]]; then
-      parallel --verbose --lb -j 5 \
-    	       python ./sice.py ${proc_root}/${date}/{} \
-    	       ::: $(ls ${proc_root}/${date}/)
-    fi
+    parallel --verbose --lb -j 5 \
+    	     "python ./sice.py ${proc_root}/${date}/{}" \
+    	     ::: $(ls ${proc_root}/${date}/)
     
     # Mosaic
-    if [[ ! -f "${mosaic_root}/${date}/SZA.tif" ]]; then
-      ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
-    fi
+    ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
 
     # Extra
-    if [[ $(ls ${mosaic_root}/${date}/* | grep BBA_emp.tif) == "" ]]; then
-      gdal_opts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q'
-      _cwd=$(pwd)
-      cd ${mosaic_root}/${date}/
-      tmpdir=./G_$$
-      grass -c SZA.tif ${tmpdir} --exec <<EOF
+    gdal_opts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q'
+    _cwd=$(pwd)
+    cd ${mosaic_root}; cd ${date}
+    tmpdir=./G_$$
+    grass -c SZA.tif ${tmpdir} --exec <<EOF
 r.external input=r_TOA_01.tif output=r01
 r.external input=r_TOA_06.tif output=r06
 r.external input=r_TOA_17.tif output=r17
@@ -73,9 +79,8 @@ r.out.gdal -f -m -c input=ndsi output=NDSI.tif ${gdal_opts}
 r.out.gdal -f -m -c input=ndbi output=NDBI.tif ${gdal_opts}
 r.out.gdal -f -m -c input=bba_emp output=BBA_emp.tif ${gdal_opts}
 EOF
-      rm -fR ${tmpdir}
-      cd ${_cwd}
-    fi
+    rm -fR ${tmpdir}
+    cd ${_cwd}
 
   done
 done
