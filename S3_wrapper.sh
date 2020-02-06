@@ -45,8 +45,8 @@ for year in 2018 2019; do
     
     ### Fetch one day of OLCI & SLSTR scenes over Greenland
     ## Use local files (PTEP, DIAS, etc.)
-    # ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} \
-    # 			 -f Svalbard -u <user> -p <password>
+    ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} \
+    			 -f Svalbard -u <user> -p <password>
     ## Download files
     # ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
     # 			 -f Svalbard -u <user> -p <password>
@@ -61,26 +61,6 @@ for year in 2018 2019; do
     
     # Mosaic
     ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
-
-    # Extra
-    gdal_opts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q'
-    _cwd=$(pwd)
-    cd ${mosaic_root}; cd ${date}
-    tmpdir=./G_$$
-    grass -c SZA.tif ${tmpdir} --exec <<EOF
-r.external input=r_TOA_01.tif output=r01
-r.external input=r_TOA_06.tif output=r06
-r.external input=r_TOA_17.tif output=r17
-r.external input=r_TOA_21.tif output=r21
-r.mapcalc "ndsi = (r17-r21)/(r17+r21)"
-r.mapcalc "ndbi = (r01-r21)/(r01+r21)"
-r.mapcalc "bba_emp = (r01 + r06 + r17 + r21) / (4.0 * 0.945 + 0.055)"
-r.out.gdal -f -m -c input=ndsi output=NDSI.tif ${gdal_opts}
-r.out.gdal -f -m -c input=ndbi output=NDBI.tif ${gdal_opts}
-r.out.gdal -f -m -c input=bba_emp output=BBA_emp.tif ${gdal_opts}
-EOF
-    rm -fR ${tmpdir}
-    cd ${_cwd}
 
   done
 done
