@@ -27,7 +27,12 @@ for year in 2018 2017; do
 #   for doy in 227 180; do  # 2017-08-15=227
 
     date=$(date -d "${year}-01-01 +$(( 10#${doy}-1 )) days" "+%Y-%m-%d")
-
+    
+    if [[ -d "${mosaic_root}/${date}" ]]; then
+      echo "${mosaic_root}/${date} already exists, date skipped"
+      continue
+    fi
+    
     # # # Fetch one day of OLCI & SLSTR scenes over Greenland
     if [[ ! -d "${SEN3_source}/${year}/${date}" ]]; then
       mkdir -p ${SEN3_source}/${year}/${date}
