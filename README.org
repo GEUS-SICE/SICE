@@ -1,105 +1,311 @@
 
+
+* Table of Contents                               :toc_2:noexport:
+- [[#sentinel-3-s3-albedo-processing-pipeline][Sentinel-3 (S3) Albedo Processing Pipeline]]
+  - [[#fetch-s3-olci--slstr-products][Fetch S3 OLCI & SLSTR products]]
+  - [[#process-with-snap][Process with SNAP]]
+  - [[#pysice][pySICE]]
+  - [[#mosaic][Mosaic]]
+- [[#debugging--testing][Debugging & Testing]]
+- [[#development-environment][Development Environment]]
+  - [[#bash][Bash]]
+  - [[#python][Python]]
+  - [[#parallel][Parallel]]
+  - [[#grass][GRASS]]
+  - [[#gpt][GPT]]
+  - [[#snap][SNAP]]
+- [[#misc-notes--code-snippets][Misc Notes & Code Snippets]]
+  - [[#generate-ice-mask][Generate ice mask]]
+  - [[#footprint][Footprint]]
+
 * Sentinel-3 (S3) Albedo Processing Pipeline
-Forked from Ken Mankoff's scripts: https://github.com/mankoff/SICE
 
 1. Fetch S3 OLCI & SLSTR products
-2. Process OLCI & SLSTR using SNAP
-3. Extract cloud ID from SLSTR and OLCI granules
-4. Build Greenland daily mosaic of SICE retrievals using multiple scenes
+2. Process OLCI & SLSTR using SNAP GPT
+3. Process using pySICE
+4. Build daily mosaic
+
+The steps above are encapsulated in [[./S3_wrapper.sh]].
 
 In more detail:
 
 ** Fetch S3 OLCI & SLSTR products
 
-+ Download OLCI EFR and SLSTR RBT products for a specified day with [[./fetch_scene_from_date.sh]].
++ Download OLCI EFR and SLSTR RBT products for a specified day with [[./dhusget_wrapper.sh]].
 
 ** Process with SNAP
 
-+ This step is a combination of running GPT on [[./S3_proc.xml]] with [[./S3_proc.sh]].
-+ This the processing can be sped up by ~10x by downscaling OLCI data to ~7 km resolution. This is done when using [[./S3_proc_fast.xml]] with [[./S3_proc.sh]].
-+ The latest code version "sice.f" can be obtained from members of the SICE team, compiled and placed in a "SnowProcessor" folder. It can then be used a low resolution calling: bash s3_proc.sh -i in_folder -o out_folder -X xml/SICE_preproc.xml -csv
-+ Outputs: A folder for each OLCI scene
++ This step is a combination of running GPT on [[./S3.xml]] with [[./S3_proc.sh]].
++ Inputs: OLCI and SLSTR scenes
++ Outputs: A folder OLCI timestamp
 
-** Data extraction from SLSTR products
-+ [[./DEBUG_SLSTR.xml]] can be used with [[./S3_proc.sh]] to extract radiances and reflectances.
-+ [[./DEBUG_SLSTR_cloud.xml]] can be used with [[./S3_proc.sh]] to extract SLSTR cloud ID.
+** pySICE
+
++ Run [[./sice.py]] passing in one of the folders generated in the previous step.
++ *WARNING*: This step is slow, and may take > 24 hours.
 
 ** Mosaic
 
 + As implemented in [[./dm.sh]] and [[./dm.grass.sh]], for each day
-  + Reproject to EPSG:3413
-  + Combine all the files from to form a mosaic using
-  + When scenes overlap, selection criteria is "minumum SZA"
-
-The GNU parallel function will be needed (Tange (2011): GNU Parallel - The Command-Line Power Tool;login: The USENIX Magazine, February 2011:42-47.). Install it with the command: 
-
-#+BEGIN_SRC sh
-sudo apt install parallel#+END_SRC
-#+END_SRC
+  + Combine all the files from to form a mosaic
+  + Mask out clouds, then...
+  + When scenes overlap, use minimum SZA
 
 * Debugging & Testing
 
-** GPT one scene
+Change the year and day for loops in [[./S3_wrapper.sh]] to one year and one day. E.g.
 
-Given one S3 EFR folder
+#+BEGIN_SRC bash :results verbatim
+for year in 2017; do # one year
+  for doy in 227 180; do # two example days
+  # loop contents
+  done
+done
+#+END_SRC
+
+#+RESULTS:
+
+* Development Environment
+:PROPERTIES:
+:header-args:bash+: :eval no-export
+:END:
+
+This work is developed with the following software versions
+
+** Bash
+#+BEGIN_SRC bash :results verbatim
+bash --version
+#+END_SRC
+
+#+RESULTS:
+: GNU bash, version 4.4.20(1)-release (x86_64-pc-linux-gnu)
+: Copyright (C) 2016 Free Software Foundation, Inc.
+: License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+: 
+: This is free software; you are free to change and redistribute it.
+: There is NO WARRANTY, to the extent permitted by law.
+
+** Python
+
+
+#+BEGIN_SRC sh :results verbatim :tangle environment.yml :async :session none
+conda env export --name SICE
+#+END_SRC
+
+Take the lines below, put into a file named =environment.yml= and then run the following in order to set up an identical Anaconda Python environment.
+
+#+BEGIN_SRC bash :results verbatim
+conda env create -f environment.yml
+#+END_SRC
+
+And then run =conda activate SICE= to activate the SICE environment.
+
+#+NAME: conda_env 
+#+BEGIN_SRC bash :cmdline -i :results verbatim :eval no-export :exports both
+conda env export --name SICE | cat
+#+END_SRC
+
+#+RESULTS: conda_env
+#+begin_example
+name: SICE
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=main
+  - affine=2.3.0=py_0
+  - attrs=19.3.0=py_0
+  - boost-cpp=1.70.0=h8e57a91_2
+  - bzip2=1.0.8=h516909a_1
+  - ca-certificates=2019.9.11=hecc5488_0
+  - cairo=1.16.0=hfb77d84_1002
+  - certifi=2019.9.11=py37_0
+  - cfitsio=3.470=hb60a0a2_2
+  - click=7.0=py_0
+  - click-plugins=1.1.1=py_0
+  - cligj=0.5.0=py_0
+  - curl=7.65.3=hf8cf82a_0
+  - expat=2.2.5=he1b5a44_1004
+  - fontconfig=2.13.1=h86ecdb6_1001
+  - freetype=2.10.0=he983fc9_1
+  - freexl=1.0.5=h14c3975_1002
+  - geos=3.7.2=he1b5a44_2
+  - geotiff=1.5.1=hfa9ff18_4
+  - gettext=0.19.8.1=hc5be6a0_1002
+  - giflib=5.1.7=h516909a_1
+  - glib=2.58.3=h6f030ca_1002
+  - hdf4=4.2.13=h9a582f1_1002
+  - hdf5=1.10.5=nompi_h3c11f04_1104
+  - icu=64.2=he1b5a44_1
+  - jpeg=9c=h14c3975_1001
+  - json-c=0.13.1=h14c3975_1001
+  - kealib=1.4.10=h58c409b_1005
+  - krb5=1.16.3=h05b26f9_1001
+  - libblas=3.8.0=14_openblas
+  - libcblas=3.8.0=14_openblas
+  - libcurl=7.65.3=hda55be3_0
+  - libdap4=3.20.4=hd3bb157_0
+  - libedit=3.1.20170329=hf8c457e_1001
+  - libffi=3.2.1=he1b5a44_1006
+  - libgcc-ng=9.1.0=hdf63c60_0
+  - libgdal=3.0.1=h3d260b8_10
+  - libgfortran-ng=7.3.0=hdf63c60_2
+  - libiconv=1.15=h516909a_1005
+  - libkml=1.3.0=h4fcabce_1010
+  - liblapack=3.8.0=14_openblas
+  - libnetcdf=4.7.1=nompi_h94020b1_101
+  - libopenblas=0.3.7=h6e990d7_2
+  - libpng=1.6.37=hed695b0_0
+  - libpq=11.5=hd9ab2ff_1
+  - libspatialite=4.3.0a=hcf5492f_1031
+  - libssh2=1.8.2=h22169c7_2
+  - libstdcxx-ng=9.1.0=hdf63c60_0
+  - libtiff=4.0.10=h57b8799_1003
+  - libuuid=2.32.1=h14c3975_1000
+  - libxcb=1.13=h14c3975_1002
+  - libxml2=2.9.9=hee79883_5
+  - lz4-c=1.8.3=he1b5a44_1001
+  - ncurses=6.1=hf484d3e_1002
+  - numpy=1.17.3=py37h95a1406_0
+  - openjpeg=2.3.1=h21c5421_1
+  - openssl=1.1.1c=h516909a_0
+  - pcre=8.43=he1b5a44_0
+  - pip=19.3.1=py37_0
+  - pixman=0.38.0=h516909a_1003
+  - poppler=0.67.0=ha967d66_7
+  - poppler-data=0.4.9=1
+  - postgresql=11.5=hc63931a_1
+  - proj=6.2.0=hc80f0dc_1
+  - pthread-stubs=0.4=h14c3975_1001
+  - pyparsing=2.4.2=py_0
+  - python=3.7.3=h33d41f4_1
+  - rasterio=1.1.0=py37h900e953_0
+  - readline=8.0=hf8c457e_0
+  - setuptools=41.4.0=py37_0
+  - snuggs=1.4.7=py_0
+  - sqlite=3.30.1=hcee41ef_0
+  - tbb=2018.0.5=h2d50403_0
+  - tiledb=1.6.2=h69c774e_1
+  - tk=8.6.9=hed695b0_1003
+  - tzcode=2019a=h516909a_1002
+  - wheel=0.33.6=py37_0
+  - xerces-c=3.2.2=h8412b87_1004
+  - xorg-kbproto=1.0.7=h14c3975_1002
+  - xorg-libice=1.0.10=h516909a_0
+  - xorg-libsm=1.2.3=h84519dc_1000
+  - xorg-libx11=1.6.9=h516909a_0
+  - xorg-libxau=1.0.9=h14c3975_0
+  - xorg-libxdmcp=1.1.3=h516909a_0
+  - xorg-libxext=1.3.4=h516909a_0
+  - xorg-libxrender=0.9.10=h516909a_1002
+  - xorg-renderproto=0.11.1=h14c3975_1002
+  - xorg-xextproto=7.3.0=h14c3975_1002
+  - xorg-xproto=7.0.31=h14c3975_1007
+  - xz=5.2.4=h14c3975_1001
+  - zlib=1.2.11=h516909a_1006
+  - zstd=1.4.0=h3b9ef0a_0
+  - pip:
+    - pandas==0.25.3
+    - python-dateutil==2.8.1
+    - pytz==2019.3
+    - six==1.13.0
+    - tqdm==4.36.1
+    - xarray==0.14.0
+prefix: /home/kdm/local/anaconda/envs/SICE
+
+#+end_example
+
+
+** Parallel
+
+#+BEGIN_SRC bash :results verbatim
+parallel --version
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+GNU parallel 20161222
+Copyright (C) 2007,2008,2009,2010,2011,2012,2013,2014,2015,2016
+Ole Tange and Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+GNU parallel comes with no warranty.
+
+Web site: http://www.gnu.org/software/parallel
+
+When using programs that use GNU Parallel to process data for publication
+please cite as described in 'parallel --citation'.
+#+end_example
+
+** GRASS
+#+BEGIN_SRC bash :results verbatim
+grass --version 2>&1
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+GRASS GIS 7.4.0
+
+Geographic Resources Analysis Support System (GRASS) is Copyright,
+1999-2018 by the GRASS Development Team, and licensed under terms of the
+GNU General Public License (GPL) version >=2.
+ 
+This GRASS GIS 7.4.0 release is coordinated and produced by
+the GRASS Development Team with contributions from all over the world.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+#+end_example
+
+** GPT
 
 #+BEGIN_SRC sh :results verbatim :exports both
-ls ./S3_dat | head -n1
+~/local/snap/bin/gpt --diag
 #+END_SRC
+
 #+RESULTS:
-: S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
+#+begin_example
+SNAP Release version 7.0
+SNAP home: /home/kdm/local/snap/bin//..
+SNAP debug: null
+SNAP log level: null
+Java home: /home/kdm/local/snap/jre
+Java version: 1.8.0_202
+Processors: 8
+Max memory: 18.7 GB
+Cache size: 1024.0 MB
+Tile parallelism: 8
+Tile size: 512 x 512 pixels
 
-Run our simple [[./DEBUG.xml]] processor and mosaic one day
+To configure your gpt memory usage:
+Edit snap/bin/gpt.vmoptions
 
-#+BEGIN_SRC sh :results verbatim
-PATH=~/local/snap/bin:${PATH}
-rm -fR tmp.out tmp.mosaic
-mkdir tmp.out
-S3=S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
-gpt DEBUG.xml -Ppathfile=./S3_dat/${S3}/xfdumanifest.xml -PtargetFolder=./tmp.out
-nth tmp.out
+To configure your gpt cache size and parallelism:
+Edit .snap/etc/snap.properties or gpt -c ${cachesize-in-GB}G -q ${parallelism} 
+#+end_example
+
+** SNAP
+
+Must be eval'd manually?
+#+BEGIN_SRC sh :results verbatim :exports both :eval no
+~/local/snap/bin/snap --nosplash --list --modules --refresh
 #+END_SRC
-#+RESULTS:
 
-** Process One Day
 
-Given the following S3 EFR folders:
-
-#+BEGIN_SRC sh :results verbatim :exports both
-ls ./S3_dat
-#+END_SRC
-#+RESULTS:
-: S3A_OL_1_EFR____20170815T103004_20170815T103304_20180707T032145_0179_021_108_1620_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T121103_20170815T121403_20180707T033458_0179_021_109_1620_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T121403_20170815T121703_20180707T033531_0179_021_109_1800_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T135202_20170815T135502_20180707T032400_0179_021_110_1620_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T135502_20170815T135802_20180707T032438_0179_021_110_1800_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T135802_20170815T140102_20180707T032538_0180_021_110_1980_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T153301_20170815T153601_20180707T033529_0180_021_111_1620_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T153601_20170815T153901_20180707T033614_0179_021_111_1800_LR2_R_NT_002.SEN3
-: S3A_OL_1_EFR____20170815T171400_20170815T171700_20180707T032123_0179_021_112_1620_LR2_R_NT_002.SEN3
-
-Run our simple [[./DEBUG.xml]] processor on one day
-
-#+BEGIN_SRC sh :results verbatim
-PATH=~/local/snap/bin:${PATH}
-rm -fR tmp.out tmp.mosaic
-
-# Process all days in S3_dat
-./S3_proc.sh -i ./S3_dat -o ./tmp.out -D -v
-
-# Mosaic one day
-./dm.sh 20170815 ./tmp.out ./tmp.mosaic
-#+END_SRC
-#+RESULTS:
 
 * Misc Notes & Code Snippets
+:PROPERTIES:
+:header-args:bash+: :eval no
+:END:
 
 ** Generate ice mask
  
 + Use the icemask from BedMachine v3
 
-#+BEGIN_SRC sh :results verbatim :eval no-export
+#+BEGIN_SRC bash :results verbatim :eval no
 grass72 -c EPSG:3413 ./Gtmp
 r.in.gdal input=NetCDF:~/data/Greenland/Morlighem_2017/BedMachineGreenland-2017-09-20.nc:mask output=icemask
 
@@ -119,402 +325,33 @@ r.out.gdal -c -m input=mask output=mask.tif type=Byte createopt=COMPRESS=DEFLATE
 exit
 trash Gtmp
 #+END_SRC
-#+RESULTS:
+*** Buffered ice mask
+#+BEGIN_SRC bash :results verbatim
+grass -c mask.tif ./Gtmp
+r.in.gdal input=mask.tif output=mask
+# 50 cells = 25 km @ 500 m
+r.mapcalc "ice = if(mask == 2, 1, null())"
+r.grow input=ice output=ice_grow radius=50 new=1
 
-** Per pixel geocoding options on CLI
+r.null ice_grow null=100
+r.clump input=ice_grow output=clumps
+r.stats -c clumps sort=asc
+for ID in $(r.stats -c clumps sort=asc | head -n7 | cut -d" " -f1); do
+  r.mapcalc "ice_grow = if(clumps == ${ID}, 1, ice_grow)" --o
+done
+r.null ice_grow setnull=100
 
-From: https://forum.step.esa.int/t/best-practice-to-convert-and-reproject-sentinel-3-radiances-to-reflectance/5744/25
+r.out.gdal input=ice_grow output=ice_mask_buffer.tif format=GTiff type=Byte createopt="COMPRESS=DEFLATE"
+exit
+trash Gtmp
+#+END_SRC
 
-+ =-Ds3tbx.reader.olci.pixelGeoCoding=true=. See also
-+ =s3tbx.reader.slstrl1b.pixelGeoCodings=
-+ =s3tbx.reader.meris.pixelGeoCoding=
 
 ** Footprint
 
 Get GL outline by drawing in Google Earth, export KML, then:
 
-#+BEGIN_SRC sh :results verbatim
+#+BEGIN_SRC bash :results verbatim :eval no-export
 ogrinfo -al GL_outline.kml  | grep LINESTRING | sed s/\ 0//g
 #+END_SRC
-#+RESULTS:
-:   LINESTRING Z (-53.656510998614 82.4951349654326,-59.9608997952054 82.1309669419302,-67.7892790605668 80.5602726884285,-67.9606014394374 80.0218479599442,-67.6072679271745 79.3014049647312,-72.7375435732184 78.589499923855,-73.5413877637147 78.1636943551527,-72.9428482239824 77.383771707567,-69.0700767925261 76.0128312085861,-66.6509837672326 75.7624371858398,-60.3956740146368 75.8231961720352,-58.4311886831941 74.885454496734,-55.1967975793182 69.6980961092145,-53.856542195614 68.836827126205,-54.2986423614971 67.0754091899264,-53.556230345375 65.610957996411,-52.3863139424116 64.7989541895734,-52.3228757389159 64.0074120108603,-50.207636158087 62.10102160819,-48.6300832525784 60.7381422112742,-45.052233335019 59.7674821385312,-43.2890274040171 59.6436933230826,-42.4957557404764 60.3093279369714,-41.8486807919329 61.5655162642218,-41.696971498891 62.648646023379,-40.1106185043429 63.5452982243944,-39.9111533763437 64.794417571311,-38.0777963367496 65.4068477012585,-36.9899016468925 65.1987069880844,-31.2165494022336 67.7166128864512,-25.8502840866575 68.6303659153185,-21.6517276244872 70.0839769825896,-20.9932063064242 70.7880484213637,-21.2829833867197 72.9254092162205,-16.9050363384979 74.9601702268335,-17.1213527989912 79.6158229046929,-10.2883304040514 81.4244115757783,-14.0398740460794 81.9745362690188,-17.8112945221629 82.0131368667592,-28.5252333238728 83.7013945514435,-40.1075150451371 83.6651081451092,-53.656510998614 82.4951349654326)
-
-* Dev & Test Environment
-
-This work is developed and tested with the following software versions
-
-** GPT
-
-#+BEGIN_SRC sh :results verbatim :exports both
-~/local/snap/bin/gpt --diag
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-SNAP Release version 7.0-SNAPSHOT
-SNAP home: /home/kdm/local/snap/bin//..
-SNAP debug: null
-SNAP log level: null
-Java home: /home/kdm/local/snap/jre
-Java version: 1.8.0_102
-Processors: 8
-Max memory: 18.7 GB
-Cache size: 1024.0 MB
-Tile parallelism: 8
-Tile size: 512 x 512 pixels
-
-To configure your gpt memory usage:
-Edit snap/bin/gpt.vmoptions
-
-To configure your gpt cache size and parallelism:
-Edit .snap/etc/snap.properties or gpt -c ${cachesize-in-GB}G -q ${parallelism} 
-#+end_example
-
-** SNAP
-
-#+BEGIN_SRC sh :results verbatim :exports both
-~/local/snap/bin/snap --modules --refresh --list
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-Refreshing SNAP Community Extensions
-Refreshing SNAP
-Refreshing SNAP Extensions
-Code Name                                          Version  State    
--------------------------------------------------- -------- ---------
-org.csa.rstb.rstb.op.polarimetric.tools            7.5.0.0  Enabled  
-org.esa.s2tbx.s2tbx.s2msi.reader                   7.0.0.0  Enabled  
-org.esa.snap.snap.temporal.percentile              7.0.0.0  Enabled  
-org.netbeans.swing.plaf                            1.41.1   Enabled  
-org.netbeans.modules.extexecution                  1.48.1   Enabled  
-org.esa.snap.snap.unmix.ui                         7.0.0.0  Enabled  
-org.netbeans.modules.options.api                   1.45.1   Enabled  
-org.esa.snap.snap.pgx.reader                       7.0.0.0  Enabled  
-org.openide.modules                                7.48.1   Enabled  
-org.esa.s2tbx.s2tbx.forest.cover.change            7.0.0    Enabled  
-org.esa.snap.snap.smart.configurator.ui            7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.landsat.reader                 7.0.0.0  Enabled  
-org.esa.sen2coral.sen2coral.kit                    1.0.0    Available
-org.openide.util.lookup                            8.33.1   Enabled  
-org.netbeans.modules.masterfs.nio2                 1.15.1   Enabled  
-org.esa.s3tbx.s3tbx.sentinel3.reader               7.0.0.0  Enabled  
-org.esa.snap.snap.python                           7.0.0.0  Enabled  
-org.esa.snap.idepix.olci.s3snow                    0.82     Enabled  
-org.esa.s1tbx.s1tbx.kit                            7.0.0.0  Enabled  
-org.netbeans.api.annotations.common                1.27.1   Enabled  
-org.esa.s2tbx.s2tbx.gdal.reader                    7.0.0.0  Enabled  
-org.esa.snap.globcover.worldmap                    7.0.0.0  Enabled  
-org.netbeans.core.output2                          1.41.1   Enabled  
-org.esa.snap.snap.branding                         7.0.0.0  Enabled  
-org.esa.snap.snap.core                             7.0.0.0  Enabled  
-org.netbeans.core.netigso                          1.31.1   Enabled  
-org.esa.s3tbx.s3tbx.spot.vgt.reader                7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.sentinel3.reader.ui            7.0.0.0  Enabled  
-org.netbeans.libs.jna.platform                     1.14.1   Enabled  
-org.esa.snap.snap.smart.configurator               7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.otb.adapters.kit               6.0.0    Available
-org.esa.s2tbx.s2tbx.land.cover                     7.0.0    Enabled  
-org.openide.execution                              9.3.1    Enabled  
-org.esa.snap.snap.statistics                       7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.mphchl                         7.0.0.0  Enabled  
-org.esa.s1tbx.s1tbx.commons                        7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.meris.l2auxdata                7.0.0.0  Enabled  
-org.esa.snap.ceres.ui                              7.0.0.0  Enabled  
-org.netbeans.spi.quicksearch                       1.27.1   Enabled  
-org.openide.windows                                6.75.1   Enabled  
-org.netbeans.modules.sampler                       1.14.1   Enabled  
-org.netbeans.modules.autoupdate.ui                 1.45.1   Enabled  
-org.esa.snap.snap.collocation                      7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.aatsr.sst.ui                   7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.olci.radiometry                7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.radiometric.indices.ui         7.0.0.0  Enabled  
-org.esa.snap.snap.gpf.ui                           7.0.0.0  Enabled  
-org.netbeans.modules.templates                     1.7.1    Enabled  
-org.esa.snap.ceres.core                            7.0.0.0  Enabled  
-org.esa.snap.snap.raster                           7.0.0.0  Enabled  
-org.esa.snap.netbeans.tile                         1.0      Enabled  
-org.esa.s3tbx.s3tbx.slstr.regrid                   7.0.0.0  Enabled  
-org.openide.util.enumerations                      6.33.1   Installed
-org.netbeans.modules.extbrowser                    1.53.1   Enabled  
-org.esa.snap.snap.csv.dataio                       7.0.0.0  Enabled  
-org.openide.actions                                6.39.1   Enabled  
-org.openide.compat                                 6.39.1   Installed
-org.esa.s2tbx.Pansharpening.bayes                  6.0.0    Available
-org.esa.snap.seadas.seadas.reader.ui               1.8      Enabled  
-org.esa.s1tbx.s1tbx.op.analysis.ui                 7.0.0.0  Enabled  
-org.esa.snap.snap.pixel.extraction                 7.0.0.0  Enabled  
-org.openide.loaders                                7.66.1   Enabled  
-org.esa.s2tbx.s2tbx.gdal.reader.ui                 7.0.0.0  Enabled  
-org.openide.nodes                                  7.45.1   Enabled  
-org.netbeans.modules.keyring.fallback              1.8.1    Enabled  
-org.esa.snap.snap.binning                          7.0.0.0  Enabled  
-org.netbeans.swing.outline                         1.34.1   Enabled  
-org.esa.s2tbx.sen2cor                              6.0.2    Available
-org.esa.s1tbx.s1tbx.op.feature.extraction          7.0.0.0  Enabled  
-org.openide.io                                     1.49.1   Enabled  
-org.esa.s3tbx.s3tbx.merisl3.reader                 7.0.0.0  Enabled  
-org.esa.snap.snap.pixel.extraction.ui              7.0.0.0  Enabled  
-org.jlinda.jlinda.nest                             7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.fub.wew.ui                     7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.spot.reader                    7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.radiometric.indices            7.0.0.0  Enabled  
-net.java.html.geo                                  1.3.0    Installed
-org.esa.snap.snap.gpf                              7.0.0.0  Enabled  
-org.esa.snap.snap.land.cover.ui                    7.0.0.0  Enabled  
-org.esa.snap.snap.bigtiff                          7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.muscate.reader                 7.0.0.0  Enabled  
-org.netbeans.libs.asm                              5.3.1    Enabled  
-org.esa.snap.snap.tango                            7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.grm.ui                         7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.meris.smac                     7.0.0.0  Enabled  
-org.esa.smostbx.smos.tools                         5.6.0    Enabled  
-org.netbeans.modules.masterfs.linux                1.13.1   Enabled  
-org.netbeans.modules.favorites                     1.46.1   Enabled  
-eu.s2gm.s2gm.snap.plugins                          1.2.0    Available
-org.esa.s1tbx.s1tbx.op.sar.processing              7.0.0.0  Enabled  
-org.esa.snap.snap.rut                              2.0      Available
-org.netbeans.modules.options.keymap                1.37.1   Enabled  
-org.esa.snap.snap.arcbingrid.reader                7.0.0.0  Enabled  
-org.netbeans.modules.queries                       1.43.1   Enabled  
-org.esa.snap.snap.envisat.reader                   7.0.0.0  Enabled  
-org.esa.sen2coral.sen2coral.algorithms             1.0.0    Available
-org.vito.probavbox.probavbox.kit                   2.1.0.0  Enabled  
-org.esa.s3tbx.s3tbx.insitu.client.ui               7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.idepix                         7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.rapideye.reader                7.0.0.0  Enabled  
-org.netbeans.modules.editor.mimelookup             1.40.1   Enabled  
-org.esa.smostbx.smos.gui                           5.6.0    Enabled  
-org.esa.s2tbx.sen2three                            6.0.0    Available
-org.esa.snap.snap.worldwind                        7.0.0.0  Enabled  
-org.esa.s1tbx.s1tbx.rcp                            7.0.0.0  Enabled  
-org.esa.snap.ceres.glayer                          7.0.0.0  Enabled  
-org.esa.snap.snap.jython                           7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.arc.ui                         7.0.0.0  Enabled  
-org.netbeans.libs.felix                            2.15.1   Enabled  
-org.esa.s2tbx.Segmentation.cc                      6.0.0    Available
-org.csa.rstb.rstb.op.classification.ui             7.5.0.0  Enabled  
-org.esa.s2tbx.s2tbx.s2msi.idepix                   7.0.0.0  Enabled  
-org.esa.snap.snap.pconvert                         7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.olci.o2corr                    0.81     Enabled  
-org.esa.snap.snap.geotiff                          7.0.0.0  Enabled  
-org.netbeans.modules.progress.ui                   1.33.1   Enabled  
-org.netbeans.modules.masterfs.ui                   2.3.1.2  Enabled  
-org.esa.s3tbx.s3tbx.atsr.reader                    7.0.0.0  Enabled  
-org.esa.snap.snap.rcp                              7.0.0.0  Enabled  
-org.netbeans.core.multiview                        1.44.1   Installed
-org.esa.s1tbx.s1tbx.op.insar                       7.0.0.0  Enabled  
-org.esa.sen2coral.sen2coral.inversion.ui           1.0.0    Available
-net.java.html.boot.fx                              1.3.0    Installed
-org.netbeans.api.visual                            2.47.1   Installed
-org.esa.snap.snap.classification                   7.0.0.0  Enabled  
-jcl.over.slf4j                                     1.7.5    Installed
-org.netbeans.modules.keyring.impl                  1.24.1   Enabled  
-org.openide.options                                6.37.1   Installed
-org.openide.explorer                               6.62.1   Enabled  
-org.esa.s2tbx.Pansharpening.rcs                    6.0.0    Available
-org.openide.filesystems.compat8                    9.9.1    Enabled  
-org.esa.snap.snap.cluster.analysis                 7.0.0.0  Enabled  
-org.esa.snap.snap.classification.ui                7.0.0.0  Enabled  
-org.esa.s1tbx.s1tbx.op.calibration.ui              7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.jp2.reader                     7.0.0.0  Enabled  
-org.netbeans.core.osgi                             1.22.1   Installed
-org.esa.snap.snap.getasse30.dem                    7.0.0.0  Enabled  
-org.netbeans.modules.netbinox                      1.41.1   Installed
-org.esa.snap.snap.product.library                  7.0.0.0  Enabled  
-org.netbeans.core.ui                               1.45.1   Enabled  
-org.esa.s3tbx.s3tbx.c2rcc                          7.0.0    Enabled  
-org.netbeans.core.startup.base                     1.62.1.1 Enabled  
-org.esa.snap.snap.watermask.ui                     7.0.0.0  Enabled  
-org.netbeans.modules.core.kit                      1.30.1   Enabled  
-org.esa.s2tbx.s2tbx.worldview2.reader              7.0.0.0  Enabled  
-org.csa.rstb.rstb.kit                              7.5.0.0  Enabled  
-org.esa.s2tbx.s2tbx.biophysical                    7.0.0.0  Enabled  
-org.esa.sen2coral.sen2coral.inversion              1.0.0    Available
-org.esa.smostbx.smos.reader                        5.6.0    Enabled  
-org.netbeans.libs.junit4                           1.17.1   Installed
-org.esa.s3tbx.s3tbx.meris.brr                      7.0.0.0  Enabled  
-org.esa.s1tbx.s1tbx.op.utilities.ui                7.0.0.0  Enabled  
-org.esa.snap.snap.sta                              7.0.0.0  Enabled  
-org.netbeans.modules.autoupdate.services           1.52.1   Enabled  
-org.esa.snap.seadas.seadas.reader                  1.8      Enabled  
-org.esa.s1tbx.s1tbx.op.ocean.ui                    7.0.0.0  Enabled  
-org.esa.snap.snap.watermask                        7.0.0.0  Enabled  
-org.esa.smostbx.smos.kit                           5.6.0    Enabled  
-org.esa.snap.snap.collocation.ui                   7.0.0.0  Enabled  
-org.esa.snap.snap.dem                              7.0.0.0  Enabled  
-org.netbeans.core.network                          1.10.1   Enabled  
-org.esa.snap.snap.envi.reader                      7.0.0.0  Enabled  
-org.netbeans.api.search                            1.21.1   Installed
-org.openide.filesystems.nb                         9.9.1    Enabled  
-org.netbeans.modules.keyring                       1.24.1   Enabled  
-org.netbeans.core.windows                          2.81.1   Enabled  
-org.netbeans.api.templates                         1.7.1    Enabled  
-org.esa.s3tbx.s3tbx.arc                            7.0.0.0  Enabled  
-org.esa.snap.snap.netcdf                           7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.s2msi.aerosol.retrieval        7.0.0.0  Enabled  
-org.esa.s1tbx.s1tbx.io.ephemeris                   7.0.0.0  Enabled  
-org.netbeans.modules.autoupdate.cli                1.13.1   Enabled  
-org.esa.s3tbx.s3tbx.alos.reader                    7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.spectral.angle.mapper          7.0.0    Enabled  
-org.netbeans.modules.uihandler                     2.35.1   Installed
-org.esa.s1tbx.s1tbx.op.utilities                   7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.s2msi.reader.ui                7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.coregistration.ui              7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.fub.wew                        7.0.0.0  Enabled  
-org.netbeans.modules.templatesui                   1.3.1    Installed
-org.esa.snap.snap.binning.ui                       7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.owt.classification             7.0.0.0  Enabled  
-org.esa.s2tbx.lib.gdal                             7.0.0.0  Enabled  
-org.esa.snap.netbeans.docwin                       1.0.2.0  Enabled  
-org.esa.s2tbx.MultivariateAlterationDetector       6.0.0    Available
-org.esa.s3tbx.s3tbx.snow                           2.0.14   Enabled  
-org.netbeans.bootstrap                             2.76.1   Enabled  
-org.vito.probavbox.probavbox.reader                2.1.0.0  Enabled  
-org.netbeans.modules.print                         7.26.1   Enabled  
-org.jlinda.jlinda.core                             7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.kompsat2.reader                7.0.0.0  Enabled  
-org.openide.util                                   9.7.1    Enabled  
-org.netbeans.modules.spi.actions                   1.28.1   Installed
-org.esa.s1tbx.s1tbx.op.feature.extraction.ui       7.0.0.0  Enabled  
-com.airbus.snap.snap.novasar.reader                1.0      Available
-org.esa.s3tbx.s3tbx.avhrr.reader                   7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.s2msi.mci.ui                   7.0.0.0  Enabled  
-org.esa.snap.ceres.jai                             7.0.0.0  Enabled  
-org.esa.snap.core.gpf.operators.tooladapter.snaphu 6.0.4    Available
-org.esa.s2tbx.s2tbx.coregistration                 7.0.0    Enabled  
-org.esa.s2tbx.s2tbx.reflectance.to.radiance        7.0.0.0  Enabled  
-org.jlinda.jlinda.nest.ui                          7.0.0.0  Enabled  
-org.netbeans.core.io.ui                            1.30.1   Enabled  
-org.netbeans.html.xhr4j                            1.3.0    Installed
-org.netbeans.api.progress.compat8                  1.47.1   Installed
-org.openide.dialogs                                7.42.1   Enabled  
-org.esa.snap.blue.marble.worldmap                  7.0.0.0  Enabled  
-org.esa.snap.snap.land.cover                       7.0.0.0  Enabled  
-org.esa.snap.snap.hdf5.writer                      7.0.0.0  Enabled  
-org.openide.awt                                    7.67.1   Enabled  
-org.esa.snap.snap.slope                            0.92     Enabled  
-org.esa.s3tbx.s3tbx.modis.reader                   7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.idepix.ui                      7.0.0.0  Enabled  
-org.netbeans.api.io                                1.3.1    Enabled  
-org.netbeans.api.intent                            1.2.1    Enabled  
-org.esa.s3tbx.s3tbx.rad2refl                       7.0.0.0  Enabled  
-org.csa.rstb.rstb.op.polarimetric.tools.ui         7.5.0.0  Enabled  
-org.csa.rstb.rstb.op.classification                7.5.0.0  Enabled  
-org.esa.s2tbx.Pansharpening.lmvm                   6.0.0    Available
-org.netbeans.api.progress.nb                       1.47.1   Enabled  
-org.esa.s2tbx.s2tbx.pleiades.reader                7.0.0.0  Enabled  
-org.esa.s2tbx.lib.openjpeg                         7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.slstr.pdu.stitching.ui         7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.preferences.ui                 7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.flhmci                         7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.forest.cover.change.ui         7.0.0.0  Enabled  
-org.netbeans.api.progress                          1.47.1   Enabled  
-net.java.html.sound                                1.3.0    Installed
-ncsa.hdf.lib.hdf                                   2.7.1    Enabled  
-org.esa.s2tbx.s2tbx.commons                        7.0.0.0  Enabled  
-org.openide.util.ui                                9.6.1    Enabled  
-org.esa.s2tbx.s2tbx.cache                          7.0.0.0  Enabled  
-org.netbeans.libs.javafx                           2.7.1    Installed
-org.esa.s3tbx.s3tbx.aatsr.sst                      7.0.0.0  Enabled  
-org.openide.text                                   6.67.1   Enabled  
-org.esa.snap.snap.help                             7.0.0.0  Enabled  
-org.esa.smostbx.smos.ee2netcdf.ui                  5.6.0    Enabled  
-org.esa.s3tbx.s3tbx.meris.ops                      7.0.0.0  Enabled  
-org.esa.snap.snap.ui                               7.0.0.0  Enabled  
-org.netbeans.libs.osgi                             1.21.1   Enabled  
-org.esa.s2tbx.s2tbx.s2msi.resampler                7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.spectral.angle.mapper.ui       7.0.0.0  Enabled  
-org.esa.s2tbx.Segmentation.meanshift               6.0.0    Available
-org.esa.s3tbx.s3tbx.flhmci.ui                      7.0.0.0  Enabled  
-net.java.html.json                                 1.3.0    Installed
-org.netbeans.core.startup                          1.62.1.1 Enabled  
-org.esa.s3tbx.s3tbx.meris.radiometry               7.0.0.0  Enabled  
-org.esa.smostbx.smos.dgg                           5.6.0    Enabled  
-org.netbeans.core.execution                        1.41.1   Enabled  
-org.esa.s3tbx.s3tbx.kit                            7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.meris.radiometry.ui            7.0.0.0  Enabled  
-org.esa.smostbx.smos.lsmask                        5.6.0    Enabled  
-org.esa.s1tbx.s1tbx.op.sar.processing.ui           7.0.0.0  Enabled  
-org.esa.snap.ceres.binio                           7.0.0.0  Enabled  
-org.netbeans.core                                  3.51.1   Enabled  
-org.netbeans.modules.sendopts                      2.35.1   Enabled  
-org.esa.snap.ceres.binding                         7.0.0.0  Enabled  
-org.esa.snap.snap.raster.ui                        7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.aerosol.retrieval              7.0.0.0  Enabled  
-org.jdesktop.layout                                1.33.1   Installed
-net.java.html.boot                                 1.3.0    Installed
-net.java.html.boot.script                          1.3.0    Installed
-org.esa.snap.snap.product.library.ui               7.0.0.0  Enabled  
-org.esa.snap.snap.engine.kit                       7.0.0.0  Enabled  
-org.esa.snap.snap.sta.ui                           7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.reflectance.to.radiance.ui     7.0.0.0  Enabled  
-org.csa.rstb.rstb.io                               7.5.0.0  Enabled  
-org.netbeans.core.nativeaccess                     1.31.1   Enabled  
-org.esa.s3tbx.s3tbx.chris.reader                   7.0.0.0  Enabled  
-org.esa.snap.snap.engine.utilities                 7.0.0.0  Enabled  
-org.esa.snap.snap.dem.ui                           7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.deimos.reader                  7.0.0.0  Enabled  
-org.esa.s1tbx.s1tbx.op.sentinel1.ui                7.0.0.0  Enabled  
-org.netbeans.modules.settings                      1.49.1   Enabled  
-org.esa.snap.ceres.metadata                        7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.spot6.reader                   7.0.0.0  Enabled  
-org.esa.s1tbx.s1tbx.op.sentinel1                   7.0.0.0  Enabled  
-org.netbeans.modules.masterfs                      2.55.1.2 Enabled  
-org.netbeans.lib.uihandler                         1.45.1   Installed
-org.esa.s2tbx.SFSTextureExtraction                 6.0.0    Available
-org.esa.sen2coral.sen2coral.algorithms.ui          1.0.0    Available
-org.esa.s2tbx.Segmentation.watershed               6.0.0    Available
-net.java.html                                      1.3.0    Installed
-org.esa.s1tbx.s1tbx.op.insar.ui                    7.0.0.0  Enabled  
-org.esa.smostbx.smos.ee2netcdf                     5.6.0    Enabled  
-org.esa.s2tbx.s2tbx.cache.ui                       7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.slstr.pdu.stitching            7.0.0.0  Enabled  
-org.netbeans.core.multitabs                        1.12.1.1 Enabled  
-org.esa.s2tbx.s2tbx.sta.adapters.help              7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.s2msi.idepix.ui                7.0.0.0  Enabled  
-org.netbeans.modules.editor.mimelookup.impl        1.32.1   Enabled  
-org.esa.s3tbx.s3tbx.meris.sdr                      7.0.0.0  Enabled  
-org.openide.filesystems                            9.10.1   Enabled  
-org.esa.snap.snap.graph.builder                    7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.kit                            7.0.0.0  Enabled  
-org.esa.s2tbx.Segmentation.mprofiles               6.0.0    Available
-org.netbeans.modules.extexecution.base             1.4.1    Enabled  
-org.esa.s3tbx.s3tbx.rad2refl.ui                    7.0.0.0  Enabled  
-org.netbeans.api.htmlui                            1.5.1    Installed
-org.esa.s1tbx.s1tbx.io                             7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.s2msi.mci                      7.0.0.0  Enabled  
-org.netbeans.swing.tabcontrol                      1.56.1   Enabled  
-org.netbeans.libs.jna                              1.44.1   Enabled  
-org.esa.snap.snap.unmix                            7.0.0.0  Enabled  
-org.netbeans.html.ko4j                             1.3.0    Installed
-org.esa.s2tbx.s2tbx.grm                            7.0.0    Enabled  
-org.esa.snap.snap.ndvi                             7.0.0.0  Enabled  
-org.esa.s2tbx.s2tbx.jp2.writer                     7.0.0.0  Enabled  
-org.esa.s3tbx.s3tbx.meris.cloud                    7.0.0.0  Enabled  
-org.netbeans.modules.javahelp                      2.41.1   Enabled  
-org.openide.execution.compat8                      9.2.1    Installed
-org.esa.s3tbx.s3tbx.fu.operator                    7.0.0.0  Enabled  
-org.esa.s1tbx.s1tbx.op.calibration                 7.0.0.0  Enabled  
-org.netbeans.libs.jsr223                           1.35.1   Installed
--------------------------------------------------- -------- ---------
-#+end_example
-
-
-Reference:
-@article{Tange2011a,
-  title = {GNU Parallel - The Command-Line Power Tool},
-  author = {O. Tange},
-  address = {Frederiksberg, Denmark},
-  journal = {;login: The USENIX Magazine},
-  month = {Feb},
-  number = {1},
-  volume = {36},
-  url = {http://www.gnu.org/s/parallel},
-  year = {2011},
-  pages = {42-47},
-  doi = {http://dx.doi.org/10.5281/zenodo.16303}
-}
-If you send a copy of your published article to tange@gnu.org, it will be
-mentioned in the release notes of next version of GNU Parallel.
 

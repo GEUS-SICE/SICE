@@ -1,14 +1,18 @@
 #!/bin/bash
 
+set -x
+
 if [ "$#" -ne 3 ]; then
-  echo "Usage: $0 <yyyymmdd> <infolder> <outfolder>" >&2
+  echo "Usage: $0 <yyyy-mm-dd> <infolder> <outfolder>" >&2
   exit 1
 fi
 
-DATE=$1      # YYYYMMDD
-INFOLDER=$2  # ./tmp ?
-OUTFOLDER=$3 # ./mosaic ?
+date=$1      # YYYY-MM-DD
+infolder=$2  # ./tmp ?
+outfolder=$3 # ./mosaic ?
 
-grass -e -c mask.tif ~/G_mosaic_$$ # work in ./G_mosaic_<PSEUDO_RANDOM>
-grass ~/G_mosaic_$$/PERMANENT --exec ./dm.grass.sh $DATE $INFOLDER $OUTFOLDER
-rm -fR ~/G_mosaic_$$ # cleanup
+grassroot=${infolder}/G
+mkdir -p ${outfolder}
+grass -e -c mask.tif ${grassroot}
+grass ${grassroot}/PERMANENT --exec ./dm.grass.sh ${date} ${infolder} ${outfolder}
+rm -fR ${grassroot} # cleanup
