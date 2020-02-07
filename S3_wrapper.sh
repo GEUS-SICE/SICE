@@ -19,9 +19,9 @@ proc_root=/sice-data/SICE/proc
 mosaic_root=/sice-data/SICE/mosaic
 
 ### dev
-# SEN3_source=./SEN3
-# proc_root=./out
-# mosaic_root=./mosaic
+SEN3_source=./SEN3
+proc_root=./out
+mosaic_root=./mosaic
 
 set -o errexit
 set -o nounset
@@ -29,24 +29,24 @@ set -o pipefail
 
 LD_LIBRARY_PATH=. # SNAP requirement
 
-for year in 2018 2019; do
-  for doy in $(seq -w 74 274); do
+# for year in 2018 2019; do
+#   for doy in $(seq -w 74 274); do
 
 ### DEBUG
-# for year in 2018; do
-#   for doy in 227; do  # 2017-08-15=227
+for year in 2018; do
+  for doy in 227; do  # 2017-08-15=227
 
     date=$(date -d "${year}-01-01 +$(( 10#${doy}-1 )) days" "+%Y-%m-%d")
     
-    if [[ -d "${mosaic_root}/${date}" ]]; then
-      log_warn "${mosaic_root}/${date} already exists, date skipped"
-      continue
-    fi
+    # if [[ -d "${mosaic_root}/${date}" ]]; then
+    #   log_warn "${mosaic_root}/${date} already exists, date skipped"
+    #   continue
+    # fi
     
     ### Fetch one day of OLCI & SLSTR scenes over Greenland
     ## Use local files (PTEP, DIAS, etc.)
-    ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} \
-    			 -f Svalbard -u <user> -p <password>
+    # ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} \
+    # 			 -f Svalbard -u <user> -p <password>
     ## Download files
     # ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
     # 			 -f Svalbard -u <user> -p <password>
@@ -55,12 +55,12 @@ for year in 2018 2019; do
     ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X S3.xml -t
     
     # SICE
-    parallel --verbose --lb -j 5 \
-    	     "python ./sice.py ${proc_root}/${date}/{}" \
-    	     ::: $(ls ${proc_root}/${date}/)
+    # parallel --verbose --lb -j 5 \
+    # 	     "python ./sice.py ${proc_root}/${date}/{}" \
+    # 	     ::: $(ls ${proc_root}/${date}/)
     
     # Mosaic
-    ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
+    # ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
 
   done
 done
