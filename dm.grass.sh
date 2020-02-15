@@ -37,10 +37,11 @@ for scene in ${scenes}; do
   files=$(ls ${infolder}/${scene}/*.tif || true)
   if [[ -z ${files} ]]; then log_err "No files: ${scene}"; continue; fi
   log_info "Importing rasters: ${scene}"
-  parallel -j 1 "r.external source={} output={/.} --q" ::: ${files}
+  # https://stackoverflow.com/questions/3667859/remove-file-extension-and-path-from-a-string-in-perl
+  parallel -j 1 "r.import input={} output={= s{^.*/|\_x*[^_x*]+$}{}g =} extent=region resolution=region --q" ::: ${files}
   
   # # UNCOMMENT to turn on SZA-only mosaic (no cloud-criteria)
-  # r.mapcalc "SZA_CM = SZA" --q
+  r.mapcalc "SZA_CM = SZA" --q
 
   # # these need to be imported, not external, so we can tweak the null mask
   # g.remove -f type=raster name=cloud_an,confidence_an --q
@@ -49,10 +50,10 @@ for scene in ${scenes}; do
   # r.null map=cloud_an setnull=0 --q
   # r.null map=confidence_an setnull=0 --q
 
-  # SZA_CM is SZA but Cloud Masked
-  log_info "Masking clouds in SZA raster"
-  r.mapcalc "cloud_flag = if((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1) || (r_TOA_21 > 0.76), null(), 1)" --q
-  r.mapcalc "SZA_CM = if(cloud_flag, SZA)" --q
+  # # SZA_CM is SZA but Cloud Masked
+  # log_info "Masking clouds in SZA raster"
+  # r.mapcalc "cloud_flag = if((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1) || (r_TOA_21 > 0.76), null(), 1)" --q
+  # r.mapcalc "SZA_CM = if(cloud_flag, SZA)" --q
 
   # remove small clusters of isolated pixels
   # frink "(1000 m)^2 -> hectares" 100 hectares per pixel, so value=10000 -> 10 pixels
@@ -123,7 +124,7 @@ mapset_list=$(g.mapsets --q -l separator=newline | grep T | tr '\n' ','| sed 's/
 raster_list=$(g.list type=raster pattern=r_TOA_01 mapset=${mapset_list} separator=comma)
 r.series input=${raster_list} method=count output=num_scenes --q
 
-bandsFloat32="$(g.list type=raster pattern="r_TOA_*") SZA SAA OZA OAA WV O3 SnBBA D"
+bandsFloat32="$(g.list type=raster pattern="r_TOA_*") SZA SAA OZA OAA" # WV O3 SnBBA D"
 bandsInt16="sza_lut num_scenes num_scenes_cloudfree"
 log_info "Writing mosaics to disk..."
 
