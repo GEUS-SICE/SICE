@@ -215,6 +215,8 @@ prefix: /home/kdm/local/anaconda/envs/SICE
 
 #+end_example
 
+=ResolvePackageNotFound= error can be raised. In that case, run =conda env export --no-builds > environment.yml= instead. 
+
 
 ** Parallel
 
