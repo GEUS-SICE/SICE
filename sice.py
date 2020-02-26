@@ -1,8 +1,18 @@
-# pySICE
+# pySICEv1.0
 # 
-# VERSION 2.3
-# Oct. 25, 2019
+# from FORTRAN VERSION 3.4
+# Nov. 11, 2019
 
+# BAV 09-092-2020 (bav@geus.dk)
+# Latest update
+# From Alex's side:
+# corrected bugs reported by bav
+# Change of certain threshold values
+# Removal of the water vapor absorption
+# zbrent not used for band 19 and 20. Interpolation is used instead.
+# output of planar and spectral abedo fixed
+# 
+# 
 # BAV 10-10-2019 (bav@geus.dk)
 # Changes:
 #   old variable:           Replaced by:
@@ -111,17 +121,17 @@
 #    if (andbi>0.66):    indexd=1
 #
 #	===============================0
-    
 import numpy as np
 from numpy import genfromtxt
-
 import sice_lib as sl
 import rasterio as rio
 import time
-start_time = time.time()
-
 import sys
+
+start_time = time.time()
 InputFolder = sys.argv[1] + '/'
+#def sice(folder):
+#    InputFolder = folder
 
 #%% ========= input tif ================
 print("Reading input ")
@@ -133,35 +143,26 @@ def WriteOutput(var,var_name,in_folder):
     # this functions write tif files based on a model file, here "Oa01"
     # opens a file for writing
     with rio.open(in_folder+var_name+'.tif', 'w+', **meta) as dst:
-        dst.write(np.reshape(var,np.shape(Oa01)),1)
+        dst.write(var.astype('float32'),1)
     
-    # calculates x, y and z 2D grids
-    l,b,r,t = Oa01.bounds
-    res = Oa01.res
-    x = np.arange(l,r, res[0])
-    y = np.arange(t,b, -res[0])
-    z=np.reshape(var,np.shape(Oa01))
-    return x, y, z
-    
-    
-olci_data = np.tile(Oa01.read(1).flatten()*np.nan, (21,1)).transpose()
+toa = np.tile(Oa01.read(1)*np.nan, (21,1,1))
 
 for i in range(21):
     dat = rio.open((InputFolder+'r_TOA_'+str(i+1).zfill(2)+'.tif'))
-    olci_data[:,i] = dat.read(1).flatten()
+    toa[i,:,:] = dat.read(1)
     
-ozone = rio.open(InputFolder+'O3.tif').read(1).flatten()
-water = rio.open(InputFolder+'WV.tif').read(1).flatten()
-sza = rio.open(InputFolder+'SZA.tif').read(1).flatten()
-saa = rio.open(InputFolder+'SAA.tif').read(1).flatten()
-vza = rio.open(InputFolder+'OZA.tif').read(1).flatten()
-vaa = rio.open(InputFolder+'OAA.tif').read(1).flatten()
-height = rio.open(InputFolder+'height.tif').read(1).flatten()
-mask = rio.open(InputFolder+'mask.tif').read(1).flatten()
+ozone = rio.open(InputFolder+'O3.tif').read(1)
+water = rio.open(InputFolder+'WV.tif').read(1)
+sza = rio.open(InputFolder+'SZA.tif').read(1)
+saa = rio.open(InputFolder+'SAA.tif').read(1)
+vza = rio.open(InputFolder+'OZA.tif').read(1)
+vaa = rio.open(InputFolder+'OAA.tif').read(1)
+height = rio.open(InputFolder+'height.tif').read(1)
 
-cloud_an_137 = rio.open(InputFolder+'cloud_an_137.tif').read(1).flatten()
-cloud_an_gross = rio.open(InputFolder+'cloud_an_gross.tif').read(1).flatten()
-cloud_an_thin_cirrus = rio.open(InputFolder+'cloud_an_thin_cirrus.tif').read(1).flatten()
+sza[np.isnan(toa[0,:,:])] = np.nan
+saa[np.isnan(toa[0,:,:])] = np.nan
+vza[np.isnan(toa[0,:,:])] = np.nan
+vaa[np.isnan(toa[0,:,:])] = np.nan
 
 water_vod = genfromtxt('./tg_water_vod.dat', delimiter='   ')
 voda = water_vod[range(21),1]
@@ -169,51 +170,255 @@ voda = water_vod[range(21),1]
 ozone_vod = genfromtxt('./tg_vod.dat', delimiter='   ',skip_header=2)
 tozon = ozone_vod[range(21),1]
 aot = 0.1
-   
-#%% Running sice
-print("Running sice")
 
+   
+#%%    start_time = time.time()
+
+# declaring variables
 BXXX, isnow, D, area, al, r0, isnow, conc, ntype, rp1, rp2, rp3, rs1, rs2, rs3 =  \
-vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan
-alb_sph, rp,refl =  olci_data*np.nan, olci_data*np.nan, olci_data*np.nan
+vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, \
+vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, \
+vaa*np.nan, vaa*np.nan, vaa*np.nan
+
+alb_sph, rp,refl =  toa*np.nan, toa*np.nan, toa*np.nan
+
+#%% solar flux calculation
+print('solar flux calculation')
+from constants import w, bai,f0,f1,f2,bet,gam
+from sice_lib import sol
+ 
+sol0 = (f0 + f1*np.exp(-bet * 0.4) + f2*np.exp(-gam * 0.4))*0.1
+
+# solar flux calculation
+# sol1      visible(0.3-0.7micron)
+# somehow, a different sol1 needs to be used for clean snow and polluted snow
+sol1_clean= sol(0.7) - sol(0.4) + sol0
+sol1_pol = sol(0.7) - sol(0.3)
+# sol2      near-infrared (0.7-2.4micron)
+# same for clean and polluted
+sol2 = sol(2.4) - sol(0.7)
+
+# sol3      shortwave(0.3-2.4 micron)
+# sol3 is also different for clean snow and polluted snow
+sol3_clean = sol1_clean  +  sol2
+sol3_pol   = sol1_pol  +  sol2
+
+# asol specific band
+asol = sol(0.865) - sol(0.7)
+
+#%%
+# =========== ozone scattering  ====================================
+BXXX, toa_cor_o3 = sl.ozone_scattering(ozone,tozon, sza, vza,toa)
+
+# Filtering pixels unsuitable for retrieval
+#    if ((cloud_an_gross[i] == 1) or (cloud_an_137[i] == 1) or (cloud_an_thin_cirrus[i] == 1)): continue
+
+isnow[sza>75] = 100
+isnow[toa_cor_o3[20, :,:] > 0.76] = 101
+isnow[toa_cor_o3[20, :,:] < 0.1] = 102
+for i_channel in range(21):
+    toa_cor_o3[i_channel, np.logical_not(np.isnan(isnow))] = np.nan
+
+vaa[np.logical_not(np.isnan(isnow))] = np.nan
+saa[np.logical_not(np.isnan(isnow))] = np.nan
+sza[np.logical_not(np.isnan(isnow))] = np.nan
+vza[np.logical_not(np.isnan(isnow))] = np.nan
+height = height.astype(float)
+height[np.logical_not(np.isnan(isnow))] = np.nan
+
+# =========== view geometry and atmosphere propeties  ==============
+raa, am1, am2, ak1, ak2, amf, co = sl.view_geometry(vaa, saa, sza, vza, aot, height)
+
+tau, p, g = sl.aerosol_properties(aot, height, co)
+        
+# =========== snow properties  ====================================
+D, area, al, r0, bal = sl.snow_properties(toa_cor_o3, ak1, ak2)
+
+# filtering small D
+D_thresh = 0.1
+isnow[D<D_thresh] = 104
+
+for i in range(21):
+    toa_cor_o3[i,D<D_thresh] = np.nan
+area[D<D_thresh] = np.nan
+al[D<D_thresh] = np.nan
+r0[D<D_thresh] = np.nan
+bal[D<D_thresh] = np.nan
+am1[D<D_thresh] = np.nan
+am2[D<D_thresh] = np.nan
+D[D<D_thresh] = np.nan
+
+# =========== clean snow  ====================================
+# for that we calculate the theoretical reflectance at band 1 of a surface with:
+# r0 = 1, a (albedo) = 1, ak1 = 1, ak2 = 1
+rs_1 = sl.alb2rtoa(1, tau[0,:,:], g[0,:,:], p[0,:,:], amf, am1, am2, 1, 1, 1)
+
+# we then compare it to the observed toa[0] value
+ind_clean = toa_cor_o3[0,:,:] >= rs_1
+isnow[ind_clean] = 0
+      
+# STEP 4a: clean snow retrieval
+alpha = 4.*np.pi*bai/w   
+absor = g*np.nan
+alb_sph = g*np.nan
+
+# the spherical albedo derivation: alb_sph
+al_clean = al
+al_clean[isnow!=0] = np.nan
+for i in range(21):
+    absor[i,:,:] = 1000.*alpha[i]*al_clean
+    alb_sph[i, :,:] = np.exp(-np.sqrt(absor[i, :, :]))
+    alb_sph[i, absor[i,:,:] <=  1.e-6] = 1.0
+    
+# ========== very dirty snow  ====================================
+ind_pol = toa_cor_o3[0,:,:] < rs_1
+isnow[ind_pol] = 1
+
+ind_very_dark = np.logical_and(toa_cor_o3[20]<0.4, ind_pol)
+isnow[ind_very_dark] = 6
+
+am11=np.sqrt(1.-am1[ind_very_dark]**2.)
+am12=np.sqrt(1.-am2[ind_very_dark]**2.)
+
+tz=np.arccos(-am1[ind_very_dark] * am2[ind_very_dark] + \
+             am11 * am12 * np.cos(raa[ind_very_dark]*np.pi/180.))\
+             *180./np.pi
+             
+pz=11.1*np.exp(-0.087*tz)+1.1*np.exp(-0.014*tz)
+
+rclean = 1.247 + 1.186 *(am1[ind_very_dark]+am2[ind_very_dark]) + \
+5.157 * am1[ind_very_dark] * am2[ind_very_dark] + pz
+
+rclean = rclean /4. /(am1[ind_very_dark] + am2[ind_very_dark])
+
+r0_save = r0
+r0[ind_very_dark] = rclean
+
+# =========== polluted snow  ====================================
+ind_pol_ok = np.argwhere(ind_pol)
+# loop over all bands except band 13, 14, 15, 19, 20
+# meaning index [12, 13, 14, 18, 19]    
+def solver_wrapper(toa_cor_o3,tau, g, p, amf, am1, am2, r0, ak1, ak2):
+    def func_solv(albedo):
+        return toa_cor_o3 - sl.alb2rtoa(albedo, tau, g, p, amf, am1, am2, r0, ak1, ak2)
+    # it is assumed that albedo is in the range 0.1-1.0
+    return sl.zbrent(func_solv, 0.1, 1, 100, 1.e-6)
+
+solver_wrapper_v = np.vectorize(solver_wrapper)
 
 from tqdm import tqdm
 
-for i in  tqdm(range(len(vaa))):
-    if (mask[i] != 2): continue
-    if ((cloud_an_gross[i] == 1) or (cloud_an_137[i] == 1) or (cloud_an_thin_cirrus[i] == 1)): continue
-    if (sza[i] > 75): continue
-    if (olci_data[i][20] > 0.76):
-        isnow[i] = 8
-        continue
-    if (olci_data[i][20] < 0.1):
-        isnow[i] = 4
-        continue
-    if np.any(np.isnan(olci_data[i])):
-        continue
-
-    BXXX[i], D[i], area[i], al[i], r0[i], isnow[i], conc[i], ntype[i], alb_sph[i,:], \
-        rp[i,:],refl[i,:], rp1[i], rp2[i], rp3[i], rs1[i], rs2[i], rs3[i] \
-        = sl.pySICE( sza[i], vza[i], saa[i], vaa[i], height[i], olci_data[i], ozone[i],\
-                     water[i], voda, tozon, aot)
+for i_channel in tqdm(np.append(np.arange(12), [15, 16, 17, 20])):
+    print(i_channel)
+    alb_sph[i_channel,ind_pol] = solver_wrapper_v(toa_cor_o3[i_channel,ind_pol],
+           tau[i_channel,ind_pol], g[i_channel,ind_pol], p[i_channel,ind_pol], 
+           amf[ind_pol], am1[ind_pol], am2[ind_pol], r0[ind_pol], ak1[ind_pol], ak2[ind_pol])
     
-WriteOutput(BXXX,   '03_SICE',   InputFolder)
+    ind_bad = alb_sph[i_channel,:,:]==1
+    alb_sph[i_channel,ind_bad] = np.nan
+    isnow[ind_bad]= -i_channel
+
+# INTERNal CHECK FOR CLEAN PIXELS
+# Update bav 2020: these high albedo polluted pixels were originally
+# reporcessed as clean pixels now they are just left as nan
+ind_bad = alb_sph[0,ind_pol_ok[:,0], ind_pol_ok[:,1]]>0.98
+isnow[ind_pol_ok[ind_bad,0], ind_pol_ok[ind_bad,1]]= 7
+
+ind_bad = alb_sph[1,ind_pol_ok[:,0], ind_pol_ok[:,1]]>0.98
+isnow[ind_pol_ok[ind_bad,0], ind_pol_ok[ind_bad,1]]= 7
+
+for i in range(21):
+    alb_sph[i,isnow==7] = np.nan
+
+#retrieving snow impurities        
+ntype, bf, conc = sl.snow_impurities(alb_sph, bal)
+
+# alex   09.06.2019
+# reprocessing of albedo to remove gaseous absorption
+# using linear polynomial approximation in the range 753-778nm
+# Meaning:
+# alb_sph[12],alb_sph[13] and alb_sph[14] are replaced by a linear 
+# interpolation between alb_sph[11] and alb_sph[15]
+    # update BAV 2020: interpolation not done. leave NaN instead
+    #    x1=w[11]
+    #    x2=w[15]
+    #         
+    #    y1=alb_sph[11]
+    #    y2=alb_sph[15]
+    #          
+    #    afirn=(y2-y1)/(x2-x1)
+    #    bfirn=y2-afirn*x2
+    #    
+    #    alb_sph[range(12,15)] = bfirn + afirn*w[range(12,15)]
+
+# BAV 09-02-2020: 0.5 to 0.35
+ind_ok =  toa_cor_o3[20]>=0.35
+ii_ok, jj_ok = np.unravel_index(ind_ok,np.shape(toa[20,:,:]))
+
+for i_channel in range(17,21):
+    alb_sph[i_channel, ii_ok, jj_ok] = np.exp(-np.sqrt(4.*1000. \
+            *al[ii_ok, jj_ok] * np.pi * bai[i_channel] / w[i_channel] ))
+
+# Update bav 2020: no interpolation done for bad output on bands 19 and 20      
+#    ind_nok =  toa[20]<0.35
+#    ii_nok, jj_nok = np.unravel_index(ind_nok,np.shape(toa[20,:,:]))
+#        # ***********CORRECTION FOR VERSION 2.2*********************
+#        # Alex, SEPTEMBER 26, 2019
+#        # to avoid the influence of gaseous absorption (water vapor)
+#        # we linearly interpolate in the range 885-1020nm
+#        # for bare ice cases only (low toa[20])
+#        # Meaning:
+#        # alb_sph[18] and alb_sph[19] are replaced by a linear 
+#        # interpolation between alb_sph[17] and alb_sph[20]
+#        delx=w[20]-w[17]
+#        bcoef=(alb_sph[20]-alb_sph[17])/delx
+#        acoef=alb_sph[20]-bcoef*w[20]
+#        
+#        alb_sph[range(18,20)] = acoef+bcoef*w[range(18,20)]
+    # ***********************END of MODIFICATION**************   
+
+# ========= derivation of plane albedo and reflectance ===========  
+for i_channel in range(21):
+    rp[i_channel,:,:] = alb_sph[i_channel,:,:]**ak1
+          
+# derivation of snow reflectance function                      
+    refl[i_channel,:,:]=r0*alb_sph[i_channel,:,:]**(ak1*ak2/r0)
+
+# STEP  5
+# CalCULATION OF BBA of clean snow
+BBA_v = np.vectorize(sl.BBA_calc_clean)
+rp1[isnow == 0], rp2[isnow == 0], rp3[isnow == 0], rs1[isnow == 0], rs2[isnow == 0], rs3[isnow == 0] =\
+BBA_v(al[isnow == 0].flatten(), ak1[isnow == 0].flatten(), sol1_clean, sol2, sol3_clean)
+
+# calculation of the BBA for the polluted snow
+ind_all_polluted = np.logical_or(isnow == 1, isnow == 7, isnow == 6)
+
+rp1[ind_all_polluted], rp2[ind_all_polluted], rp3[ind_all_polluted]= \
+sl.BBA_calc_pol(rp[:, ind_all_polluted], asol, sol1_pol, sol2, sol3_pol)
+
+rs1[ind_all_polluted], rs2[ind_all_polluted], rs3[ind_all_polluted] = \
+sl.BBA_calc_pol(alb_sph[:, ind_all_polluted], asol, sol1_pol, sol2, sol3_pol)
+               
+#%% Output
+
+WriteOutput(BXXX,   '03_SICE_new',   InputFolder)
 WriteOutput(D,      'D',InputFolder)
 WriteOutput(area,   'area', InputFolder)
-# WriteOutput(al,   'al_py',     InputFolder)
-# WriteOutput(r0,   'r0_py',InputFolder)
-# WriteOutput(isnow,'isnow_py',InputFolder)
-# WriteOutput(conc, 'conc_py',InputFolder)
-# WriteOutput(ntype,'ntype_py',InputFolder)
-# WriteOutput(rp1,  'rp1_py',InputFolder)
-# WriteOutput(rp2,  'rp2_py',InputFolder)
+for i in range(21):
+    WriteOutput(refl[i,:,:],   'r_BOA_'+str(i+1).zfill(2), InputFolder)
+
+WriteOutput(al,   'al_py',     InputFolder)
+WriteOutput(r0,   'r0_py',InputFolder)
+WriteOutput(isnow,'isnow_py',InputFolder)
+WriteOutput(conc, 'conc_py',InputFolder)
+WriteOutput(alb_sph[0,:,:],'alb_sph_1',InputFolder)
+WriteOutput(rp1,  'rp1_py',InputFolder)
+WriteOutput(rp2,  'rp2_py',InputFolder)
 WriteOutput(rp3,    'SnBBA',InputFolder)
 WriteOutput(rs1,  'rs1',InputFolder)
 WriteOutput(rs2,  'rs2',InputFolder)
 WriteOutput(rs3,  'rs3',InputFolder)
-# for i in np.arange(21): WriteOutput(refl[:,i],    'r_BOA_'+str(i), InputFolder)
+for i in np.arange(21): WriteOutput(alb_sph[:,i],    'alb_sph_'+str(i), InputFolder)
+for i in np.arange(21): WriteOutput(rp[:,i],    'rp_'+str(i), InputFolder)
 
-print("Writing %s --- %s seconds ---" % (InputFolder, time.time() - start_time))
-start_time = time.time()
-
-
+print("End SICE.py %s --- %s seconds ---" % (InputFolder, time.time() - start_time))

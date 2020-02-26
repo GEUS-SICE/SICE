@@ -11,7 +11,7 @@ date=$1      # YYYY-MM-DD
 infolder=$2  # ./tmp ?
 outfolder=$3 # ./mosaic ?
 
-grassroot=${infolder}/G
+grassroot=~/G
 mkdir -p ${outfolder}
 grass -e -c mask.tif ${grassroot}
 grass ${grassroot}/PERMANENT --exec ./dm.grass.sh ${date} ${infolder} ${outfolder}

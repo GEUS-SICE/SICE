@@ -28,6 +28,9 @@ mkdir -p "${outfolder}/${date}"
 
 # load all the data
 yyyymmdd=${date:0:4}${date:5:2}${date:8:2}
+
+echo ${infolder}
+
 scenes=$(cd "${infolder}"; ls | grep -E "${yyyymmdd}T??????")
 scene=$(echo ${scenes}|tr ' ' '\n' | head -n3|tail -n1) # DEBUG
 
@@ -37,10 +40,10 @@ for scene in ${scenes}; do
   files=$(ls ${infolder}/${scene}/*.tif || true)
   if [[ -z ${files} ]]; then log_err "No files: ${scene}"; continue; fi
   log_info "Importing rasters: ${scene}"
-  parallel -j 1 "r.external source={} output={/.} --q" ::: ${files}
+  parallel -j 1 "r.external source={} output={/.} -o --q" ::: ${files}
   
   # # UNCOMMENT to turn on SZA-only mosaic (no cloud-criteria)
-  # r.mapcalc "SZA_CM = SZA" --q
+  r.mapcalc "SZA_CM = SZA" --q
 
   # # these need to be imported, not external, so we can tweak the null mask
   # g.remove -f type=raster name=cloud_an,confidence_an --q
@@ -50,9 +53,9 @@ for scene in ${scenes}; do
   # r.null map=confidence_an setnull=0 --q
 
   # SZA_CM is SZA but Cloud Masked
-  log_info "Masking clouds in SZA raster"
-  r.mapcalc "cloud_flag = if((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1) || (r_TOA_21 > 0.76), null(), 1)" --q
-  r.mapcalc "SZA_CM = if(cloud_flag, SZA)" --q
+  # log_info "Masking clouds in SZA raster"
+  # r.mapcalc "cloud_flag = if((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1) || (r_TOA_21 > 0.76), null(), 1)" --q
+  # r.mapcalc "SZA_CM = if(cloud_flag, SZA)" --q
 
   # remove small clusters of isolated pixels
   # frink "(1000 m)^2 -> hectares" 100 hectares per pixel, so value=10000 -> 10 pixels
@@ -134,3 +137,12 @@ parallel "r.out.gdal -m -c input={} output=${outfolder}/${date}/{}.tif ${tifopts
 
 tifopts='type=Int16 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
 parallel "r.out.gdal -m -c input={} output=${outfolder}/${date}/{}.tif ${tifopts}" ::: ${bandsInt16}
+
+# Generat some extra rasters
+tifopts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
+r.mapcalc "ndsi = ( r_TOA_17 - r_TOA_21 ) /(  r_TOA_17 + r_TOA_21 )"
+r.mapcalc "ndbi = ( r_TOA_01 - r_TOA_21 ) / ( r_TOA_01 + r_TOA_21 )"
+r.mapcalc "bba_emp = (r_TOA_01 + r_TOA_06 + r_TOA_17 + r_TOA_21) / (4.0 * 0.945 + 0.055)"
+r.out.gdal -f -m -c input=ndsi output=${outfolder}/${date}/NDSI.tif ${tifopts}
+r.out.gdal -f -m -c input=ndbi output=${outfolder}/${date}/NDBI.tif ${tifopts}
+r.out.gdal -f -m -c input=bba_emp output=${outfolder}/${date}/BBA_emp.tif ${tifopts}
