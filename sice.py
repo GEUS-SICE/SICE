@@ -180,7 +180,7 @@ vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, \
 vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, \
 vaa*np.nan, vaa*np.nan, vaa*np.nan
 
-alb_sph, rp,refl =  toa*np.nan, toa*np.nan, toa*np.nan
+alb_sph, rp, refl =  toa*np.nan, toa*np.nan, toa*np.nan
 
 #%% solar flux calculation
 print('solar flux calculation')
@@ -260,15 +260,14 @@ isnow[ind_clean] = 0
 # STEP 4a: clean snow retrieval
 alpha = 4.*np.pi*bai/w   
 absor = g*np.nan
-alb_sph = g*np.nan
 
 # the spherical albedo derivation: alb_sph
 al_clean = al
 al_clean[isnow!=0] = np.nan
-for i in range(21):
-    absor[i,:,:] = 1000.*alpha[i]*al_clean
-    alb_sph[i, :,:] = np.exp(-np.sqrt(absor[i, :, :]))
-    alb_sph[i, absor[i,:,:] <=  1.e-6] = 1.0
+for i_channel in range(21):
+    absor[i_channel,:,:] = 1000.*alpha[i_channel]*al_clean
+    alb_sph[i_channel, :,:] = np.exp(-np.sqrt(absor[i_channel, :, :]))
+    alb_sph[i_channel, absor[i_channel,:,:] <=  1.e-6] = 1.0
     
 # ========== very dirty snow  ====================================
 ind_pol = toa_cor_o3[0,:,:] < rs_1
@@ -315,7 +314,7 @@ for i_channel in tqdm(np.append(np.arange(12), [15, 16, 17, 20])):
            amf[ind_pol], am1[ind_pol], am2[ind_pol], r0[ind_pol], ak1[ind_pol], ak2[ind_pol])
     
     ind_bad = alb_sph[i_channel,:,:]==1
-    alb_sph[i_channel,ind_bad] = np.nan
+    alb_sph[i_channel,ind_bad] = 1
     isnow[ind_bad]= -i_channel
 
 # INTERNal CHECK FOR CLEAN PIXELS
@@ -401,24 +400,24 @@ sl.BBA_calc_pol(alb_sph[:, ind_all_polluted], asol, sol1_pol, sol2, sol3_pol)
                
 #%% Output
 
-WriteOutput(BXXX,   '03_SICE_new',   InputFolder)
+WriteOutput(BXXX,   '03_SICE',   InputFolder)
 WriteOutput(D,      'D',InputFolder)
 WriteOutput(area,   'area', InputFolder)
 for i in range(21):
     WriteOutput(refl[i,:,:],   'r_BOA_'+str(i+1).zfill(2), InputFolder)
 
-WriteOutput(al,   'al_py',     InputFolder)
-WriteOutput(r0,   'r0_py',InputFolder)
-WriteOutput(isnow,'isnow_py',InputFolder)
-WriteOutput(conc, 'conc_py',InputFolder)
+#WriteOutput(al,   'al',     InputFolder)
+WriteOutput(r0,   'r0',InputFolder)
+WriteOutput(isnow,'isnow',InputFolder)
+#WriteOutput(conc, 'conc',InputFolder)
 WriteOutput(alb_sph[0,:,:],'alb_sph_1',InputFolder)
-WriteOutput(rp1,  'rp1_py',InputFolder)
-WriteOutput(rp2,  'rp2_py',InputFolder)
+#WriteOutput(rp1,  'rp1',InputFolder)
+#WriteOutput(rp2,  'rp2',InputFolder)
 WriteOutput(rp3,    'SnBBA',InputFolder)
 WriteOutput(rs1,  'rs1',InputFolder)
 WriteOutput(rs2,  'rs2',InputFolder)
 WriteOutput(rs3,  'rs3',InputFolder)
-for i in np.arange(21): WriteOutput(alb_sph[:,i],    'alb_sph_'+str(i), InputFolder)
-for i in np.arange(21): WriteOutput(rp[:,i],    'rp_'+str(i), InputFolder)
+#for i in np.arange(21): WriteOutput(alb_sph[:,i],    'alb_sph_'+str(i+1), InputFolder)
+#for i in np.arange(21): WriteOutput(rp[:,i],    'rp_'+str(i+1), InputFolder)
 
 print("End SICE.py %s --- %s seconds ---" % (InputFolder, time.time() - start_time))

@@ -34,7 +34,7 @@ LD_LIBRARY_PATH=. # SNAP requirement
 
 ### DEBUG
 for year in 2018; do
-  for doy in; do  # 2017-08-15=227
+  for doy in 227; do  # 2017-08-15=227
 
     date=$(date -d "${year}-01-01 +$(( 10#${doy}-1 )) days" "+%Y-%m-%d")
     
@@ -60,7 +60,7 @@ for year in 2018; do
     	     ::: $(ls ${proc_root}/${date}/)
     
     # Mosaic
-    # ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
+    ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
 
   done
 done
