@@ -134,8 +134,7 @@ debug "Footprint ${footprint} is: ${footprint_poly}"
 
 log_warn "Setting mask.tif to masks/${footprint}.tif"
 rm -f mask.tif
-# ln -s ./masks/${footprint}.tif mask.tif 
-cp ./masks/${footprint}.tif mask.tif 
+ln -s ./masks/${footprint}.tif mask.tif 
 
 log_info "***********************************************************"
 log_info "***                                                     ***"

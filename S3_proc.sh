@@ -76,7 +76,7 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   olci_dts=$(echo "${olci_folder}" | rev | cut -d_ -f11 | rev)
   dest=${outpath}/${olci_dts}
 
-   if [[ -d "${dest}" ]]; then log_warn "skipping ";continue ; fi
+  # if [[ -d "${dest}" ]]; then continue; fi
   
   # find nearest SLSTR folder. Timestamp is same or next minute.
   olci_date=${olci_dts:0:8}
@@ -112,9 +112,9 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   resize=5000
   log_info "Resampling to ${resize} m resolution..."
   log_info "Aligning SLSTR to OLCI..."
-  grass -c ./mask.tif ~/G_align --exec ./G_align.sh ${dest} ./mask.tif ${resize}
+  grass -c ./mask.tif ${dest}/G_align --exec ./G_align.sh ${dest} ./mask.tif ${resize}
   (cd ${dest} && rm *_x.tif)
-  (cd ${dest} && rm -fR ~/G_align)
+  (cd ${dest} && rm -fR G_align)
 done
 
 log_info "Finished: ${outpath}"
