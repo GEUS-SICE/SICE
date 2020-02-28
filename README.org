@@ -73,7 +73,7 @@ done
 This work is developed with the following software versions
 
 ** Bash
-#+BEGIN_SRC bash :results verbatim
+#+BEGIN_SRC bash :results verbatim :exports both
 bash --version
 #+END_SRC
 
@@ -220,7 +220,7 @@ prefix: /home/kdm/local/anaconda/envs/SICE
 
 ** Parallel
 
-#+BEGIN_SRC bash :results verbatim
+#+BEGIN_SRC bash :results verbatim :exports both
 parallel --version
 #+END_SRC
 
@@ -240,7 +240,7 @@ please cite as described in 'parallel --citation'.
 #+end_example
 
 ** GRASS
-#+BEGIN_SRC bash :results verbatim
+#+BEGIN_SRC bash :results verbatim :exports both
 grass --version 2>&1
 #+END_SRC
 
