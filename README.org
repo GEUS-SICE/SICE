@@ -211,7 +211,6 @@ dependencies:
     - six==1.13.0
     - tqdm==4.36.1
     - xarray==0.14.0
-prefix: /home/kdm/local/anaconda/envs/SICE
 
 #+end_example
 
