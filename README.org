@@ -6,6 +6,7 @@
   - [[#process-with-snap][Process with SNAP]]
   - [[#pysice][pySICE]]
   - [[#mosaic][Mosaic]]
+  - [[#outputs][Outputs]]
 - [[#debugging--testing][Debugging & Testing]]
 - [[#development-environment][Development Environment]]
   - [[#bash][Bash]]
@@ -50,6 +51,36 @@ In more detail:
   + Combine all the files from to form a mosaic
   + Mask out clouds, then...
   + When scenes overlap, use minimum SZA
+
+** Outputs
+grain_diameter		|in mm
+snow_specific_area	|in mm
+ndsi				|normalized difference snow index
+ndbi				|normalized difference blue ice index
+auto_cloud			|in development
+sza					|sun zenith angle
+vza					|viewing zenith angle
+saa					|sun azimuth angle
+vaa					|viewing azimuth angle
+albedo_bb_planar_nir	|broadband planar albedo in the near infrared 700-2400 nm
+albedo_bb_planar_sw		|broadband planar albedo in the shortwave domain 300-2400 nm
+albedo_bb_planar_vis	|broadband planar albedo in the visible 300-700 nm
+albedo_bb_spherical_nir	|broadband spherical albedo in the near infrared 700-2400 nm
+albedo_bb_spherical_sw	|broadband spherical albedo in the shortwave domain 300-2400 nm
+albedo_bb_spherical_vis	|broadband spherical albedo in the visible 300-700 nm
+Oa01..21_reflectance	|top of the atmosphere OLCI reflectance
+rBRR_01..21				|bottom of the atmosphere surface reflectance at the OLCI bands
+albedo_spectral_planar_01..21	|spectral planar albedo at the OLCI bands
+diagnostic_retrieval	|flag from the retrival: 
+						|	0=clean snow
+						|	1=polluted snow
+						|	6=polluted snow for which r0 was calculated and not derived from observations
+						|	7=polluted snow of calculated spherical albedo in bands 1 and 2 >0.98 reprocessed as clean snow
+						|   100=sza<75, no retrival
+						| 	102=TOA reflectance at band 21 < 0.1, no retrieval
+						|	104=grain_diameter < 0.1, no retrieval, potential cloud flag
+						|	-k=impossible to solve polluted snow albedo equation at band k
+						
 
 * Debugging & Testing
 
@@ -96,6 +127,7 @@ conda env create -f SICE.yml
 And then run =conda activate SICE= to activate the SICE environment.
 
 =ResolvePackageNotFound= error can be raised. In that case, run =conda env export --no-builds > environment.yml= instead. 
+
 
 ** Parallel
 
