@@ -97,9 +97,6 @@ And then run =conda activate SICE= to activate the SICE environment.
 
 =ResolvePackageNotFound= error can be raised. In that case, run =conda env export --no-builds > environment.yml= instead. 
 
-=ResolvePackageNotFound= error can be raised. In that case, run =conda env export --no-builds > environment.yml= instead. 
-
-
 ** Parallel
 
 #+BEGIN_SRC bash :results verbatim :exports both
