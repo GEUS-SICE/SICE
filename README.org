@@ -80,7 +80,6 @@ In more detail:
 |								| 	102=TOA reflectance at band 21 < 0.1, no retrieval
 |								|	104=grain_diameter < 0.1, no retrieval, potential cloud flag
 |								|	-k=impossible to solve polluted snow albedo equation at band k
-|						
 
 * Debugging & Testing
 
