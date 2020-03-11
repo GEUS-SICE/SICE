@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Oct 14 16:58:31 2019
- pySICE library
+Update 07032019
+
+ pySICEv1.1 library
  contains:
      pySICE                     main function
      alb2rtoa                  calculates TOA reflectance from surface albedo
      salbed                    calculates ratm for albedo correction (?)
      zbrent                    equation solver
-     sol                       solar spectrum
-     analyt_func               calculation of surface radiance
      quad_func                 calculation of quadratic parameters
      funp                      snow spectral planar and spherical albedo function
 
@@ -18,7 +18,7 @@ Created on Mon Oct 14 16:58:31 2019
 @author: bav@geus.dk
 """
 import numpy as np
-from constants import w, bai, xa, ya, f0, f1, f2, bet, gam
+from constants import w, bai, xa, ya, f0, f1, f2, bet, gam, coef1, coef2, coef3, coef4
 
 #%% Main function
 def pySICE(toa,am1, am2, raa, ak1, ak2, amf, tau, co, p, g,
@@ -230,10 +230,46 @@ def pySICE(toa,am1, am2, raa, ak1, ak2, amf, tau, co, p, g,
 #    # derivation of snow reflectance function                      
 #    refl=r0*alb_sph**(ak1*ak2/r0)
                 
-
+#%% =================================================
+def prepare_coef(tau, g, p, am1, am2, amf):
+    astra=tau*np.nan
+    rms=tau*np.nan
+    t1=tau*np.nan
+    t2=tau*np.nan
     
+    # SOBOLEV
+    oskar=4.+3.*(1.-g)*tau
+    b1=1.+1.5*am1+(1.-1.5*am1)*np.exp(-tau/am1)
+    b2=1.+1.5*am2+(1.-1.5*am2)*np.exp(-tau/am2)
+    
+    for i in range(21):
+        astra[i,:,:]=(1.-np.exp(-tau[i,:,:]*amf))/(am1+am2)/4.
+        rms[i,:,:] = 1.- b1[i,:,:]*b2[i,:,:]/oskar[i,:,:]  \
+        + (3.*(1.+g[i,:,:])*am1*am2 - 2.*(am1+am2))*astra[i,:,:]
+        t1[i,:,:] = np.exp(-(1.-g[i,:,:])*tau[i,:,:]/am1/2.)
+        t2[i,:,:] = np.exp(-(1.-g[i,:,:])*tau[i,:,:]/am2/2.)
+
+    rss = p*astra
+    r = rss + rms
+    
+    # SALBED
+#    ratm = salbed(tau, g)
+    a_s = (.18016,  -0.18229,  0.15535,     -0.14223)
+    bs = (.58331,  -0.50662,  -0.09012,        0.0207)
+    cs = (0.21475,   -0.1,  0.13639,            -0.21948)
+    als = (0.16775, -0.06969,  0.08093,     -0.08903)
+    bets = (1.09188,  0.08994,  0.49647,   -0.75218)
+    
+    a_cst =     a_s[0]*g**0  + a_s[1]*g**1 + a_s[2]*g**2 + a_s[3]*g**3
+    b_cst =     bs[0]*g**0   + bs[1]*g**1 + bs[2]*g**2 + bs[3]*g**3
+    c_cst =     cs[0]*g**0   + cs[1]*g**1 + cs[2]*g**2 + cs[3]*g**3
+    al_cst=     als[0]*g**0  + als[1]*g**1 + als[2]*g**2 + als[3]*g**3
+    bet_cst=    bets[0]*g**0 + bets[1]*g**1 + bets[2]*g**2 + bets[3]*g**3        
+   
+    ratm = tau*(a_cst*np.exp(-tau/al_cst)+b_cst*np.exp(-tau/bet_cst)+c_cst)
+    return t1, t2, ratm, r, astra, rms
 #%% ===========================================================================
-def alb2rtoa(a, tau, g, p, amf, am1, am2, r0, ak1, ak2):
+def alb2rtoa_old(a, tau, g, p, amf, am1, am2, r0, ak1, ak2):
 # Function that calculates the theoretical reflectance from a snow spherical albedo a
 # This function can then be solved to find optimal snow albedo
 # Inputs:
@@ -257,13 +293,13 @@ def alb2rtoa(a, tau, g, p, amf, am1, am2, r0, ak1, ak2):
     t1=np.exp(-(1.-g)*tau/am1/2.)
     t2=np.exp(-(1.-g)*tau/am2/2.)
     
-    ratm = salbed(tau, g)
+    ratm = salbed_old(tau, g)
     surf = t1*t2*r0*a**(ak1*ak2/r0)/(1-a*ratm)
     rs=r + surf
-    return rs
+    return rs,  astra, rms
 
 #%% ===========================================================================
-def salbed(tau, g):
+def salbed_old(tau, g):
     # SPHERICAL ALBEDO OF TERRESTRIAL ATMOSPHERE:      
     # bav: replaced as by a_s
     # inputs:
@@ -294,9 +330,67 @@ def salbed(tau, g):
     
     salbed = tau*(a*np.exp(-tau/al)+b*np.exp(-tau/bet)+c)
     return salbed
+    
+#%% ===========================================================================
+def alb2rtoa(a, t1, t2, r0, ak1, ak2, ratm, r):
+# Function that calculates the theoretical reflectance from a snow spherical albedo a
+# This function can then be solved to find optimal snow albedo
+# Inputs:
+# a                     Surface albedo
+# r0                    reflectance of a semi-infinite non-absorbing snow layer 
+#
+# Outputs:
+# rs                  surface reflectance at specific channel     
+    surf = t1*t2*r0*a**(ak1*ak2/r0)/(1-a*ratm)
+    rs=r + surf
+    return rs
+
+#%% ===========================================================================
+def salbed(tau, g):
+    # WARNING: NOT USED ANYMORE
+    # SPHERICAL ALBEDO OF TERRESTRIAL ATMOSPHERE:      
+    # bav: replaced as by a_s
+    # inputs:
+    # tau               directional albedo ?
+    # g                 asymetry coefficient
+    # outputs:
+    # salbed            spherical albedo
+    a_s = (.18016,  -0.18229,  0.15535,     -0.14223)
+    bs = (.58331,  -0.50662,  -0.09012,        0.0207)
+    cs = (0.21475,   -0.1,  0.13639,            -0.21948)
+    als = (0.16775, -0.06969,  0.08093,     -0.08903)
+    bets = (1.09188,  0.08994,  0.49647,   -0.75218)
+
+#    a=0.
+#    b=0.
+#    c=0.
+#    al=0.
+#    bet=0.
+#            
+#    for i in range(0,4):
+#        if (i==0): aks=1
+#        else: aks=g**i
+#        a=a  + a_s[i]*aks
+#        b=b  + bs[i]*aks
+#        c= c +cs[i]*aks
+#        al=al +als[i]*aks
+#        bet=bet +bets[i]*aks
+#    salbed = tau*(a*np.exp(-tau/al)+b*np.exp(-tau/bet)+c)
+#    return salbed
+    
+
+    a =     a_s[0]*g**0  + a_s[1]*g**1 + a_s[2]*g**2 + a_s[3]*g**3
+    b =     bs[0]*g**0   + bs[1]*g**1 + bs[2]*g**2 + bs[3]*g**3
+    c =     cs[0]*g**0   + cs[1]*g**1 + cs[2]*g**2 + cs[3]*g**3
+    al=     als[0]*g**0  + als[1]*g**1 + als[2]*g**2 + als[3]*g**3
+    bet=    bets[0]*g**0 + bets[1]*g**1 + bets[2]*g**2 + bets[3]*g**3        
+   
+    salbed = tau*(a*np.exp(-tau/al)+b*np.exp(-tau/bet)+c)
+    return salbed
+
 
 #%% =====================================================================
-def zbrent(f, x0, x1, max_iter=50, tolerance=1e-5):
+def zbrent(f, x0, x1, max_iter=100, tolerance=1e-6):
     # Equation solver using Brent's method
     # https://en.wikipedia.org/wiki/Brent%27s_method
     # Brent’s is essentially the Bisection method augmented with Inverse 
@@ -316,7 +410,7 @@ def zbrent(f, x0, x1, max_iter=50, tolerance=1e-5):
     if ((fx0 * fx1) > 0):
 #        print("Root not bracketed "+str(fx0)+", "+str(fx1))
 #        assert ((fx0 * fx1) <= 0), ("-----Root not bracketed"+str(fx0)+", "+str(fx1))
-        return 0.002
+        return -999
  
     if abs(fx0) < abs(fx1):
         x0, x1 = x1, x0
@@ -367,21 +461,6 @@ def zbrent(f, x0, x1, max_iter=50, tolerance=1e-5):
  
     return x1
 
-#%% ==================================================================      
-def sol(x):
-    # SOLAR SPECTRUM at GROUND level
-    # Inputs:
-    # x         wave length in micrometer
-    # Outputs: 
-    # sol       solar spectrum in W m-2 micrometer-1 (?)
-                            
-    #    if (x < 0.4):
-    #            x=0.4
-            
-    sol1a = f0*x
-    sol1b = - f1*np.exp(-bet*x)/bet
-    sol1c = - f2*np.exp(-gam*x)/gam
-    return sol1a+sol1b+sol1c
 
 #%% ================================================
 # tozon [i_channel]         spectral ozone vertical optical depth at the fixed ozone concentration 404.59DU ( wavelength, VOD)
@@ -501,7 +580,6 @@ def snow_properties(toa, ak1, ak2):
     
     # effective grain size(mm):diameter
     D=al/16.36              
-    D [D<=0.1] = np.nan
     # snow specific area ( dimension: m*m/kg)
     area=   6./D/0.917
     return  D, area, al, r0, bal
@@ -573,13 +651,14 @@ def funp(x, al, sph_calc, ak1):
     if (sph_calc == 0):     rs = rsd**ak1
     elif (sph_calc == 1):   rs = rsd
 
-    if (x < 0.4):  x = 0.4
+    if (x < 0.4):  
+        x = 0.4
     funcs = f0+ f1*np.exp(-x*bet)+ f2*np.exp(-x*gam)
      
     return rs*funcs
 
 #%%   CalCULATION OF BBA for clean pixels
-def BBA_calc_clean(al, ak1, sol1_clean, sol2, sol3_clean):
+def BBA_calc_clean(al, ak1):
     # for clean snow
     # plane albedo
     sph_calc = 0 # planar
@@ -588,16 +667,11 @@ def BBA_calc_clean(al, ak1, sol1_clean, sol2, sol3_clean):
         return funp(x, al, sph_calc, ak1)
     
     p1 = qsimp(func_integ,0.3,0.7)
-    rp1=p1/sol1_clean
     
     # near-infrared (0.7-2.4micron)
 #        p2 = trapzd(func_integ,0.7,2.4, 20)
     p2 = qsimp(func_integ,0.7,2.4)
-    rp2=p2/sol2
-    
-    # shortwave(0.3-2.4 micron)
-    rp3=(p1+p2)/sol3_clean
- 
+     
     # spherical albedo
     sph_calc = 1 # spherical calculation
     
@@ -607,15 +681,12 @@ def BBA_calc_clean(al, ak1, sol1_clean, sol2, sol3_clean):
     # visible(0.3-0.7micron)
 #        s1 = trapzd(func_integ,0.3,0.7, 20)
     s1 = qsimp(func_integ,0.3,0.7)
-    rs1=s1/sol1_clean
     # near-infrared (0.7-2.4micron)
 #        s2 = trapzd(func_integ,0.7,2.4, 20)
     s2 = qsimp(func_integ,0.7,2.4)
-    rs2=s2/sol2
     # shortwave(0.3-2.4 micron)
-    rs3=(s1+s2)/sol3_clean
     # END of clean snow bba calculation
-    return rp1, rp2, rp3, rs1, rs2, rs3
+    return p1,p2,s1,s2
 
 #%% ===============================
 def qsimp(func,a,b):
@@ -662,40 +733,50 @@ def BBA_calc_pol(alb, asol, sol1_pol, sol2, sol3_pol):
     # segment 1
     # QUADRATIC POLYNOMIal for the range 400-709nm
     # input wavelength
-    alam2=w[0]
-    alam3=w[5]
-    alam5=w[10]
+#    alam2=w[0]
+#    alam3=w[5]
+#    alam5=w[10]
+#    alam6=w[11]
+#    alam7=w[16]
+#    alam8=w[20]
+    
+    alam2=0.4
+    alam3=0.56
+    alam5=0.709
+    alam6=0.753
+    alam7=0.865
+    alam8=1.02
+  
     #input reflectances
     r2 =alb[0,:]
     r3 =alb[5,:]
     r5 =alb[10,:]
-
-    sa1, a1, b1, c1 = quad_func(alam2,alam3,alam5, r2 ,r3,r5)
-    aj1 = analyt_func(0.3, 0.7, a1, b1, c1, sol1_pol)
-    
-    # segment 2.1
-    # QUADRATIC POLYNOMIal for the range 709-865nm
-    # input wavelength
-    alam6=w[11]
-    alam7=w[16]
-    alam8=w[20]
-    #input reflectances
     r6=alb[11,:]
     r7=alb[16,:]
     r8=alb[20,:]
-        
-    sa1, a2, b2, c2 = quad_func(alam5,alam6,alam7,r5,r6,r7)                     
-    aj2 = analyt_func(0.7, 0.865, a2, b2, c2, asol)
+    
+    sa1, a1, b1, c1 = quad_func(alam2,alam3,alam5, r2 ,r3,r5)
+    ajx1 = a1*sol1_pol
+    ajx2 = b1*coef1
+    ajx3 = c1*coef2
 
-    # segment 2.2
+    aj1 = ajx1 + ajx2 + ajx3
+    # segment 2.1
+    # QUADRATIC POLYNOMIal for the range 709-865nm        
+    sa1, a2, b2, c2 = quad_func(alam5,alam6,alam7,r5,r6,r7)
+    ajx1 = a2*asol
+    ajx2 = b2*coef3
+    ajx3 = c2*coef4
+
+    aj2 = ajx1 + ajx2 + ajx3    # segment 2.2
     # exponential approximation for the range 865- 2400 nm
-
     z1=0.865
     z2=2.4
     rati=r7/r8
     alasta = (alam8-alam7)/np.log(rati)
     an=1./alasta
     p   = r7 * np.exp(alam7/alasta)
+    
     aj31=(1./an)*(np.exp(-an*z2)-np.exp(-an*z1))
     aj32=(1./(bet+an))*(np.exp(-(bet+an)*z2)-np.exp(-(an+bet)*z1))
     aj33=(1./(gam+an))*(np.exp(-(gam+an)*z2)-np.exp(-(an+gam)*z1))
@@ -715,33 +796,10 @@ def quad_func(x0,x1,x2,y0,y1,y2):
     d1=(x0-x1)*(x0-x2)
     d2=(x1-x0)*(x1-x2)
     d3=(x2-x0)*(x2-x1)
-
-    a1 = x1*x2*y0/d1    +  x0*x2*y1/d2  + x0*x1*y2/d3
-    b1 = -(x1+x2)*y0/d1 - (x0+x2)*y1/d2 -(x0+x1)*y2/d3
-    c1 = y0/d1 + y1/d2 + y2/d3
-    x = x1
-    sa= a1 + b1*x + c1*x*x
+    
+    a1=x1*x2*y0/d1+x0*x2*y1/d2+x0*x1*y2/d3
+    b1=-(x1+x2)*y0/d1-(x0+x2)*y1/d2-(x0+x1)*y2/d3
+    c1=y0/d1+y1/d2+y2/d3
+    x=x1
+    sa=a1+b1*x+c1*x*x
     return sa, a1, b1, c1
-
-#%% =====================================================================
-def analyt_func(z1, z2, a, b, c, sol1):
-    # analystical function used in the polluted snow BBA calculation
-    # see BBA_calc_pol
-    # compatible with array
-    ajx1=a*sol1
-
-    ak1=(z2**2.-z1**2.)/2.
-    ak2=(z2/bet+1./bet**2)*np.exp(-bet*z2) - (z1/bet+1./bet**2)*np.exp(-bet*z1)
-    ak3=(z2/gam+1./gam**2)*np.exp(-gam*z2) - (z1/gam+1./gam**2)*np.exp(-gam*z1)
-   
-    ajx2=b*(f0*ak1  -f1*ak2  -f2*ak3 )
-    
-    am1=(z2**3.-z1**3.)/3.
-    am2=(z2**2./bet+2.*z2/bet**2 +2./bet**3) *np.exp(-bet*z2) \
-    - (z1**2./bet+2.*z1/bet**2 +2./bet**3) *np.exp(-bet*z1)
-    am3=(z2**2./gam+2.*z2/gam**2 +2./gam**3.)*np.exp(-gam*z2) \
-    - (z1**2./gam+2.*z1/gam**2 +2./gam**3.)*np.exp(-gam*z1)
-    
-    ajx3 = c*(f0*am1 -f1*am2 -f2*am3)
-                
-    return ajx1 + ajx2 + ajx3
