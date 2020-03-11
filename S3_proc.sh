@@ -109,7 +109,7 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   (cd ${dest}/../; du -sm * | awk '$1 > 10000 {print $2}' | xargs rm -fr)
   if [[ ! -d "${dest}" ]]; then continue; fi # if we removed the directory, break out of the loop
 
-  resize=5000
+  resize=1000
   log_info "Resampling to ${resize} m resolution..."
   log_info "Aligning SLSTR to OLCI..."
   grass -c ./mask.tif ${dest}/G_align --exec ./G_align.sh ${dest} ./mask.tif ${resize}
