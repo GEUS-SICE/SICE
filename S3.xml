@@ -5,11 +5,10 @@
       This script:
       1) Converts OLCI radiance to reflectance
       2) Reprojects to EPSG:3413
-      3) Writes out 
+      3) Writes out
          reflecance bands 1-21
 	 SZA
       4) Same for SLSTR confidence_an and cloud_an
-
       GPT bug means we can't write out band.tif, but have to use some other name.
       I chose "band_x.tif".
   -->
@@ -23,7 +22,7 @@
       <!-- Sen3 ensures that SLSTR is read as multisize -->
     </parameters>
   </node>
-  
+
   <node id="Rad2Refl_OLCI">
     <operator>Rad2Refl</operator>
     <sources><source>Read_OLCI</source></sources>
@@ -34,7 +33,7 @@
       <copyNonSpectralBands>true</copyNonSpectralBands>
     </parameters>
   </node>
-  
+
   <node id="Reproject_OLCI">
     <operator>Reproject</operator>
     <sources><source>Rad2Refl_OLCI</source></sources>
@@ -45,7 +44,7 @@
       <includeTiePointGrids>true</includeTiePointGrids>
     </parameters>
   </node>
-  
+
   <node id="BandSelect_OLCI_Oa01">
     <operator>BandSelect</operator>
     <sources><source>Reproject_OLCI</source></sources>
@@ -97,7 +96,7 @@
       <file>${targetFolder}/r_TOA_04_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
-  
+
   <node id="BandSelect_OLCI_Oa05">
     <operator>BandSelect</operator>
     <sources><source>Reproject_OLCI</source></sources>
@@ -136,7 +135,7 @@
       <file>${targetFolder}/r_TOA_07_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
-  
+
   <node id="BandSelect_OLCI_Oa08">
     <operator>BandSelect</operator>
     <sources><source>Reproject_OLCI</source></sources>
@@ -346,7 +345,7 @@
     <sources><sourceProduct>BandSelect_OZA</sourceProduct></sources>
     <parameters><file>${targetFolder}/OZA_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
-  
+
   <node id="BandSelect_SAA">
     <operator>BandSelect</operator>
     <sources><source>Reproject_OLCI</source></sources>
@@ -357,7 +356,7 @@
     <sources><sourceProduct>BandSelect_SAA</sourceProduct></sources>
     <parameters><file>${targetFolder}/SAA_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
-  
+
   <node id="BandSelect_OAA">
     <operator>BandSelect</operator>
     <sources><source>Reproject_OLCI</source></sources>
@@ -403,7 +402,17 @@
   </node>
 
 
-  
+
+  <!--
+      SLSTR Top of Atmosphere reflectances (SX_reflectance_an): 1,5
+      SLSTR Brightness Temperatures (SX_BT_in): 7,8,9
+  -->
+
+
+  <!--
+      SLSTR operators
+  -->
+
   <node id="Read_SLSTR">
     <operator>Read</operator>
     <parameters>
@@ -413,10 +422,35 @@
       <!-- Sen3 ensures that SLSTR is read as multisize -->
     </parameters>
   </node>
-  
-  <node id="Reproject_SLSTR">
-    <operator>Reproject</operator>
+
+  <node id="Rad2Refl_SLSTR">
+    <operator>Rad2Refl</operator>
     <sources><source>Read_SLSTR</source></sources>
+    <parameters>
+      <sensor>SLSTR_500m</sensor>
+      <copyTiePointGrids>true</copyTiePointGrids>
+      <copyFlagBandsAndMasks>true</copyFlagBandsAndMasks>
+      <copyNonSpectralBands>true</copyNonSpectralBands>
+    </parameters>
+  </node>
+
+  <node id="Resample_SLSTR_R">
+    <operator>Resample</operator>
+    <sources>
+      <sourceProduct refid="Rad2Refl_SLSTR"/>
+    </sources>
+    <parameters>
+      <referenceBand>S1_reflectance_an</referenceBand>
+      <upsampling>Nearest</upsampling>
+      <downsampling>First</downsampling>
+      <flagDownsampling>First</flagDownsampling>
+      <resampleOnPyramidLevels>true</resampleOnPyramidLevels>
+    </parameters>
+  </node>
+
+  <node id="Reproject_SLSTR_R">
+    <operator>Reproject</operator>
+    <sources><source>Resample_SLSTR_R</source></sources>
     <parameters>
       <crs>EPSG:3413</crs>
       <resampling>Nearest</resampling>
@@ -425,99 +459,113 @@
     </parameters>
   </node>
 
-  <node id="BandSelect_SLSTR_cloud">
+  <node id="Resample_SLSTR_BT">
+    <operator>Resample</operator>
+    <sources>
+      <sourceProduct refid="Read_SLSTR"/>
+    </sources>
+    <parameters>
+      <referenceBand>S1_radiance_an</referenceBand>
+      <upsampling>Nearest</upsampling>
+      <downsampling>First</downsampling>
+      <flagDownsampling>First</flagDownsampling>
+      <resampleOnPyramidLevels>true</resampleOnPyramidLevels>
+    </parameters>
+  </node>
+
+  <node id="Reproject_SLSTR_BT">
+    <operator>Reproject</operator>
+    <sources><source>Resample_SLSTR_BT</source></sources>
+    <parameters>
+      <crs>EPSG:3413</crs>
+      <resampling>Nearest</resampling>
+      <noDataValue>NaN</noDataValue>
+      <includeTiePointGrids>true</includeTiePointGrids>
+    </parameters>
+  </node>
+
+  <!--
+      SLSTR bands selection and writing
+  -->
+
+  <node id="BandSelect_01">
     <operator>BandSelect</operator>
-    <sources><source>Reproject_SLSTR</source></sources>
-    <parameters><sourceBands>cloud_an</sourceBands></parameters>
+    <sources>
+      <source>Reproject_SLSTR_R</source>
+    </sources>
+    <parameters>
+      <sourceBands>S1_reflectance_an</sourceBands>
+    </parameters>
   </node>
-  <node id="Write_SLSTR_cloud">
+
+  <node id="Write_01">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_SLSTR_cloud</sourceProduct></sources>
-    <parameters><file>${targetFolder}/cloud_an_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+    <sources><sourceProduct>BandSelect_01</sourceProduct></sources>
+    <parameters><file>${targetFolder}/S1_reflectance_an_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
-  
-  <node id="BandSelect_SLSTR_confidence">
+
+  <node id="BandSelect_05">
     <operator>BandSelect</operator>
-    <sources><source>Reproject_SLSTR</source></sources>
-    <parameters><sourceBands>confidence_an</sourceBands></parameters>
-  </node>
-  <node id="Write_SLSTR_confidence">
-    <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_SLSTR_confidence</sourceProduct></sources>
-    <parameters><file>${targetFolder}/confidence_an_x.tif</file>
-    <formatName>GeoTIFF</formatName></parameters>
-  </node>
-
-  <node id="BandMaths_cloud_137">
-    <operator>BandMaths</operator>
-    <sources><sourceProducts>Reproject_SLSTR</sourceProducts></sources>
+    <sources>
+      <source>Reproject_SLSTR_R</source>
+    </sources>
     <parameters>
-      <targetBands><targetBand>
-          <name>cloud_an_137</name><type>Int16</type>
-          <expression>cloud_an.1_37_threshold</expression>
-        </targetBand></targetBands>
-    </parameters>
-  </node>
-  <node id="Write_cloud_137">
-    <operator>Write</operator>
-    <sources><sourceProduct>BandMaths_cloud_137</sourceProduct></sources>
-    <parameters>
-      <file>${targetFolder}/cloud_an_137_x.tif</file><formatName>GeoTIFF</formatName>
+      <sourceBands>S5_reflectance_an</sourceBands>
     </parameters>
   </node>
 
-  <node id="BandMaths_cloud_gross">
-    <operator>BandMaths</operator>
-    <sources><sourceProducts>Reproject_SLSTR</sourceProducts></sources>
-    <parameters>
-      <targetBands><targetBand>
-          <name>cloud_an_gross</name><type>Int16</type>
-          <expression>cloud_an_gross_cloud</expression>
-        </targetBand></targetBands>
-    </parameters>
-  </node>
-  <node id="Write_cloud_137">
+  <node id="Write_05">
     <operator>Write</operator>
-    <sources><sourceProduct>BandMaths_cloud_gross</sourceProduct></sources>
+    <sources><sourceProduct>BandSelect_05</sourceProduct></sources>
+    <parameters><file>${targetFolder}/S5_reflectance_an_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+  </node>
+
+  <node id="BandSelect_07">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject_SLSTR_BT</source>
+    </sources>
     <parameters>
-      <file>${targetFolder}/cloud_an_gross_x.tif</file><formatName>GeoTIFF</formatName>
+      <sourceBands>S7_BT_in</sourceBands>
     </parameters>
   </node>
 
-    <node id="BandMaths_cloud_thin_cirrus">
-    <operator>BandMaths</operator>
-    <sources><sourceProducts>Reproject_SLSTR</sourceProducts></sources>
-    <parameters>
-      <targetBands><targetBand>
-          <name>cloud_an_cirrus</name><type>Int16</type>
-          <expression>cloud_an_thin_cirrus</expression>
-        </targetBand></targetBands>
-    </parameters>
-  </node>
-  <node id="Write_cloud_thin_cirrus">
+  <node id="Write_07">
     <operator>Write</operator>
-    <sources><sourceProduct>BandMaths_cloud_thin_cirrus</sourceProduct></sources>
+    <sources><sourceProduct>BandSelect_07</sourceProduct></sources>
+    <parameters><file>${targetFolder}/S7_BT_an_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+  </node>
+
+  <node id="BandSelect_08">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject_SLSTR_BT</source>
+    </sources>
     <parameters>
-      <file>${targetFolder}/cloud_an_thin_cirrus_x.tif</file><formatName>GeoTIFF</formatName>
+      <sourceBands>S8_BT_in</sourceBands>
     </parameters>
   </node>
 
-  <node id="BandMaths_confidence_cloud">
-    <operator>BandMaths</operator>
-    <sources><sourceProducts>Reproject_SLSTR</sourceProducts></sources>
+  <node id="Write_08">
+    <operator>Write</operator>
+    <sources><sourceProduct>BandSelect_08</sourceProduct></sources>
+    <parameters><file>${targetFolder}/S8_BT_an_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+  </node>
+
+  <node id="BandSelect_09">
+    <operator>BandSelect</operator>
+    <sources>
+      <source>Reproject_SLSTR_BT</source>
+    </sources>
     <parameters>
-      <targetBands><targetBand>
-          <name>confidence_an_cloud</name><type>Int16</type>
-          <expression>confidence_an.summary_cloud</expression>
-        </targetBand></targetBands>
+      <sourceBands>S9_BT_in</sourceBands>
     </parameters>
   </node>
-  <node id="Write_confidence_cloud">
+
+  <node id="Write_09">
     <operator>Write</operator>
-    <sources><sourceProduct>BandMaths_confidence_cloud</sourceProduct></sources>
-    <parameters>
-      <file>${targetFolder}/confidence_an_cloud_x.tif</file><formatName>GeoTIFF</formatName>
-    </parameters>
+    <sources><sourceProduct>BandSelect_09</sourceProduct></sources>
+    <parameters><file>${targetFolder}/S9_BT_an_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
 </graph>

@@ -54,6 +54,9 @@ for year in 2018 2019; do
     # SNAP: Reproject, calculate reflectance, extract bands, etc.
     ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X S3.xml -t
     
+    #Run the Simple Cloud Detection Algorithm (SCDA)
+    python ./SCDA.py ${proc_root}/${date}
+    
     # SICE
     parallel --verbose --lb -j 5 \
     	     "python ./sice.py ${proc_root}/${date}/{}" \
