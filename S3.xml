@@ -404,8 +404,8 @@
 
 
   <!--
-      SLSTR Top of Atmosphere reflectances (SX_reflectance_an): 1,5
-      SLSTR Brightness Temperatures (SX_BT_in): 7,8,9
+      SLSTR Top of Atmosphere reflectances (r_TOA_SX): 1,5
+      SLSTR Brightness Temperatures (BT_SX): 7,8,9
   -->
 
 
@@ -501,7 +501,7 @@
   <node id="Write_01">
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_01</sourceProduct></sources>
-    <parameters><file>${targetFolder}/S1_reflectance_an_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+    <parameters><file>${targetFolder}/r_TOA_S1.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
   <node id="BandSelect_05">
@@ -517,7 +517,7 @@
   <node id="Write_05">
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_05</sourceProduct></sources>
-    <parameters><file>${targetFolder}/S5_reflectance_an_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+    <parameters><file>${targetFolder}/r_TOA_S5.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
   <node id="BandSelect_07">
@@ -533,7 +533,7 @@
   <node id="Write_07">
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_07</sourceProduct></sources>
-    <parameters><file>${targetFolder}/S7_BT_an_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+    <parameters><file>${targetFolder}/BT_S7.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
   <node id="BandSelect_08">
@@ -549,7 +549,7 @@
   <node id="Write_08">
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_08</sourceProduct></sources>
-    <parameters><file>${targetFolder}/S8_BT_an_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+    <parameters><file>${targetFolder}/BT_S8.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
   <node id="BandSelect_09">
@@ -565,7 +565,7 @@
   <node id="Write_09">
     <operator>Write</operator>
     <sources><sourceProduct>BandSelect_09</sourceProduct></sources>
-    <parameters><file>${targetFolder}/S9_BT_an_x.tif</file><formatName>GeoTIFF</formatName></parameters>
+    <parameters><file>${targetFolder}/BT_S9.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
 </graph>
