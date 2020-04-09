@@ -38,7 +38,7 @@ for year in 2018 2019; do
 
     date=$(date -d "${year}-01-01 +$(( 10#${doy}-1 )) days" "+%Y-%m-%d")
     
-    if [[ -d "${mosaic_root}/${date}" ]]; then
+    if [[ -d "${mosaic_root}/${date}" ]] && [[ -e "${mosaic_root}/${date}/conc.tif" ]]; then
       log_warn "${mosaic_root}/${date} already exists, date skipped"
       continue
     fi
@@ -54,16 +54,14 @@ for year in 2018 2019; do
     # SNAP: Reproject, calculate reflectance, extract bands, etc.
     ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X S3.xml -t
     
-    #Run the Simple Cloud Detection Algorithm (SCDA)
+    # Run the Simple Cloud Detection Algorithm (SCDA)
     python ./SCDA.py ${proc_root}/${date}
-    
-    # SICE
-    parallel --verbose --lb -j 5 \
-    	     "python ./sice.py ${proc_root}/${date}/{}" \
-    	     ::: $(ls ${proc_root}/${date}/)
     
     # Mosaic
     ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
 
+    # SICE
+    python ./sice.py ${mosaic_root}/${date}
+    
   done
 done

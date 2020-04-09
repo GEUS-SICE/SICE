@@ -39,19 +39,10 @@ for scene in ${scenes}; do
   log_info "Importing rasters: ${scene}"
   parallel -j 1 "r.external source={} output={/.} --q" ::: ${files}
   
-  # # UNCOMMENT to turn on SZA-only mosaic (no cloud-criteria)
-  # r.mapcalc "SZA_CM = SZA" --q
-
-  # # these need to be imported, not external, so we can tweak the null mask
-  # g.remove -f type=raster name=cloud_an,confidence_an --q
-  # r.in.gdal input=${infolder}/${scene}/cloud_an.tif output=cloud_an --q --o
-  # r.in.gdal input=${infolder}/${scene}/confidence_an.tif output=confidence_an --q --o
-  # r.null map=cloud_an setnull=0 --q
-  # r.null map=confidence_an setnull=0 --q
-
   # SZA_CM is SZA but Cloud Masked
   log_info "Masking clouds in SZA raster"
-  r.mapcalc "cloud_flag = if((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1) || (r_TOA_21 > 0.76), null(), 1)" --q
+  # r.mapcalc "cloud_flag = if((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1) || (r_TOA_21 > 0.76), null(), 1)" --q
+  r.mapcalc "cloud_flag = if((r_TOA_21 > 0.76) || isnull(SCDA_v20), null(), 1)" --q
   r.mapcalc "SZA_CM = if(cloud_flag, SZA)" --q
 
   # remove small clusters of isolated pixels
@@ -123,7 +114,7 @@ mapset_list=$(g.mapsets --q -l separator=newline | grep T | tr '\n' ','| sed 's/
 raster_list=$(g.list type=raster pattern=r_TOA_01 mapset=${mapset_list} separator=comma)
 r.series input=${raster_list} method=count output=num_scenes --q
 
-bandsFloat32="$(g.list type=raster pattern="r_TOA_*") SZA SAA OZA OAA WV O3 albedo_bb_planar_sw"
+bandsFloat32="$(g.list type=raster pattern="r_TOA_*") SZA SAA OZA OAA WV O3 NDSI BT_S7 BT_S8 BT_S9 r_TOA_S5 r_TOA_S5_rc r_TOA_S1 height"
 bandsInt16="sza_lut num_scenes num_scenes_cloudfree"
 log_info "Writing mosaics to disk..."
 
@@ -135,11 +126,11 @@ parallel "r.out.gdal -m -c input={} output=${outfolder}/${date}/{}.tif ${tifopts
 tifopts='type=Int16 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
 parallel "r.out.gdal -m -c input={} output=${outfolder}/${date}/{}.tif ${tifopts}" ::: ${bandsInt16}
 
-# Generat some extra rasters
+# Generate some extra rasters
 tifopts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
 r.mapcalc "ndsi = ( r_TOA_17 - r_TOA_21 ) /(  r_TOA_17 + r_TOA_21 )"
 r.mapcalc "ndbi = ( r_TOA_01 - r_TOA_21 ) / ( r_TOA_01 + r_TOA_21 )"
 r.mapcalc "bba_emp = (r_TOA_01 + r_TOA_06 + r_TOA_17 + r_TOA_21) / (4.0 * 0.945 + 0.055)"
-r.out.gdal -f -m -c input=ndsi output=${outfolder}/${date}/NDSI.tif ${tifopts}
+r.out.gdal -f -m -c input=ndsi output=${outfolder}/${date}/NDSI2.tif ${tifopts}
 r.out.gdal -f -m -c input=ndbi output=${outfolder}/${date}/NDBI.tif ${tifopts}
 r.out.gdal -f -m -c input=bba_emp output=${outfolder}/${date}/BBA_emp.tif ${tifopts}

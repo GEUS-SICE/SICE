@@ -2,13 +2,15 @@
   <version>1.0</version>
 
   <!--
-      This script:
-      1) Converts OLCI radiance to reflectance
-      2) Reprojects to EPSG:3413
-      3) Writes out
-         reflecance bands 1-21
-	 SZA
-      4) Same for SLSTR confidence_an and cloud_an
+      + Read OLCI > Rad2Refl > Reproject
+        + Write bands 1-21
+        + Write SZA, OZA, SAA, OAA, ozone, water, altitude
+      + Read SLSTR > Rad2Refl
+        + Resample R > Reproject
+          + Write bands 1,5
+        + Resample BT > Reproject
+          + Write bands 7,8,9
+
       GPT bug means we can't write out band.tif, but have to use some other name.
       I chose "band_x.tif".
   -->
@@ -401,13 +403,10 @@
     <parameters><file>${targetFolder}/height_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
-
-
   <!--
       SLSTR Top of Atmosphere reflectances (r_TOA_SX): 1,5
       SLSTR Brightness Temperatures (BT_SX): 7,8,9
   -->
-
 
   <!--
       SLSTR operators
