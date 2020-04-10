@@ -112,6 +112,9 @@ def SCDA_v20(R550, R16, BT37, BT11, BT12, profile, scene,
     S=base.copy()
     S[:]=1.1
     
+    #masking nan values
+    mask_invalid=np.isnan(R550)
+    
     #tests 1 to 5, only based on inputs
     t1=ar(R550>0.30)*ar(NDSI/R550<0.8)*ar(BT12<=290)
     t2=ar(BT11-BT37<-13)*ar(R550>0.15)*ar(NDSI >= -0.30)\
@@ -119,7 +122,6 @@ def SCDA_v20(R550, R16, BT37, BT11, BT12, profile, scene,
     t3=ar(BT11-BT37<-30)
     t4=ar(R550<0.75)*ar(BT12>265)
     t5=ar(R550>0.75)
-    
     
     cloud_detection=t1
     cloud_detection[cloud_detection==False]=t2[cloud_detection==False]
@@ -136,6 +138,9 @@ def SCDA_v20(R550, R16, BT37, BT11, BT12, profile, scene,
        *ar(BT12<=270)*ar(R550>0.18)
 
     cloud_detection[cloud_detection==False]=t6[cloud_detection==False]
+    
+    #masking nan values
+    cloud_detection[mask_invalid]=True
     
     if SICE_toolchain:
         cloud_detection = np.where(cloud_detection==True, 255.0, 1.0)
