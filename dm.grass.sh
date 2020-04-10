@@ -128,9 +128,7 @@ parallel "r.out.gdal -m -c input={} output=${outfolder}/${date}/{}.tif ${tifopts
 
 # Generate some extra rasters
 tifopts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
-r.mapcalc "ndsi = ( r_TOA_17 - r_TOA_21 ) /(  r_TOA_17 + r_TOA_21 )"
 r.mapcalc "ndbi = ( r_TOA_01 - r_TOA_21 ) / ( r_TOA_01 + r_TOA_21 )"
 r.mapcalc "bba_emp = (r_TOA_01 + r_TOA_06 + r_TOA_17 + r_TOA_21) / (4.0 * 0.945 + 0.055)"
-r.out.gdal -f -m -c input=ndsi output=${outfolder}/${date}/NDSI2.tif ${tifopts}
 r.out.gdal -f -m -c input=ndbi output=${outfolder}/${date}/NDBI.tif ${tifopts}
 r.out.gdal -f -m -c input=bba_emp output=${outfolder}/${date}/BBA_emp.tif ${tifopts}
