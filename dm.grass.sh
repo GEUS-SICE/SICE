@@ -42,7 +42,7 @@ for scene in ${scenes}; do
   # SZA_CM is SZA but Cloud Masked
   log_info "Masking clouds in SZA raster"
   # r.mapcalc "cloud_flag = if((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1) || (r_TOA_21 > 0.76), null(), 1)" --q
-  r.mapcalc "cloud_flag = if((r_TOA_21 > 0.76) || isnull(SCDA_v20), null(), 1)" --q
+  r.mapcalc "cloud_flag = if(isnull(SCDA_v20), null(), 1)" --q
   r.mapcalc "SZA_CM = if(cloud_flag, SZA)" --q
 
   # remove small clusters of isolated pixels
