@@ -26,53 +26,51 @@ debug() { if [[ ${debug:-} == 1 ]]; then log_warn "debug:"; echo $@; fi; }
 
 mkdir -p "${outfolder}/${date}"
 
+
+# Zoom to mask region
+r.in.gdal input=mask.tif output=MASK --quiet
+g.region raster=MASK
+g.region zoom=MASK
+g.region res=1000 -a
+g.region -s # save as default region
+
 # load all the data
 yyyymmdd=${date:0:4}${date:5:2}${date:8:2}
 scenes=$(cd "${infolder}"; ls | grep -E "${yyyymmdd}T??????")
 scene=$(echo ${scenes}|tr ' ' '\n' | head -n3|tail -n1) # DEBUG
 
 for scene in ${scenes}; do
-  g.mapset -c ${scene} --quiet
-  g.region res=1000 -a --quiet
+  g.mapset -c ${scene} --q
+  g.region -d --q
   files=$(ls ${infolder}/${scene}/*.tif || true)
   if [[ -z ${files} ]]; then log_err "No files: ${scene}"; continue; fi
   log_info "Importing rasters: ${scene}"
   parallel -j 1 "r.external source={} output={/.} --q" ::: ${files}
   
-  # SZA_CM is SZA but Cloud Masked
   log_info "Masking clouds in SZA raster"
-  # r.mapcalc "cloud_flag = if((cloud_an_gross == 1) || (cloud_an_137 == 1) || (cloud_an_thin_cirrus == 1) || (r_TOA_21 > 0.76), null(), 1)" --q
-  r.mapcalc "cloud_flag = if(isnull(SCDA_v20), null(), 1)" --q
-  r.mapcalc "SZA_CM = if(cloud_flag, SZA)" --q
-
+  r.grow input=SCDA_v20 output=SCDA_grow radius=-5 new=-1 --q # increase clouds by 5 pixels
   # remove small clusters of isolated pixels
+  r.clump -d input=SCDA_grow output=SCDA_clump --q
   # frink "(1000 m)^2 -> hectares" 100 hectares per pixel, so value=10000 -> 10 pixels
-  r.mapcalc "SZA_CM_mask = if(SZA_CM)" --q
-  r.clump -d input=SZA_CM_mask output=SZA_CM_clump --q
   # this sometimes fails. Force success (||true) and check for failure on next line.
-  r.reclass.area -c input=SZA_CM_clump output=SZA_CM_area value=10000 mode=greater --q || true
-  [[ "" == $(g.list type=raster pattern=SZA_CM_area) ]] && r.mapcalc "SZA_CM_area = null()" --q
-  r.mapcalc "SZA_CM_rmarea = if(SZA_CM_area, SZA_CM)" --q
+  r.reclass.area -c input=SCDA_clump output=SCDA_area value=10000 mode=greater --q || true
+  [[ "" == $(g.list type=raster pattern=SCDA_area) ]] && r.mapcalc "SCDA_area = null()" --q
+  # SZA_CM is SZA but Cloud Masked: Invalid where buffered clouds over ice w/ valid SZA
+  r.mapcalc "SZA_CM0 = if((isnull(SCDA_area) && (MASK@PERMANENT == 220)) || (isnull(SCDA_v20) && (MASK@PERMANENT != 220)), null(), 1)" --q
+  r.mapcalc "SZA_CM = if(not(isnull(SZA)) & SZA_CM0, 1, null())" --q
+  g.remove -f type=raster name=SCDA_grow,SCDA_clump,SCDA_area,SZA_CM0 --q
 done
 
 # The target bands. For example, R_TOA_01 or SZA.
-bands=$(g.list type=raster mapset=* | cut -d"@" -f1 | sort | uniq)
+bands=$(g.list type=raster mapset=* -m | grep -v PERMANENT | cut -d"@" -f1 | sort | uniq)
 
-# Mask and zoom to Greenland ice+land
-g.mapset PERMANENT --quiet
-r.in.gdal input=mask.tif output=MASK --quiet
-g.region raster=MASK
-g.region zoom=MASK
-g.region res=1000 -a
-# g.region raster=$(g.list type=raster pattern=SZA separator=, mapset=*)
-g.region -s # save as default region
 g.mapset -c ${date} --quiet # create a new mapset for final product
 r.mask raster=MASK@PERMANENT --o --q # mask to Greenland ice+land
 
 # find the array index with the minimum SZA
 # Array for indexing, list for using in GRASS
-sza_arr=($(g.list -m type=raster pattern=SZA_CM_rmarea mapset=*))
-sza_list=$(g.list -m type=raster pattern=SZA_CM_rmarea mapset=* separator=comma)
+sza_arr=($(g.list -m type=raster pattern=SZA_CM mapset=*))
+sza_list=$(g.list -m type=raster pattern=SZA_CM mapset=* separator=comma)
 
 r.series input=${sza_list} method=min_raster output=sza_lut --o --q
 # echo ${SZA_list} | tr ',' '\n' | cut -d@ -f2 > ${outfolder}/${date}/SZA_LUT.txt
