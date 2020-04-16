@@ -3,7 +3,7 @@
 Created on Mon Oct 14 16:58:31 2019
 Update 07032019
 
- pySICEv1.1 library
+ pySICEv1.2 library
  contains:
      pySICE                     main function
      alb2rtoa                  calculates TOA reflectance from surface albedo
@@ -24,19 +24,18 @@ from constants import w, bai, xa, ya, f0, f1, f2, bet, gam, coef1, coef2, coef3,
 def pySICE(toa,am1, am2, raa, ak1, ak2, amf, tau, co, p, g,
            D, area, al, r0, bal,
            sol1_clean, sol1_pol, sol2, sol3_clean, sol3_pol, asol):
-# pySICEv1.0
+# pySICEv1.2
 # 
-# from FORTRAN VERSION 3.4
-# Nov. 11, 2019
-
-# BAV 09-092-2020 (bav@geus.dk)
-# Latest update
+# from FORTRAN VERSION 5
+# March 31, 2020
+#
+# Update 16-04-2020 (bav@geus.dk)
+# From Baptiste:
+#- prevented caluclation on nan values in snow_impurities function
+#- now use clean snow BBA caluclation for clear plluted pixels (isnow = 7)
 # From Alex's side:
-# corrected bugs reported by bav
-# Change of certain threshold values
-# Removal of the water vapor absorption
-# zbrent not used for band 19 and 20. Interpolation is used instead.
-# output of planar and spectral abedo fixed   
+#- approximation of the bba clean snow
+    
 # This code retrieves snow/ice  albedo and related snow products for clean Arctic
 # atmosphere. The errors increase with the load of pollutants in air.
 # Alexander  KOKHANOVSKY
@@ -592,10 +591,14 @@ def snow_impurities(alb_sph, bal):
     # bm    Angstroem absorption coefficient of pollutants ( around 1 - for soot, 3-7 for dust)
     bm=np.nan*bal
     bf=bm
-             
-    p1=np.log(alb_sph[0,:,:])*np.log(alb_sph[0,:,:])
-    p2=np.log(alb_sph[1,:,:])*np.log(alb_sph[1,:,:])
-    bm=np.log( p1/p2)/np.log(w[1]/w[0])
+    p1 = bm       
+    p2 = bm
+    
+    ind_nonan = np.logical_and(np.logical_not(np.isnan(alb_sph[0,:,:])),
+                               np.logical_not(np.isnan(alb_sph[1,:,:])))
+    p1[ind_nonan]=np.log(alb_sph[0,ind_nonan])*np.log(alb_sph[0,ind_nonan])
+    p2[ind_nonan]=np.log(alb_sph[1,ind_nonan])*np.log(alb_sph[1,ind_nonan])
+    bm[ind_nonan]=np.log( p1[ind_nonan]/p2[ind_nonan])/np.log(w[1]/w[0])
 
     # type of pollutants
     ntype=np.nan*bal
@@ -657,6 +660,23 @@ def funp(x, al, sph_calc, ak1):
      
     return rs*funcs
 
+#%% Approximation functions for BBA integration
+def plane_albedo_sw_approx(D,am1):
+    anka= 0.7389  -0.1783*am1    +0.0484*am1**2.
+    banka=0.0853  +0.0414*am1    -0.0127*am1**2.
+    canka=0.1384  +0.0762*am1    -0.0268*am1**2.
+    diam1=187.89  -69.2636*am1     +40.4821*am1**2.
+    diam2=2687.25 -405.09*am1   +94.5*am1**2.
+    return anka+banka*np.exp(-1000*D/diam1)+canka*np.exp(-1000*D/diam2)
+
+def spher_albedo_sw_approx(D):
+    anka= 0.6420
+    banka=0.1044
+    canka=0.1773
+    diam1=158.62
+    diam2=2448.18
+    return anka+banka*np.exp(-1000*D/diam1)+canka*np.exp(-1000*D/diam2)
+
 #%%   CalCULATION OF BBA for clean pixels
 def BBA_calc_clean(al, ak1):
     # for clean snow
@@ -686,7 +706,7 @@ def BBA_calc_clean(al, ak1):
     s2 = qsimp(func_integ,0.7,2.4)
     # shortwave(0.3-2.4 micron)
     # END of clean snow bba calculation
-    return p1,p2,s1,s2
+    return p1,p2,s1,s2            
 
 #%% ===============================
 def qsimp(func,a,b):

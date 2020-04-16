@@ -1,19 +1,14 @@
-# pySICEv1.1
+# pySICEv1.2
 # 
-# from FORTRAN VERSION 3.4
-# Nov. 11, 2019
+# from FORTRAN VERSION 5
+# March 31, 2020
 #
-# Update 07032019 (bav@geus.dk)
+# Update 16-04-2020 (bav@geus.dk)
 # From Baptiste:
-# 	Matrix calculation and np.vectorize for speed-up
-# 	Moving pixel- or band-independent calculations outside of loops
+#- prevented caluclation on nan values in snow_impurities function
+#- now use clean snow BBA caluclation for clear plluted pixels (isnow = 7)
 # From Alex's side:
-# 	corrected bugs reported by bav
-# 	Change of certain threshold values
-# 	Removal of the water vapor absorption
-# 	zbrent not used for band 19 and 20. Interpolation is used instead.
-# 	output of planar and spectral abedo fixed
-#	calculate bba based on BOA instead of TOA reflectance
+#- approximation of the bba clean snow
 # 
 # BAV 10-10-2019 (bav@geus.dk)
 # Changes:
@@ -147,8 +142,7 @@ ozone_vod = genfromtxt('./tg_vod.dat', delimiter='   ',skip_header=2)
 tozon = ozone_vod[range(21),1]
 aot = 0.1
 
-#%%    start_time = time.process_time()
-# declaring variables
+#%%   declaring variables
 BXXX, isnow, D, area, al, r0, isnow, conc, ntype, rp1, rp2, rp3, rs1, rs2, rs3 =  \
 vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, \
 vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, vaa*np.nan, \
@@ -160,9 +154,6 @@ alb_sph, rp, refl =  toa*np.nan, toa*np.nan, toa*np.nan
 BXXX, toa_cor_o3 = sl.ozone_scattering(ozone,tozon, sza, vza,toa)
 
 # Filtering pixels unsuitable for retrieval
-#    if ((cloud_an_gross[i] == 1) or (cloud_an_137[i] == 1) or (cloud_an_thin_cirrus[i] == 1)): continue
-#   isnow[toa_cor_o3[20, :,:] > 0.76] = 101
-
 isnow[sza>75] = 100
 isnow[toa_cor_o3[20, :,:] < 0.1] = 102
 for i_channel in range(21):
@@ -311,24 +302,34 @@ alb_sph[19,ind_pol] = acoef + bcoef*w[19]
 rp = np.power (alb_sph, ak1)
 refl =r0* np.power(alb_sph, (ak1*ak2/r0))
 
-ind_all_clean = isnow == 0
+ind_all_clean = np.logical_or(isnow == 0, isnow == 7)
 
-# CalCULATION OF BBA of clean snow
-BBA_v = np.vectorize(sl.BBA_calc_clean)
-p1,p2,s1,s2 = BBA_v(al[ind_all_clean], ak1[ind_all_clean])
+## CalCULATION OF BBA of clean snow
 
-# visible(0.3-0.7micron)
-rp1[ind_all_clean]=p1/sol1_clean
-rs1[ind_all_clean]=s1/sol1_clean
-# near-infrared (0.7-2.4micron)
-rp2[ind_all_clean]=p2/sol2
-rs2[ind_all_clean]=s2/sol2
-# shortwave(0.3-2.4 micron)
-rp3[ind_all_clean]=(p1+p2)/sol3_clean
-rs3[ind_all_clean]=(s1+s2)/sol3_clean
+# old method: integrating equation
+#BBA_v = np.vectorize(sl.BBA_calc_clean)
+#p1,p2,s1,s2 = BBA_v(al[ind_all_clean], ak1[ind_all_clean])
+#
+## visible(0.3-0.7micron)
+#rp1[ind_all_clean]=p1/sol1_clean
+#rs1[ind_all_clean]=s1/sol1_clean
+## near-infrared (0.7-2.4micron)
+#rp2[ind_all_clean]=p2/sol2
+#rs2[ind_all_clean]=s2/sol2
+## shortwave(0.3-2.4 micron)
+#rp3[ind_all_clean]=(p1+p2)/sol3_clean
+#rs3[ind_all_clean]=(s1+s2)/sol3_clean
+
+# approximation
+# planar albedo
+#rp1 and rp2 not derived anymore
+rp3[ind_all_clean]=sl.plane_albedo_sw_approx(D[ind_all_clean],am1[ind_all_clean])
+#     spherical albedo
+#rs1 and rs2 not derived anymore
+rs3[ind_all_clean]= sl.spher_albedo_sw_approx(D[ind_all_clean])
     
 # calculation of the BBA for the polluted snow
-ind_all_polluted =  np.logical_or(np.logical_or(isnow == 1,  isnow == 6), isnow == 7)
+ind_all_polluted =  np.logical_or(isnow == 1,  isnow == 6)
 
 rp1[ind_all_polluted], rp2[ind_all_polluted], rp3[ind_all_polluted] = sl.BBA_calc_pol(
         rp[:, ind_all_polluted], asol, sol1_pol, sol2, sol3_pol)
@@ -343,11 +344,11 @@ WriteOutput(al,   'al',     InputFolder)
 WriteOutput(r0,   'r0',InputFolder)
 WriteOutput(isnow,'diagnostic_retrieval',InputFolder)
 WriteOutput(conc, 'conc',InputFolder)
-WriteOutput(rp1,  'albedo_bb_planar_vis',InputFolder)
-WriteOutput(rp2,  'albedo_bb_planar_nir',InputFolder)
+#WriteOutput(rp1,  'albedo_bb_planar_vis',InputFolder)
+#WriteOutput(rp2,  'albedo_bb_planar_nir',InputFolder)
 WriteOutput(rp3,  'albedo_bb_planar_sw',InputFolder)
-WriteOutput(rs1,  'albedo_bb_spherical_vis',InputFolder)
-WriteOutput(rs2,  'albedo_bb_spherical_nir',InputFolder)
+#WriteOutput(rs1,  'albedo_bb_spherical_vis',InputFolder)
+#WriteOutput(rs2,  'albedo_bb_spherical_nir',InputFolder)
 WriteOutput(rs3,  'albedo_bb_spherical_sw',InputFolder)
 
 for i in range(21): 
