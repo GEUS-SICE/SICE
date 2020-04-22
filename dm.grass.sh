@@ -47,18 +47,18 @@ for scene in ${scenes}; do
   log_info "Importing rasters: ${scene}"
   parallel -j 1 "r.external source={} output={/.} --q" ::: ${files}
   
-  log_info "Masking clouds in SZA raster"
-  r.grow input=SCDA_v20 output=SCDA_grow radius=-5 new=-1 --q # increase clouds by 5 pixels
-  # remove small clusters of isolated pixels
-  r.clump -d input=SCDA_grow output=SCDA_clump --q
-  # frink "(1000 m)^2 -> hectares" 100 hectares per pixel, so value=10000 -> 10 pixels
-  # this sometimes fails. Force success (||true) and check for failure on next line.
-  r.reclass.area -c input=SCDA_clump output=SCDA_area value=10000 mode=greater --q || true
-  [[ "" == $(g.list type=raster pattern=SCDA_area) ]] && r.mapcalc "SCDA_area = null()" --q
-  # SZA_CM is SZA but Cloud Masked: Invalid where buffered clouds over ice w/ valid SZA
-  r.mapcalc "SZA_CM0 = if((isnull(SCDA_area) && (MASK@PERMANENT == 220)) || (isnull(SCDA_v20) && (MASK@PERMANENT != 220)), null(), 1)" --q
-  r.mapcalc "SZA_CM = if(not(isnull(SZA)) & SZA_CM0, 1, null())" --q
-  g.remove -f type=raster name=SCDA_grow,SCDA_clump,SCDA_area,SZA_CM0 --q
+  # log_info "Masking clouds in SZA raster"
+  # r.grow input=SCDA_v20 output=SCDA_grow radius=-5 new=-1 --q # increase clouds by 5 pixels
+  # # remove small clusters of isolated pixels
+  # r.clump -d input=SCDA_grow output=SCDA_clump --q
+  # # frink "(1000 m)^2 -> hectares" 100 hectares per pixel, so value=10000 -> 10 pixels
+  # # this sometimes fails. Force success (||true) and check for failure on next line.
+  # r.reclass.area -c input=SCDA_clump output=SCDA_area value=10000 mode=greater --q || true
+  # [[ "" == $(g.list type=raster pattern=SCDA_area) ]] && r.mapcalc "SCDA_area = null()" --q
+  # # SZA_CM is SZA but Cloud Masked: Invalid where buffered clouds over ice w/ valid SZA
+  # r.mapcalc "SZA_CM0 = if((isnull(SCDA_area) && (MASK@PERMANENT == 220)) || (isnull(SCDA_v20) && (MASK@PERMANENT != 220)), null(), 1)" --q
+  r.mapcalc "SZA_CM = if(not(isnull(SZA)), 1, null())" --q
+  # g.remove -f type=raster name=SCDA_grow,SCDA_clump,SCDA_area,SZA_CM0 --q
 done
 
 # The target bands. For example, R_TOA_01 or SZA.
@@ -112,7 +112,7 @@ mapset_list=$(g.mapsets --q -l separator=newline | grep T | tr '\n' ','| sed 's/
 raster_list=$(g.list type=raster pattern=r_TOA_01 mapset=${mapset_list} separator=comma)
 r.series input=${raster_list} method=count output=num_scenes --q
 
-bandsFloat32="$(g.list type=raster pattern="r_TOA_*") SZA SAA OZA OAA WV O3 NDSI BT_S7 BT_S8 BT_S9 r_TOA_S5 r_TOA_S5_rc r_TOA_S1 height"
+bandsFloat32="$(g.list type=raster pattern="r_TOA_*") SZA SAA OZA OAA WV O3 r_TOA_S5 r_TOA_S5_rc r_TOA_S1 height"
 bandsInt16="sza_lut num_scenes num_scenes_cloudfree"
 log_info "Writing mosaics to disk..."
 
