@@ -23,10 +23,6 @@ mosaic_root=/sice-data/SICE/mosaic
 # proc_root=./out
 # mosaic_root=./mosaic
 
-set -o errexit
-set -o nounset
-set -o pipefail
-
 LD_LIBRARY_PATH=. # SNAP requirement
 
 for year in 2018 2019; do
