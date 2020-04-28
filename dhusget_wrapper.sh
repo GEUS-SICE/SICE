@@ -17,7 +17,7 @@ print_usage() {
        "[dhusget.sh options]"
   echo ""
   echo "  -d|--date YYYY-MM-DD or YYY-DOY"
-  echo "  [-f|--footprint Greenland|Iceland|Svalbard|NovayaZemlya|SevernayaZemlya|FransJosefLand|NorthernArcticCanada (Devon Island included)|SouthernArcticCanada|JanMayen|Norway|Beaufort (sea ice) [DEFAULT: Greenland] [ELSE: footprint coordinates (.geojson, .csv: decimal long/lat]]"
+  echo "  [-f|--footprint Greenland|Iceland|Svalbard|NovayaZemlya|SevernayaZemlya|FransJosefLand|NorthernArcticCanada (Devon Island included)|SouthernArcticCanada|JanMayen|Norway|Beaufort (sea ice)|AlaskaYukon  [DEFAULT: Greenland] [ELSE: footprint coordinates (.geojson, .csv: decimal lon/lat]]"
   echo "  [-l|--local /path/to/Sentinel-3 (e.g. /o3data/Sentinel-3)]"
   echo "  [           {SLSTR,OLCI}/YYYY/MM/DD subfolders required]"
   echo "  -o|--output-folder /path/to/folder"
@@ -126,6 +126,8 @@ elif [[ ${footprint} == "Norway" ]]; then
           footprint_poly="footprint:\"Intersects(POLYGON((6.360509 62.951828,5.636290 62.626962,4.738299 62.266442,4.280832 61.540340,4.213059 61.207532,4.484150 60.531225,4.839958 59.729643,4.929492 59.464417,9.193077 59.562844,9.620502 62.539475,6.360509 62.951828)))\""
 elif [[ ${footprint} == "Beaufort" ]]; then
         footprint_poly="footprint:\"Intersects(POLYGON((-145.8544921875 70.05059634999759,-134.75830078125 74.69485438254536,-123.22265625000001 74.38442852287905,-128.03466796875 68.9189095799366,-135.41748046875 68.68053347928972,-145.7666015625 70.02809362050226,-145.8544921875 70.05059634999759)))\""
+elif [[ ${footprint} == "AlaskaYukon" ]]; then
+        footprint_poly="footprint:\"Intersects(POLYGON((-153.443453 59.371565,-155.758468 59.983386,-155.849887 62.149612,-149.612619 64.317909,-144.046921 64.090493,-132.520688 60.004403,-127.994321 55.260251,-130.140189 54.742974,-134.865137 57.917908,-137.747917 58.366708,-140.962528 59.595609,-145.794814 60.095665, -150.979670 58.572775, -153.443453 59.371565)))\""
 else
   boundary=$(boundary_from_file.py ${footprint})
   footprint_poly="footprint:\"Intersects(POLYGON((${boundary})))\""
