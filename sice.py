@@ -1,29 +1,13 @@
-# pySICEv1.3
+# pySICEv1.4
 # 
-# from FORTRAN VERSION 5
+# from FORTRAN VERSION 5.2
 # March 31, 2020
 #
-# Latest update of python script: 20-04-2020 (bav@geus.dk)
-# From Baptiste:
-#- reorganized sice_lib.py
-#- prevented code to crash when no pixels are suitable for retrieval
-# 
-# BAV 10-10-2019 (bav@geus.dk)
-# Changes:
-#   old variable:           Replaced by:
-#   raa                     its formula: 180.-(vaa-saa)
-#   AKOEF                   its formula: totadu/404.59
-#   nv np and isk           i_channel
-#   xxx                     ak1*ak2/r0
-#   answer                  alb_sph
-#   nsolo                   spher_calc
-#   fun                     alb2rtoa
-#   deltak                  removed (diagnostic variable)
-#   sobthv                  specific case o alb2rtoa
-#   funs                    removed (not used)
-#   zbrent                  replaced by a python version
-#   psi                     specific case of sol
-#   wave                    removed (using vectorized w instead)
+# Latest update of python scripts: 29-04-2020 (bav@geus.dk)
+# - Fixed a bug in the indexing of the polluted pixels for which the spherical albedo equation could not be solved.  Solved the oultiers visible in bands 12-15 and 19-20 and  expended the BBA calculation to few pixels that fell out of the index.
+# -compression of output
+# - new backscatter fraction from Alex
+# - new format for tg_vod.dat file
               
 # This code retrieves snow/ice  albedo and related snow products for clean Arctic
 # atmosphere. The errors increase with the load of pollutants in air.
@@ -107,10 +91,13 @@ InputFolder =  sys.argv[1] + '/'
 #%% ========= input tif ================
 Oa01 = rio.open(InputFolder+'r_TOA_01.tif')
 meta = Oa01.meta
+with rio.Env():    
+    meta.update(compress='DEFLATE')
 
 def WriteOutput(var,var_name,in_folder):
     # this functions write tif files based on a model file, here "Oa01"
     # opens a file for writing
+
     with rio.open(in_folder+var_name+'.tif', 'w+', **meta) as dst:
         dst.write(var.astype('float32'),1)
     
@@ -136,7 +123,7 @@ vaa[np.isnan(toa[0,:,:])] = np.nan
 water_vod = genfromtxt('./tg_water_vod.dat', delimiter='   ')
 voda = water_vod[range(21),1]
 
-ozone_vod = genfromtxt('./tg_vod.dat', delimiter='   ',skip_header=2)
+ozone_vod = genfromtxt('./tg_vod.dat', delimiter='   ')
 tozon = ozone_vod[range(21),1]
 aot = 0.1
 
@@ -269,7 +256,7 @@ if np.any(ind_pol):
         alb_sph[i_channel,ind_clear_pol] = np.exp(-np.sqrt(4.*1000.*al[ind_clear_pol] * np.pi * bai[i_channel] / w[i_channel] )) 
         
     # re-defining polluted pixels
-    ind_pol =  np.logical_or(isnow==6, isnow==1)
+    ind_pol =  np.logical_and(ind_pol, isnow!=7)
     
     #retrieving snow impurities        
     ntype, bf, conc = sl.snow_impurities(alb_sph, bal)
@@ -287,7 +274,7 @@ if np.any(ind_pol):
     # pixels that are clean enough in channels 18 19 20 and 21 are not affected by pollution, the analytical equation can then be used
     ind_ok =  np.logical_and(ind_pol, toa_cor_o3[20,:,:]>0.35)
     for i_channel in range(17,21):
-        alb_sph[i_channel,ind_ok] = np.exp(-np.sqrt(4.*1000.*al[ind_ok] * np.pi * bai[i_channel] / w[i_channel] ))    
+        alb_sph[i_channel,ind_ok] = np.exp(-np.sqrt(4.*1000.*al[ind_ok] * np.pi * bai[i_channel] / w[i_channel] ))
     # Alex, SEPTEMBER 26, 2019
     # to avoid the influence of gaseous absorption (water vapor) we linearly interpolate in the range 885-1020nm for bare ice cases only (low toa[20])
     # Meaning: alb_sph[18] and alb_sph[19] are replaced by a linear interpolation between alb_sph[17] and alb_sph[20]
@@ -301,7 +288,7 @@ if np.any(ind_pol):
 rp = np.power (alb_sph, ak1)
 refl =r0* np.power(alb_sph, (ak1*ak2/r0))
 
-ind_all_clean = np.logical_or(isnow == 0, isnow == 7)
+ind_all_clean = np.logical_or(ind_clean, isnow == 7)
 
 ## CalCULATION OF BBA of clean snow
 
@@ -328,29 +315,24 @@ rp3[ind_all_clean]=sl.plane_albedo_sw_approx(D[ind_all_clean],am1[ind_all_clean]
 rs3[ind_all_clean]= sl.spher_albedo_sw_approx(D[ind_all_clean])
     
 # calculation of the BBA for the polluted snow
-ind_all_polluted =  np.logical_or(isnow == 1,  isnow == 6)
-
-rp1[ind_all_polluted], rp2[ind_all_polluted], rp3[ind_all_polluted] = sl.BBA_calc_pol(
-        rp[:, ind_all_polluted], asol, sol1_pol, sol2, sol3_pol)
-rs1[ind_all_polluted], rs2[ind_all_polluted], rs3[ind_all_polluted] = sl.BBA_calc_pol(
-        alb_sph[:, ind_all_polluted], asol, sol1_pol, sol2, sol3_pol)
+rp1[ind_pol], rp2[ind_pol], rp3[ind_pol] = sl.BBA_calc_pol(
+        rp[:, ind_pol], asol, sol1_pol, sol2, sol3_pol)
+rs1[ind_pol], rs2[ind_pol], rs3[ind_pol] = sl.BBA_calc_pol(
+        alb_sph[:, ind_pol], asol, sol1_pol, sol2, sol3_pol)
                
 #%% Output
-WriteOutput(BXXX,   '03_SICE',   InputFolder)
+WriteOutput(BXXX,   'O3_SICE',   InputFolder)
 WriteOutput(D,      'grain_diameter',InputFolder)
 WriteOutput(area,   'snow_specific_area', InputFolder)
 WriteOutput(al,   'al',     InputFolder)
 WriteOutput(r0,   'r0',InputFolder)
 WriteOutput(isnow,'diagnostic_retrieval',InputFolder)
 WriteOutput(conc, 'conc',InputFolder)
-#WriteOutput(rp1,  'albedo_bb_planar_vis',InputFolder)
-#WriteOutput(rp2,  'albedo_bb_planar_nir',InputFolder)
 WriteOutput(rp3,  'albedo_bb_planar_sw',InputFolder)
-#WriteOutput(rs1,  'albedo_bb_spherical_vis',InputFolder)
-#WriteOutput(rs2,  'albedo_bb_spherical_nir',InputFolder)
 WriteOutput(rs3,  'albedo_bb_spherical_sw',InputFolder)
 
-for i in range(21): 
+for i in np.append(np.arange(11), np.arange(15,21)):
+# for i in np.arange(21):
     WriteOutput(alb_sph[i,:,:],    'albedo_spectral_spherical_'+str(i+1).zfill(2), InputFolder)
     WriteOutput(rp[i,:,:],    'albedo_spectral_planar_'+str(i+1).zfill(2), InputFolder)
     WriteOutput(refl[i,:,:],   'rBRR_'+str(i+1).zfill(2), InputFolder)

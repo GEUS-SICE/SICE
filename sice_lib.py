@@ -28,10 +28,11 @@ Update 07032019
 # from FORTRAN VERSION 5
 # March 31, 2020
 #
-# Latest update of python script: 20-04-2020 (bav@geus.dk)
-# From Baptiste:
-#- reorganized sice_lib.py
-#- prevented code to crash when no pixels are suitable for retrieval
+# Latest update of python scripts: 29-04-2020 (bav@geus.dk)
+# - Fixed a bug in the indexing of the polluted pixels for which the spherical albedo equation could not be solved.  Solved the oultiers visible in bands 12-15 and 19-20 and  expended the BBA calculation to few pixels that fell out of the index.
+# -compression of output
+# - new backscatter fraction from Alex
+# - new format for tg_vod.dat file
 
 # **************************************************
 # Inputs:
@@ -215,21 +216,24 @@ def prepare_coef(tau, g, p, am1, am2, amf,gaer,taumol,tauaer):
     oskar=4.+3.*(1.-g)*tau
     b1=1.+1.5*am1+(1.-1.5*am1)*np.exp(-tau/am1)
     b2=1.+1.5*am2+(1.-1.5*am2)*np.exp(-tau/am2)
-#    BAPT=tau*np.nan    
-#    BAP=(1.+gaer)/np.sqrt(1.+gaer*gaer)-1.
-#    BAPTG=(1.-gaer)*BAP/2./gaer
-    
+
+    wa1=1.10363
+    wa2=-6.70122
+    wx0=2.19777
+    wdx=0.51656
+    bex=np.exp   (  (g-wx0)/wdx )
+    sssss=  (wa1-wa2)/(1.+bex)+wa2
+
     for i in range(21):
         astra[i,:,:]=(1.-np.exp(-tau[i,:,:]*amf))/(am1+am2)/4.
         rms[i,:,:] = 1.- b1[i,:,:]*b2[i,:,:]/oskar[i,:,:]  \
         + (3.*(1.+g[i,:,:])*am1*am2 - 2.*(am1+am2))*astra[i,:,:]
         #backscattering fraction
-        t1[i,:,:] = np.exp(-(1.-g[i,:,:])*tau[i,:,:]/am1/2.)
-        t2[i,:,:] = np.exp(-(1.-g[i,:,:])*tau[i,:,:]/am2/2.)
-#        BAPT[i,:,:] = 0.5*taumol[i,:,:] + BAPTG[i]*tauaer[i]
-#        t1[i,:,:]=np.exp(-BAPT[i]/am1)
-#        t2[i,:,:] =np.exp(-BAPT[i]/am2)
-        
+        # t1[i,:,:] = np.exp(-(1.-g[i,:,:])*tau[i,:,:]/am1/2.)
+        # t2[i,:,:] = np.exp(-(1.-g[i,:,:])*tau[i,:,:]/am2/2.)
+        t1[i,:,:]=np.exp(-(1.-g[i,:,:])*tau[i,:,:]/am1/2./sssss[i,:,:])
+        t2[i,:,:]=np.exp(-(1.-g[i,:,:])*tau[i,:,:]/am2/2./sssss[i,:,:])
+      
     rss = p*astra
     r = rss + rms
     
