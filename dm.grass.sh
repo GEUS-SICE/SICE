@@ -61,26 +61,36 @@ for scene in ${scenes}; do
   g.remove -f type=raster name=SCDA_grow,SCDA_clump,SCDA_area,SZA_CM0 --q
 done
 
-# The target bands. For example, R_TOA_01 or SZA.
-bands=$(g.list type=raster mapset=* -m | grep -v PERMANENT | cut -d"@" -f1 | sort | uniq)
+# The target bands to mask for clouds (CM; all except r_TOA and BT)
+bands_CM=$(g.list type=raster exclude="{r_TOA,BT}_*" mapset=* -m | grep -v PERMANENT | cut -d"@" -f1 | sort | uniq)
+
+# Bands for which invalid pixels are kept (r_TOA and BT)
+bands=$(g.list type=raster pattern="{r_TOA,BT}_*" mapset=* -m | grep -v PERMANENT | cut -d"@" -f1 | sort | uniq)
 
 g.mapset -c ${date} --quiet # create a new mapset for final product
 r.mask raster=MASK@PERMANENT --o --q # mask to Greenland ice+land
 
-# find the array index with the minimum SZA
+# find the array index with the minimum SZA and SZA_CM (cloud masked)
 # Array for indexing, list for using in GRASS
-sza_arr=($(g.list -m type=raster pattern=SZA_CM mapset=*))
-sza_list=$(g.list -m type=raster pattern=SZA_CM mapset=* separator=comma)
+sza_arr_CM=($(g.list -m type=raster pattern=SZA_CM mapset=*))
+sza_arr=($(g.list -m type=raster pattern=SZA mapset=*))
+sza_list_CM=$(g.list -m type=raster pattern=SZA_CM mapset=* separator=comma)
+sza_list=$(g.list -m type=raster pattern=SZA mapset=* separator=comma)
 
+r.series input=${sza_list_CM} method=min_raster output=sza_lut_CM --o --q
 r.series input=${sza_list} method=min_raster output=sza_lut --o --q
+
 # echo ${SZA_list} | tr ',' '\n' | cut -d@ -f2 > ${outfolder}/${date}/SZA_LUT.txt
 
 # find the indices used. It is possible one scene is never used
+sza_lut_idxs_CM=$(r.stats --q -n -l sza_lut_CM)
 sza_lut_idxs=$(r.stats --q -n -l sza_lut)
+n_imgs_CM=$(echo $sza_lut_idxs_CM |wc -w)
 n_imgs=$(echo $sza_lut_idxs |wc -w)
 
 # generate a raster of nulls that we can then patch into
 log_info "Initializing mosaic scenes..."
+parallel -j 1 "r.mapcalc \"{} = null()\" --o --q" ::: ${bands_CM}
 parallel -j 1 "r.mapcalc \"{} = null()\" --o --q" ::: ${bands}
 
 ### REFERENCE LOOP VERSION
@@ -96,24 +106,27 @@ parallel -j 1 "r.mapcalc \"{} = null()\" --o --q" ::: ${bands}
 
 # PARALLEL?
 log_info "Patching bands based on minmum SZA_LUT"
+
 doit() {
-  local idx=$1
-  local band=$2
+  local lut=$1
+  local idx=$2
+  local band=$3
   local b_arr=($(g.list type=raster pattern=${band} mapset=* | grep "@.*T"))
-  r.mapcalc "${band} = if((sza_lut == ${idx}), ${b_arr[${idx}]}, ${band})" --o --q
+  r.mapcalc "${band} = if((${lut} == ${idx}), ${b_arr[${idx}]}, ${band})" --o --q
 }
 export -f doit
 
-parallel -j 1 doit {1} {2} ::: ${sza_lut_idxs} ::: ${bands}
+parallel -j 1 doit {1} {2} {3} ::: sza_lut_CM ::: ${sza_lut_idxs_CM} ::: ${bands_CM}
+parallel -j 1 doit {1} {2} {3} ::: sza_lut ::: ${sza_lut_idxs} ::: ${bands}
 
 # diagnostics
-r.series input=${sza_list} method=count output=num_scenes_cloudfree --q
+r.series input=${sza_list_CM} method=count output=num_scenes_cloudfree --q
 mapset_list=$(g.mapsets --q -l separator=newline | grep T | tr '\n' ','| sed 's/,*$//g')
 raster_list=$(g.list type=raster pattern=r_TOA_01 mapset=${mapset_list} separator=comma)
 r.series input=${raster_list} method=count output=num_scenes --q
 
 bandsFloat32="$(g.list type=raster pattern="r_TOA_*") SZA SAA OZA OAA WV O3 NDSI BT_S7 BT_S8 BT_S9 r_TOA_S5 r_TOA_S5_rc r_TOA_S1 height"
-bandsInt16="sza_lut num_scenes num_scenes_cloudfree"
+bandsInt16="sza_lut_CM num_scenes num_scenes_cloudfree"
 log_info "Writing mosaics to disk..."
 
 tifopts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
