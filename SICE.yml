@@ -8,9 +8,9 @@ dependencies:
   - attrs=19.3.0=py_0
   - boost-cpp=1.70.0=h8e57a91_2
   - bzip2=1.0.8=h516909a_1
-  - ca-certificates=2019.9.11=hecc5488_0
+  - ca-certificates=2020.4.5.2=hecda079_0
   - cairo=1.16.0=hfb77d84_1002
-  - certifi=2019.9.11=py37_0
+  - certifi=2020.4.5.2=py37hc8dfbb8_0
   - cfitsio=3.470=hb60a0a2_2
   - click=7.0=py_0
   - click-plugins=1.1.1=py_0
@@ -59,7 +59,7 @@ dependencies:
   - ncurses=6.1=hf484d3e_1002
   - numpy=1.17.3=py37h95a1406_0
   - openjpeg=2.3.1=h21c5421_1
-  - openssl=1.1.1c=h516909a_0
+  - openssl=1.1.1g=h516909a_0
   - pcre=8.43=he1b5a44_0
   - pip=19.3.1=py37_0
   - pixman=0.38.0=h516909a_1003
@@ -70,9 +70,11 @@ dependencies:
   - pthread-stubs=0.4=h14c3975_1001
   - pyparsing=2.4.2=py_0
   - python=3.7.3=h33d41f4_1
+  - python_abi=3.7=1_cp37m
   - rasterio=1.1.0=py37h900e953_0
   - readline=8.0=hf8c457e_0
   - setuptools=41.4.0=py37_0
+  - shapely=1.6.4=py37hec07ddf_1006
   - snuggs=1.4.7=py_0
   - sqlite=3.30.1=hcee41ef_0
   - tbb=2018.0.5=h2d50403_0
