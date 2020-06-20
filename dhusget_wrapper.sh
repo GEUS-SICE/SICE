@@ -91,9 +91,6 @@ if [[ ${date} =~ 20[1,2][0-9]-[0-9][0-9]?[0-9]?$ ]]; then # YYYY-DOY format
   doy=${date:5:9}
   date=$(date -d "${year}-01-01 +$(( 10#${doy}-1 )) days" "+%Y-%m-%d")
 fi
-datestr0="${date}T00:00:00.0000Z"
-datestr1="${date}T23:59:59.9999Z"
-debug "Date search from: ${datestr0} to ${datestr1}"
 
 # NOTE: Fetching SLSTR and OLCI for the same YYYY-MM-DD day. However,
 # SLSTR scenes are delayed by 4 seconds. Because we aim for descending
@@ -133,6 +130,46 @@ else
   footprint_poly="footprint:\"Intersects(POLYGON((${boundary})))\""
 fi
 debug "Footprint ${footprint} is: ${footprint_poly}"
+
+datestr0="${date}T00:00:00.0000Z"
+datestr1="${date}T23:59:59.9999Z"
+
+#limit the number of scenes when footprint set to a
+#small high latitude region by searching around the local solar noon +-dt hours
+if ! [[ ${footprint} == "Greenland" ]]; then
+  
+  y=${footprint_poly:22:-2}
+  dt=1  	
+  output=`python <<END
+
+import shapely.wkt
+from math import modf
+
+polygon_str="${y}"
+polygon=shapely.wkt.loads(polygon_str)
+centroid=polygon.centroid
+centroid_lon=centroid.coords.xy[0][0]
+solar_noon=12-(centroid_lon/360*24)
+date="${date}"
+dt=int("${dt}")
+
+def frmt(hour):
+    _min, hours = modf(hour)
+    _sec, minutes = modf(_min*60)
+    return "%s:%s"%(str(int(hours)).zfill(2), 
+    str(int(minutes)).zfill(2))
+
+datestr0=date+'T'+frmt(solar_noon-dt)+':00.0000Z'
+datestr1=date+'T'+frmt(solar_noon+dt)+':00.0000Z'
+print(datestr0, datestr1)
+END`
+
+  datestrs=($output)
+  datestr0=${datestrs[0]}
+  datestr1=${datestrs[1]}
+fi
+
+debug "Date search from: ${datestr0} to ${datestr1}"
 
 log_warn "Setting mask.tif to masks/${footprint}.tif"
 rm -f mask.tif
