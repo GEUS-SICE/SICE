@@ -125,7 +125,7 @@ mapset_list=$(g.mapsets --q -l separator=newline | grep T | tr '\n' ','| sed 's/
 raster_list=$(g.list type=raster pattern=r_TOA_01 mapset=${mapset_list} separator=comma)
 r.series input=${raster_list} method=count output=num_scenes --q
 
-bandsFloat32="$(g.list type=raster pattern="r_TOA_*") SZA SAA OZA OAA WV O3 NDSI BT_S7 BT_S8 BT_S9 r_TOA_S5 r_TOA_S5_rc r_TOA_S1 height"
+bandsFloat32="$(g.list type=raster pattern="r_TOA_*") SZA SAA OZA OAA WV O3 NDSI BT_S7 BT_S8 BT_S9 r_TOA_S5 r_TOA_S5_rc r_TOA_S1 height SCDA_v20 SCDA_grow SCDA_clump SCDA_area"
 bandsInt16="sza_lut_CM num_scenes num_scenes_cloudfree"
 log_info "Writing mosaics to disk..."
 
