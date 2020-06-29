@@ -323,7 +323,7 @@ rs1[ind_pol], rs2[ind_pol], rs3[ind_pol] = sl.BBA_calc_pol(
 #%% Output
 WriteOutput(BXXX,   'O3_SICE',   InputFolder)
 WriteOutput(D,      'grain_diameter',InputFolder)
-WriteOutput(area,   'snow_specific_area', InputFolder)
+WriteOutput(area,   'snow_specific_surface_area', InputFolder)
 WriteOutput(al,   'al',     InputFolder)
 WriteOutput(r0,   'r0',InputFolder)
 WriteOutput(isnow,'diagnostic_retrieval',InputFolder)
