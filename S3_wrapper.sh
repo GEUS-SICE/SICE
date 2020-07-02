@@ -42,23 +42,22 @@ for year in 2018 2019; do
     ### Fetch one day of OLCI & SLSTR scenes over Greenland
     ## Use local files (PTEP, DIAS, etc.)
     ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} \
-    			 -f Svalbard -u <user> -p <password> || continue && echo "${date} ./dhusget_wrapper.sh" >> ./log_SICE.txt
+    			 -f Svalbard -u <user> -p <password>
     ## Download files
     # ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
     # 			 -f Svalbard -u <user> -p <password>
     
     # SNAP: Reproject, calculate reflectance, extract bands, etc.
-    ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X S3.xml -t || \
-    continue && echo "${date} ./S3_proc.sh" >> ./log_SICE.txt
+    ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X S3.xml -t
     
     # Run the Simple Cloud Detection Algorithm (SCDA)
-    python ./SCDA.py ${proc_root}/${date} || continue && echo "${date} ./SCDA.py" >> ./log_SICE.txt
+    python ./SCDA.py ${proc_root}/${date}
     
     # Mosaic
-    ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root} || continue && echo "${date} ./dm.sh" >> ./log_SICE.txt
+    ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
 
     # SICE
-    python ./sice.py ${mosaic_root}/${date} || continue && echo "${date} ./sice.py" >> ./log_SICE.txt
+    python ./sice.py ${mosaic_root}/${date}
     
   done
 done
