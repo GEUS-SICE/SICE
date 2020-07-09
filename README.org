@@ -56,7 +56,7 @@ In more detail:
 | File Name                     | Description                                                            | Units       |
 |-------------------------------+------------------------------------------------------------------------+-------------|
 | grain_diameter                |                                                                        | mm          |
-| snow_specific_area            |                                                                        | mm          |
+| snow_specific_surface_area    |                                                                        | m^{2}kg^{-1}|
 | ndsi                          | normalized difference snow index                                       |             |
 | ndbi                          | normalized difference blue ice index                                   |             |
 | auto_cloud                    | in development                                                         |             |
