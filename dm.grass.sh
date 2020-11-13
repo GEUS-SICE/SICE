@@ -80,7 +80,7 @@ r.series input=${sza_list} method=min_raster output=sza_lut --o --q
 sza_lut_idxs=$(r.stats --q -n -l sza_lut)
 n_imgs=$(echo $sza_lut_idxs |wc -w)
 
-# save indices to csv 
+# save sza_list to txt file
 echo "${sza_list}" >> ${outfolder}/${date}/sza_list.txt
 
 # generate a raster of nulls that we can then patch into
