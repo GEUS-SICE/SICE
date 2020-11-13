@@ -64,7 +64,6 @@ done
 # Bands for which invalid pixels are kept (r_TOA and BT)
 bands=$(g.list type=raster mapset=* -m | grep -v PERMANENT | cut -d"@" -f1 | sort | uniq)
 
-
 g.mapset -c ${date} --quiet # create a new mapset for final product
 r.mask raster=MASK@PERMANENT --o --q # mask to Greenland ice+land
 
