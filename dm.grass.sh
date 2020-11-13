@@ -58,7 +58,7 @@ for scene in ${scenes}; do
   # SZA_CM is SZA but Cloud Masked: Invalid where buffered clouds over ice w/ valid SZA
   r.mapcalc "SZA_CM0 = if((isnull(SCDA_area) && (MASK@PERMANENT == 220)) || (isnull(SCDA_v20) && (MASK@PERMANENT != 220)), null(), 1)" --q
   r.mapcalc "SZA_CM = if(not(isnull(SZA)) & SZA_CM0, 1, null())" --q
-  g.remove -f type=raster name=SCDA_grow,SCDA_clump,SCDA_area,SZA_CM0 --q
+  # g.remove -f type=raster name=SCDA_grow,SCDA_clump,SCDA_area,SZA_CM0 --q
 done
 
 # The target bands to mask for clouds (CM; all except r_TOA and BT)
