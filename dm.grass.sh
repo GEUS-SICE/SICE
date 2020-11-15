@@ -80,6 +80,21 @@ r.series input=${sza_list} method=min_raster output=sza_lut --o --q
 sza_lut_idxs=$(r.stats --q -n -l sza_lut)
 n_imgs=$(echo $sza_lut_idxs |wc -w)
 
+# link sza_lut_idxs with scene IDs
+output=`python <<END
+import pandas as pd
+import numpy as np
+scenes_str = "${sza_list}"
+scenes_sep = scenes_str.split(',')
+scenes_number = [s.split('@')[-1] for s in scenes_sep]
+idxs_ids = pd.DataFrame({'lut_index': np.arange(len(scenes_number)), 
+                         'scene': scenes_number})
+print(idxs_ids)
+END`
+
+# save idxs_ids in txt file
+echo "${output}" >> ${outfolder}/${date}/scenes_lut.txt
+
 # generate a raster of nulls that we can then patch into
 log_info "Initializing mosaic scenes..."
 parallel -j 1 "r.mapcalc \"{} = null()\" --o --q" ::: ${bands}
