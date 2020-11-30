@@ -57,7 +57,7 @@ for year in 2018 2019; do
     ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
     
     # Slopey correction
-    python ./get_ITOAR.py ${mosaic_root} $(pwd}/ArcticDEM/ 
+    python ./get_ITOAR.py ${mosaic_root}/${date}/ $(pwd}/ArcticDEM/ 
 
     # SICE
     python ./sice.py ${mosaic_root}/${date}
