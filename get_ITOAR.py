@@ -137,17 +137,17 @@ def get_ITOAR(slope, aspect):
     '''
     
     # load solar and viewing zenith angles (flat)
-    sza = rasterio.open(inpath + 'SZA.tif').read(1)
-    oza = rasterio.open(inpath + 'OZA.tif').read(1)
+    sza = rasterio.open(args.inpath + 'SZA.tif').read(1)
+    oza = rasterio.open(args.inpath + 'OZA.tif').read(1)
     
     # load solar azimuth angle (flat)
-    saa = rasterio.open(inpath + 'SAA.tif').read(1)
+    saa = rasterio.open(args.inpath + 'SAA.tif').read(1)
     
     # load TOAR (flat)
-    toar17 = rasterio.open(inpath + 'r_TOA_17.tif').read(1)
-    toar21 = rasterio.open(inpath + 'r_TOA_21.tif').read(1)
+    toar17 = rasterio.open(args.inpath + 'r_TOA_17.tif').read(1)
+    toar21 = rasterio.open(args.inpath + 'r_TOA_21.tif').read(1)
     # save profile as base for ITOAR file
-    profile = rasterio.open(inpath + 'r_TOA_21.tif').profile 
+    profile = rasterio.open(args.inpath + 'r_TOA_21.tif').profile 
     
     # compute ITOARs
     def compute_ITOAR(toar):
@@ -165,9 +165,9 @@ def get_ITOAR(slope, aspect):
     itoar21 = compute_ITOAR(toar21)
     
     # save ITOARs
-    with rasterio.open(inpath + 'ir_TOA_17.tif', 'w', **profile) as dst:
+    with rasterio.open(args.inpath + 'ir_TOA_17.tif', 'w', **profile) as dst:
         dst.write(itoar17, 1)
-    with rasterio.open(inpath + 'ir_TOA_21.tif', 'w', **profile) as dst:
+    with rasterio.open(args.inpath + 'ir_TOA_21.tif', 'w', **profile) as dst:
         dst.write(itoar21, 1)
 
     
@@ -179,13 +179,13 @@ OZA_eff = get_effective_angle(variable='OZA')
 get_ITOAR(slope, aspect)
 
 # remove initial angles
-os.remove(inpath_scene + 'SZA.tif')
-os.remove(inpath_scene + 'OZA.tif')
-os.remove(inpath_scene + 'r_TOA_21.tif')
-os.remove(inpath_scene + 'r_TOA_17.tif')
+os.remove(args.inpath + 'SZA.tif')
+os.remove(args.inpath + 'OZA.tif')
+os.remove(args.inpath + 'r_TOA_21.tif')
+os.remove(args.inpath + 'r_TOA_17.tif')
 
 # rename corrected angles
-os.rename(inpath_scene + 'SZA_eff.tif', inpath_scene + 'SZA.tif')
-os.rename(inpath_scene + 'OZA_eff.tif', inpath_scene + 'OZA.tif')
-os.rename(inpath_scene + 'ir_TOA_21.tif', inpath_scene + 'r_TOA_21.tif')
-os.rename(inpath_scene + 'ir_TOA_17.tif', inpath_scene + 'r_TOA_17.tif')
+os.rename(args.inpath + 'SZA_eff.tif', args.inpath + 'SZA.tif')
+os.rename(args.inpath + 'OZA_eff.tif', args.inpath + 'OZA.tif')
+os.rename(args.inpath + 'ir_TOA_21.tif', args.inpath + 'r_TOA_21.tif')
+os.rename(args.inpath + 'ir_TOA_17.tif', args.inpath + 'r_TOA_17.tif')
