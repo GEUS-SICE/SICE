@@ -35,7 +35,7 @@ def get_effective_angle(variable):
     Intrinsic BOA Reflectance (ITOAR).
     
     INPUTS:
-        variable: name of the variable to compute [string]
+        variable: name of the variable to compute (here SZA or OZA) [string]
     
     OUTPUTS:
         {variable}_eff: effective angles [array]
