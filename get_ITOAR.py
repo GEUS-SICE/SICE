@@ -284,3 +284,4 @@ for i, scene in enumerate(scenes):
     os.rename(inpath_scene + 'SZA_eff.tif', inpath_scene + 'SZA.tif')
     os.rename(inpath_scene + 'OZA_eff.tif', inpath_scene + 'OZA.tif')
     os.rename(inpath_scene + 'ir_TOA_21.tif', inpath_scene + 'r_TOA_21.tif')
+    
