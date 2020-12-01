@@ -18,6 +18,9 @@ SEN3_source=/sice-data/SICE/S3
 proc_root=/sice-data/SICE/proc
 mosaic_root=/sice-data/SICE/mosaic
 
+# Slope correction 
+slopey=false
+
 ### dev
 # SEN3_source=./SEN3
 # proc_root=./out
@@ -56,8 +59,10 @@ for year in 2018 2019; do
     # Mosaic
     ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
     
-    # Slopey correction
-    python ./get_ITOAR.py ${mosaic_root}/${date}/ $(pwd)/ArcticDEM/ 
+    if [ "$slopey" = true ] ; then
+      # Run the slopey correction
+      python ./get_ITOAR.py ${mosaic_root}/${date}/ $(pwd)/ArcticDEM/ 
+    fi
 
     # SICE
     python ./sice.py ${mosaic_root}/${date}
