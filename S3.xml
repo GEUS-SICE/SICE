@@ -428,8 +428,8 @@
     <parameters>
       <sensor>SLSTR_500m</sensor>
       <copyTiePointGrids>true</copyTiePointGrids>
-      <copyFlagBandsAndMasks>true</copyFlagBandsAndMasks>
-      <copyNonSpectralBands>true</copyNonSpectralBands>
+      <copyFlagBandsAndMasks>false</copyFlagBandsAndMasks>
+      <copyNonSpectralBands>false</copyNonSpectralBands>
     </parameters>
   </node>
 
