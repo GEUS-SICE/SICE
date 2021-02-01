@@ -145,23 +145,26 @@ if ! [[ ${footprint} == "Greenland" ]]; then
 import shapely.wkt
 from math import modf
 
-polygon_str="${y}"
-polygon=shapely.wkt.loads(polygon_str)
-centroid=polygon.centroid
-centroid_lon=centroid.coords.xy[0][0]
-solar_noon=12-(centroid_lon/360*24)
-date="${date}"
-dt=int("${dt}")
+polygon_str = "${y}"
+polygon = shapely.wkt.loads(polygon_str)
+centroid = polygon.centroid
+centroid_lon = centroid.coords.xy[0][0]
+solar_noon = 12 - (centroid_lon / 360 * 24)
+date = "${date}"
+dt = int("${dt}")
+
 
 def frmt(hour):
     _min, hours = modf(hour)
     _sec, minutes = modf(_min*60)
     return "%s:%s"%(str(int(hours)).zfill(2), 
     str(int(minutes)).zfill(2))
+    
 
-datestr0=date+'T'+frmt(solar_noon-dt)+':00.0000Z'
-datestr1=date+'T'+frmt(solar_noon+dt)+':00.0000Z'
+datestr0 = date + 'T' + frmt(solar_noon-dt) + ':00.0000Z'
+datestr1 = date + 'T' + frmt(solar_noon+dt) + ':00.0000Z'
 print(datestr0, datestr1)
+
 END`
 
   datestrs=($output)
