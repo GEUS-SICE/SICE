@@ -81,7 +81,7 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   # find nearest SLSTR folder. Timestamp is same or next minute.
   olci_date=${olci_dts:0:8}
   olci_time=${olci_dts:9:4}
-  olci_time1=$(date -d "${olci_date} ${olci_time} + 1 minute" "+%H%M") 
+  olci_time1=$(date -d "${olci_date} ${olci_time} + 1 minute" "+%H%M")  
   olci_time2=$(date -d "${olci_date} ${olci_time} - 1 minute" "+%H%M")
   fileroot="S3._SL_1_RBT____........T" # grep for acquisition not ingest time
   # pick first nearby slstr
@@ -107,7 +107,7 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   log_info "gpt: Finished"
 
   # # Discard out bad folders (defined as size > 10 GB)
-  (cd ${dest}/../; du -sm * | awk '$1 > 10000 {print $2}' | xargs rm -fr)
+  # (cd ${dest}/../; du -sm * | awk '$1 > 10000 {print $2}' | xargs rm -fr)
   if [[ ! -d "${dest}" ]]; then continue; fi # if we removed the directory, break out of the loop
 
   resize=1000
