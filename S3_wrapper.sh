@@ -14,22 +14,36 @@ log_err() { echo -e "${red}[$(date --iso-8601=seconds)] [ERR] ${@}${nc}" 1>&2; }
 
 # CREODIAS
 SEN3_local=/eodata/Sentinel-3
-SEN3_source=/sice-data/SICE/S3
-proc_root=/sice-data/SICE/proc
-mosaic_root=/sice-data/SICE/mosaic
-
-# Slope correction 
-slopey=false
-
+SEN3_source=~/sice-data/SICE/S3
+proc_root=~/sice-data/SICE/proc
+mosaic_root=~/sice-data/SICE/mosaic
 ### dev
 # SEN3_source=./SEN3
 # proc_root=./out
 # mosaic_root=./mosaic
 
+# Geographic area
+area=Greenland
+# Svalbard...
+
+# Slope correction 
+slopey=false
+
+# Fast processing:
+fast=true
+
+if [ "$fast" = true ] ; then
+  xml_file=S3_fast.xml
+  product_list="-pl products-lists/${area}"
+else
+  xml_file=S3.xml
+  product_list=""
+fi
+
 LD_LIBRARY_PATH=. # SNAP requirement
 
-for year in 2018 2019; do
-  for doy in $(seq -w 74 274); do
+for year in 2018 ; do
+  for doy in $(seq -w 125 126); do
 
 ### DEBUG
 # for year in 2018; do
@@ -45,13 +59,13 @@ for year in 2018 2019; do
     ### Fetch one day of OLCI & SLSTR scenes over Greenland
     ## Use local files (PTEP, DIAS, etc.)
     ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} \
-    			 -f Svalbard -u <user> -p <password>
+    			 -f ${area} -u baptistevdx -p geus1234 $product_list
     ## Download files
     # ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
     # 			 -f Svalbard -u <user> -p <password>
     
     # SNAP: Reproject, calculate reflectance, extract bands, etc.
-    ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X S3.xml -t
+    ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X ${xml_file} -t
     
     # Run the Simple Cloud Detection Algorithm (SCDA)
     python ./SCDA.py ${proc_root}/${date}

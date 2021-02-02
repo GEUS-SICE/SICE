@@ -104,21 +104,23 @@ def WriteOutput(var, var_name, in_folder):
     with rio.open(in_folder + var_name + '.tif', 'w+', **meta) as dst:
         dst.write(var.astype('float32'), 1)
   
-
-toa = np.tile(Oa01.read(1) * np.nan, (21, 1, 1))
+toa = np.tile(Oa01.read(1).astype('float32') * np.nan, (21, 1, 1))
 
 for i in range(21):
     
-    dat = rio.open((InputFolder + 'r_TOA_' + str(i + 1).zfill(2) + '.tif'))
-    toa[i, :, :] = dat.read(1)
+    try:
+        dat = rio.open((InputFolder + 'r_TOA_' + str(i + 1).zfill(2) + '.tif'))
+        toa[i, :, :] = dat.read(1).astype('float32')
+    except:
+        toa[i, :, :] = np.nan
     
-ozone = rio.open(InputFolder + 'O3.tif').read(1)
-water = rio.open(InputFolder + 'WV.tif').read(1)
-sza = rio.open(InputFolder + 'SZA.tif').read(1)
-saa = rio.open(InputFolder + 'SAA.tif').read(1)
-vza = rio.open(InputFolder + 'OZA.tif').read(1)
-vaa = rio.open(InputFolder + 'OAA.tif').read(1)
-height = rio.open(InputFolder + 'height.tif').read(1)
+ozone = rio.open(InputFolder + 'O3.tif').read(1).astype('float32')
+water = rio.open(InputFolder + 'WV.tif').read(1).astype('float32')
+sza = rio.open(InputFolder + 'SZA.tif').read(1).astype('float32')
+saa = rio.open(InputFolder + 'SAA.tif').read(1).astype('float32')
+vza = rio.open(InputFolder + 'OZA.tif').read(1).astype('float32')
+vaa = rio.open(InputFolder + 'OAA.tif').read(1).astype('float32')
+height = rio.open(InputFolder + 'height.tif').read(1).astype('float32')
 
 sza[np.isnan(toa[0, :, :])] = np.nan
 saa[np.isnan(toa[0, :, :])] = np.nan
@@ -157,14 +159,14 @@ saa[~np.isnan(isnow)] = np.nan
 sza[~np.isnan(isnow)] = np.nan
 vza[~np.isnan(isnow)] = np.nan
 
-height = height.astype(float)
 height[~np.isnan(isnow)] = np.nan
 
 # =========== view geometry and atmosphere propeties  ==============
 
 raa, am1, am2, ak1, ak2, amf, co = sl.view_geometry(vaa, saa, sza, vza, aot, height)
+
 tau, p, g, gaer, taumol, tauaer = sl.aerosol_properties(aot, height, co)
-        
+     
 # =========== snow properties  ====================================
 
 D, area, al, r0, bal = sl.snow_properties(toa_cor_o3, ak1, ak2)
