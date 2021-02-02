@@ -122,6 +122,7 @@ vza = rio.open(InputFolder + 'OZA.tif').read(1).astype('float32')
 vaa = rio.open(InputFolder + 'OAA.tif').read(1).astype('float32')
 height = rio.open(InputFolder + 'height.tif').read(1).astype('float32')
 
+
 sza[np.isnan(toa[0, :, :])] = np.nan
 saa[np.isnan(toa[0, :, :])] = np.nan
 vza[np.isnan(toa[0, :, :])] = np.nan
@@ -166,7 +167,7 @@ height[~np.isnan(isnow)] = np.nan
 raa, am1, am2, ak1, ak2, amf, co = sl.view_geometry(vaa, saa, sza, vza, aot, height)
 
 tau, p, g, gaer, taumol, tauaer = sl.aerosol_properties(aot, height, co)
-     
+
 # =========== snow properties  ====================================
 
 D, area, al, r0, bal = sl.snow_properties(toa_cor_o3, ak1, ak2)

@@ -17,6 +17,7 @@ SEN3_local=/eodata/Sentinel-3
 SEN3_source=~/sice-data/SICE/S3
 proc_root=~/sice-data/SICE/proc
 mosaic_root=~/sice-data/SICE/mosaic
+
 ### dev
 # SEN3_source=./SEN3
 # proc_root=./out
@@ -59,27 +60,36 @@ for year in 2018 ; do
     ### Fetch one day of OLCI & SLSTR scenes over Greenland
     ## Use local files (PTEP, DIAS, etc.)
     ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} \
-    			 -f ${area} -u baptistevdx -p geus1234 $product_list
+    			 -f ${area} -u baptistevdx -p geus1234 $product_list || error=true
+
     ## Download files
     # ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
     # 			 -f Svalbard -u <user> -p <password>
     
     # SNAP: Reproject, calculate reflectance, extract bands, etc.
-    ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X ${xml_file} -t
+    ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X ${xml_file} -t || error=true
+
     
     # Run the Simple Cloud Detection Algorithm (SCDA)
-    python ./SCDA.py ${proc_root}/${date}
+    python ./SCDA.py ${proc_root}/${date} || error=true
     
     # Mosaic
-    ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root}
+
+    ./dm.sh ${date} ${proc_root}/${date} ${mosaic_root} || error=true
     
     if [ "$slopey" = true ] ; then
       # Run the slopey correction
-      python ./get_ITOAR.py ${mosaic_root}/${date}/ $(pwd)/ArcticDEM/ 
+      python ./get_ITOAR.py ${mosaic_root}/${date}/ $(pwd)/ArcticDEM/ || error=true
     fi
 
     # SICE
-    python ./sice.py ${mosaic_root}/${date}
+    python ./sice.py ${mosaic_root}/${date} || error=true
+    
+     # Write date in log file if error
+    if [ "$error" = true ] ; then
+        echo "${date}" >> ./log_SICE.txt
+        error=false
+    fi
     
   done
 done

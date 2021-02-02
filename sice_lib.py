@@ -105,6 +105,7 @@ def ozone_scattering(ozone, tozon, sza, vza, toa):
     amf = 1. / np.cos(sza * scale) + 1. / np.cos(vza * scale)
           
     BX = (toa[20,:,:]**(1. - eps)) * (toa[16,:,:]**eps) / toa[6,:,:]
+
     BXXX = np.log(BX) / 1.11e-4 / amf
     BXXX[BXXX > 500] = 999
     BXXX[BXXX < 0] = 999
