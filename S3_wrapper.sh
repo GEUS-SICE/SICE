@@ -42,8 +42,8 @@ fi
 
 LD_LIBRARY_PATH=. # SNAP requirement
 
-for year in 2018 ; do
-  for doy in $(seq -w 125 126); do
+for year in 2017 ; do
+  for doy in $(seq -w 91 276); do
 
 ### DEBUG
 # for year in 2018; do

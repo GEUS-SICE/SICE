@@ -206,6 +206,8 @@ if [[ -z ${path_product_list:-} ]]; then
     log_info "***                                                     ***"
     log_info "***********************************************************"
 else
+    rm -f mask.tif
+    ln -s ./masks/${footprint}.tif mask.tif 
     log_info "Using input product list"
     cp "${path_product_list}/products-list_${year}-${month}-${day}.csv" "products-list.csv"
 fi
