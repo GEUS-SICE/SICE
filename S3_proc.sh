@@ -76,7 +76,13 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   olci_dts=$(echo "${olci_folder}" | rev | cut -d_ -f11 | rev)
   dest=${outpath}/${olci_dts}
 
-  # if [[ -d "${dest}" ]]; then continue; fi
+  # skipping if scene already processed
+  if [[ -d "${dest}" ]]; then 
+    if [[ -f "${dest}/r_TOA_01.tif" ]]; then 
+      log_warn "${dest} already exists, scene skipped"
+      continue
+    fi
+  fi
   
   # find nearest SLSTR folder. Timestamp is same or next minute.
   olci_date=${olci_dts:0:8}
