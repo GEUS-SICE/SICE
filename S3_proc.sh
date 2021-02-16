@@ -106,10 +106,11 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
 		 -POLCIsource="${inpath}/${olci_folder}" \
 		 -PSLSTRsource="${inpath}/${slstr_folder}" \
 		 -PtargetFolder="${dest}" \
-		 -Ds3tbx.reader.olci.pixelGeoCoding=true \
-		 -Ds3tbx.reader.slstrl1b.pixelGeoCodings=true \
 		 -Dsnap.log.level=ERROR \
 		 -e || (log_err "gpt error"; exit 1)
+		 # -Ds3tbx.reader.olci.pixelGeoCoding=true \
+		 # -Ds3tbx.reader.slstrl1b.pixelGeoCodings=true \
+
   log_info "gpt: Finished"
 
   # # Discard out bad folders (defined as size > 10 GB)
