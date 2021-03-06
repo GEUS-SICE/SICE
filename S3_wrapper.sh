@@ -62,7 +62,7 @@ for year in 2017 ; do
     ### Fetch one day of OLCI & SLSTR scenes over Greenland
     ## Use local files (PTEP, DIAS, etc.)
     ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} \
-    			 -f ${area} -u baptistevdx -p geus1234 $product_list || error=true
+    			 -f ${area} -u usrname -p psswd $product_list || error=true
     ## Download files
     # ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
     # 			 -f Svalbard -u <user> -p <password>
