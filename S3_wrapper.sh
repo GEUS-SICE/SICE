@@ -29,6 +29,9 @@ area=Greenland
 # Slope correction 
 slopey=false
 
+# Error handling
+error=false
+
 # Fast processing:
 fast=true
 
