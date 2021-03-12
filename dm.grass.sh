@@ -130,7 +130,7 @@ mapset_list=$(g.mapsets --q -l separator=newline | grep T | tr '\n' ','| sed 's/
 raster_list=$(g.list type=raster pattern=r_TOA_01 mapset=${mapset_list} separator=comma)
 r.series input=${raster_list} method=count output=num_scenes --q
 
-bandsFloat32="$(g.list type=raster pattern="r_TOA_*") SZA SZA_CM SAA OZA OAA WV O3 NDSI BT_S7 BT_S8 BT_S9 r_TOA_S5 r_TOA_S5_rc r_TOA_S1 height SCDA_v20 SCDA_grow SCDA_clump SCDA_area SCDA_final"
+bandsFloat32="$(g.list type=raster pattern="r_TOA_*") SZA SZA_CM SAA OZA OAA WV O3 NDSI BT_S7 BT_S8 BT_S9 r_TOA_S5 r_TOA_S5_rc r_TOA_S1 height SCDA_final"
 bandsInt16="sza_lut num_scenes num_scenes_cloudfree"
 log_info "Writing mosaics to disk..."
 
@@ -145,6 +145,6 @@ parallel "r.out.gdal -m -c input={} output=${outfolder}/${date}/{}.tif ${tifopts
 # Generate some extra rasters
 tifopts='type=Float32 createopt=COMPRESS=DEFLATE,PREDICTOR=2,TILED=YES --q --o'
 r.mapcalc "ndbi = ( r_TOA_01 - r_TOA_21 ) / ( r_TOA_01 + r_TOA_21 )"
-r.mapcalc "bba_emp = (r_TOA_01 + r_TOA_06 + r_TOA_17 + r_TOA_21) / 4.0 * 0.945 + 0.055"
+r.mapcalc "bba_emp = (r_TOA_01 + r_TOA_06 + r_TOA_17 + r_TOA_21) / 4.0 * 1.003 + 0.058"
 r.out.gdal -f -m -c input=ndbi output=${outfolder}/${date}/NDBI.tif ${tifopts}
 r.out.gdal -f -m -c input=bba_emp output=${outfolder}/${date}/BBA_emp.tif ${tifopts}
