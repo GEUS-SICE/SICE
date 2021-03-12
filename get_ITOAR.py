@@ -177,15 +177,16 @@ OZA_eff = get_effective_angle(variable='OZA')
 
 # get ITOAR 
 get_ITOAR(slope, aspect)
+print('slopey end')
 
-# remove initial angles
-os.remove(args.inpath + 'SZA.tif')
-os.remove(args.inpath + 'OZA.tif')
-os.remove(args.inpath + 'r_TOA_21.tif')
-os.remove(args.inpath + 'r_TOA_17.tif')
+# # remove initial angles
+# os.remove(args.inpath + 'SZA.tif')
+# os.remove(args.inpath + 'OZA.tif')
+# os.remove(args.inpath + 'r_TOA_21.tif')
+# os.remove(args.inpath + 'r_TOA_17.tif')
 
-# rename corrected angles
-os.rename(args.inpath + 'SZA_eff.tif', args.inpath + 'SZA.tif')
-os.rename(args.inpath + 'OZA_eff.tif', args.inpath + 'OZA.tif')
-os.rename(args.inpath + 'ir_TOA_21.tif', args.inpath + 'r_TOA_21.tif')
-os.rename(args.inpath + 'ir_TOA_17.tif', args.inpath + 'r_TOA_17.tif')
+# # rename corrected angles
+# os.rename(args.inpath + 'SZA_eff.tif', args.inpath + 'SZA.tif')
+# os.rename(args.inpath + 'OZA_eff.tif', args.inpath + 'OZA.tif')
+# os.rename(args.inpath + 'ir_TOA_21.tif', args.inpath + 'r_TOA_21.tif')
+# os.rename(args.inpath + 'ir_TOA_17.tif', args.inpath + 'r_TOA_17.tif')
