@@ -23,7 +23,7 @@ Update 07032019
 @author: bav@geus.dk
 """
 
-# pySICEv1.3
+# pySICEv1.5
 # 
 # from FORTRAN VERSION 5
 # March 31, 2020

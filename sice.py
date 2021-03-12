@@ -1,4 +1,4 @@
-# pySICEv1.4
+# pySICEv1.5
 # 
 # from FORTRAN VERSION 5.2
 # March 31, 2020
@@ -97,10 +97,7 @@ if __name__ == '__main__':
     pySICE(InputPath,OutputFolder)
     
 def pySICE(InputPath, OutputFolder, olci_gains = False, slopey = False):
-    try: 
-        os.makedirs(OutputFolder)
-    except:
-        pass
+    os.makedirs(OutputFolder,exist_ok=True)
         
     pySICE_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     print(pySICE_dir)
@@ -164,9 +161,7 @@ def pySICE(InputPath, OutputFolder, olci_gains = False, slopey = False):
             sza = rio.open(InputFolder+'SZA.tif').read(1)
             vza = rio.open(InputFolder+'OZA.tif').read(1)
 
-
         saa = rio.open(InputFolder+'SAA.tif').read(1)
-        vza = rio.open(InputFolder+'OZA.tif').read(1)
         vaa = rio.open(InputFolder+'OAA.tif').read(1)
         height = rio.open(InputFolder+'height.tif').read(1)
         
