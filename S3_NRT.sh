@@ -7,10 +7,10 @@
 # 00 12 * * * /bin/bash -c "/path/to/wrapper/S3_NRT.sh" > /path/to/log/log_NRT.txt
 
 # use SNAP gpt
-export PATH=/srv/home/8675309/local/snap/bin:${PATH}
+export PATH=/path/to/snap/bin:${PATH}
 
 # activate SICE anaconda virtual environment
-. /srv/home/8675309/local/anaconda/envs/SICE/bin/activate
+. /path/to/anaconda/envs/SICE/bin/activate
 
 set -o errexit
 set -o nounset
