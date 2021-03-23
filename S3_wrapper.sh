@@ -65,7 +65,7 @@ for year in 2020 ; do
     # 			 -f Svalbard -u <user> -p <password>
     
     # SNAP: Reproject, calculate reflectance, extract bands, etc.
-    ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X ${xml_file} || error=true -t
+    ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X ${xml_file} -t || error=true 
     
     # Run the Simple Cloud Detection Algorithm (SCDA)
     python ./SCDA.py ${proc_root}/${date} || error=true
