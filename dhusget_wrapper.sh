@@ -164,10 +164,10 @@ dt = int("${dt}")
 
 
 def frmt(hour):
-_min, hours = modf(hour)
-_sec, minutes = modf(_min*60)
-return "%s:%s"%(str(int(hours)).zfill(2), 
-str(int(minutes)).zfill(2))
+    _min, hours = modf(hour)
+    _sec, minutes = modf(_min*60)
+    return "%s:%s"%(str(int(hours)).zfill(2), 
+      str(int(minutes)).zfill(2))
 
 
 datestr0 = date + 'T' + frmt(solar_noon-dt) + ':00.0000Z'
