@@ -41,11 +41,11 @@ for region in "${regions[@]}"; do
 
   # CREODIAS
   SEN3_local=/eodata/Sentinel-3
-  SEN3_source=/sice-data/SICE/${region}/S3
-  proc_root=/sice-data/SICE/${region}/proc
-  mosaic_root=/sice-data/SICE/${region}/mosaic
+  SEN3_source=/sice-data/SICE_NRT/${region}/S3
+  proc_root=/sice-data/SICE_NRT/${region}/proc
+  mosaic_root=/sice-data/SICE_NRT/${region}/mosaic
 
-  mkdir -p /sice-data/SICE/${region}
+  mkdir -p /sice-data/SICE_NRT/${region}
 
   ### Fetch one day of OLCI & SLSTR scenes over Greenland
   ## Use local files (PTEP, DIAS, etc.)
@@ -53,7 +53,7 @@ for region in "${regions[@]}"; do
                        -f ${region} -u <user> -p <password>
 
   # SNAP: Reproject, calculate reflectance, extract bands, etc.
-  ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X S3.xml -t
+  ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X S3_fast.xml -t
 
   # Run the Simple Cloud Detection Algorithm (SCDA)
   python ./SCDA.py ${proc_root}/${date}
