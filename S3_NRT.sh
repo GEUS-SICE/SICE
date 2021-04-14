@@ -12,6 +12,9 @@ export PATH=/path/to/snap/bin:${PATH}
 # activate SICE anaconda virtual environment
 . /path/to/anaconda/envs/SICE/bin/activate
 
+source /path/to/anaconda/etc/profile.d/conda.sh
+conda activate SICE
+
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -53,7 +56,7 @@ for region in "${regions[@]}"; do
                        -f ${region} -u <user> -p <password>
 
   # SNAP: Reproject, calculate reflectance, extract bands, etc.
-  ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X S3.xml -t
+  ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X S3_fast.xml -t
 
   # Run the Simple Cloud Detection Algorithm (SCDA)
   python ./SCDA.py ${proc_root}/${date}
