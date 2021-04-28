@@ -7,7 +7,7 @@
 # 00 12 * * * /bin/bash -c "/path/to/wrapper/S3_NRT.sh" > /path/to/log/log_NRT.txt
 
 # use SNAP gpt
-export PATH=/srv/home/8675309/local/snap/bin:${PATH}
+export PATH=/path/to/snap/bin:${PATH}
 
 # activate SICE anaconda virtual environment
 # . /srv/home/8675309/local/anaconda/bin/activate SICE
@@ -46,11 +46,11 @@ for region in "${regions[@]}"; do
 
     # CREODIAS
     SEN3_local=/eodata/Sentinel-3
-    SEN3_source=/sice-data/SICE_NRT21/${region}/S3
-    proc_root=/sice-data/SICE_NRT21/${region}/proc
-    mosaic_root=/sice-data/SICE_NRT21/${region}/mosaic
+    SEN3_source=/path/to/sice-data/SICE_NRT21/${region}/S3
+    proc_root=path/to/sice-data/SICE_NRT21/${region}/proc
+    mosaic_root=path/to/sice-data/SICE_NRT21/${region}/mosaic
 
-    mkdir -p /sice-data/SICE_NRT21/${region}
+    mkdir -p path/to/sice-data/SICE_NRT21/${region}
 
     ### Fetch one day of OLCI & SLSTR scenes over Greenland
     ## Use local files (PTEP, DIAS, etc.)
