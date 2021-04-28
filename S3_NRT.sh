@@ -9,14 +9,6 @@
 # use SNAP gpt
 export PATH=/path/to/snap/bin:${PATH}
 
-# activate SICE anaconda virtual environment
-# . /srv/home/8675309/local/anaconda/bin/activate SICE
-
-# . /srv/home/8675309/local/anaconda/envs/SICE/bin/activate
-
-# source /path/to/anaconda/etc/profile.d/conda.sh
-# conda activate SICE
-
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -30,11 +22,6 @@ log_err() { echo -e "${red}[$(date --iso-8601=seconds)] [ERR] ${@}${nc}" 1>&2; }
 # change directory to the current folder
 cd "${0%/*}"
 
-### dev
-# SEN3_source=./SEN3
-# proc_root=./out
-# mosaic_root=./mosaic
-
 LD_LIBRARY_PATH=. # SNAP requirement
 
 date=$(date -d '-1days' "+%Y-%m-%d")
@@ -47,8 +34,8 @@ for region in "${regions[@]}"; do
     # CREODIAS
     SEN3_local=/eodata/Sentinel-3
     SEN3_source=/path/to/sice-data/SICE_NRT21/${region}/S3
-    proc_root=path/to/sice-data/SICE_NRT21/${region}/proc
-    mosaic_root=path/to/sice-data/SICE_NRT21/${region}/mosaic
+    proc_root=/path/to/sice-data/SICE_NRT21/${region}/proc
+    mosaic_root=/path/to/sice-data/SICE_NRT21/${region}/mosaic
 
     mkdir -p path/to/sice-data/SICE_NRT21/${region}
 
