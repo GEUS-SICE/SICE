@@ -33,7 +33,7 @@ slopey=false
 error=false
 
 # Fast processing:
-fast=true
+fast=false
 
 if [ "$fast" = true ] ; then
   xml_file=S3_fast.xml
