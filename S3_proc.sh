@@ -74,7 +74,7 @@ if [[ -z ${xml:-} ]]; then log_err "-X not set"; print_usage; exit 1; fi
 for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
   olci_folder=$(basename "${folder}")
   olci_dts=$(echo "${olci_folder}" | rev | cut -d_ -f11 | rev)
-  dest=${outpath}/${olci_dts}
+  dest=${outpath}/${olci_dts}_$(echo "${olci_folder}" | cut -b3)
 
   # skipping if scene already processed
   if [[ -d "${dest}" ]]; then 
