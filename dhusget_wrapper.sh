@@ -147,34 +147,34 @@ if [[ -z ${path_product_list:-} ]]; then
     #small high latitude region by searching around the local solar noon +-dt hours
     if ! [[ ${footprint} == "Greenland" ]]; then
       
-      y=${footprint_poly:22:-2}
-      dt=1  	
-      output=`python <<END
+		y=${footprint_poly:22:-2}
+		dt=1  	
+		output=`python <<END
 
-    import shapely.wkt
-    from math import modf
+import shapely.wkt
+from math import modf
 
-    polygon_str = "${y}"
-    polygon = shapely.wkt.loads(polygon_str)
-    centroid = polygon.centroid
-    centroid_lon = centroid.coords.xy[0][0]
-    solar_noon = 12 - (centroid_lon / 360 * 24)
-    date = "${date}"
-    dt = int("${dt}")
+polygon_str = "${y}"
+polygon = shapely.wkt.loads(polygon_str)
+centroid = polygon.centroid
+centroid_lon = centroid.coords.xy[0][0]
+solar_noon = 12 - (centroid_lon / 360 * 24)
+date = "${date}"
+dt = int("${dt}")
 
 
-    def frmt(hour):
-        _min, hours = modf(hour)
-        _sec, minutes = modf(_min*60)
-        return "%s:%s"%(str(int(hours)).zfill(2), 
-        str(int(minutes)).zfill(2))
-        
+def frmt(hour):
+	_min, hours = modf(hour)
+	_sec, minutes = modf(_min*60)
+	return "%s:%s"%(str(int(hours)).zfill(2), 
+	str(int(minutes)).zfill(2))
+	
 
-    datestr0 = date + 'T' + frmt(solar_noon-dt) + ':00.0000Z'
-    datestr1 = date + 'T' + frmt(solar_noon+dt) + ':00.0000Z'
-    print(datestr0, datestr1)
+datestr0 = date + 'T' + frmt(solar_noon-dt) + ':00.0000Z'
+datestr1 = date + 'T' + frmt(solar_noon+dt) + ':00.0000Z'
+print(datestr0, datestr1)
 
-    END`
+END`
 
       datestrs=($output)
       datestr0=${datestrs[0]}
@@ -207,7 +207,7 @@ if [[ -z ${path_product_list:-} ]]; then
     log_info "***********************************************************"
 else
     rm -f mask.tif
-    ln -s ./masks/${footprint}.tif mask.tif 
+    cp ./masks/${footprint}.tif mask.tif 
     log_info "Using input product list"
     cp "${path_product_list}/products-list_${year}-${month}-${day}.csv" "products-list.csv"
 fi

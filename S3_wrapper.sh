@@ -13,17 +13,17 @@ log_warn() { echo -e "${orange}[$(date --iso-8601=seconds)] [WARN] ${@}${nc}"; }
 log_err() { echo -e "${red}[$(date --iso-8601=seconds)] [ERR] ${@}${nc}" 1>&2; }
 
 # CREODIAS
-SEN3_local=/eodata/Sentinel-3
-SEN3_source=~/sice-data/SICE/S3
-proc_root=~/sice-data/SICE/proc
-mosaic_root=~/sice-data/SICE/mosaic
+# SEN3_local=/eodata/Sentinel-3
+# SEN3_source=~/sice-data/SICE/S3
+# proc_root=~/sice-data/SICE/proc
+# mosaic_root=~/sice-data/SICE/mosaic
 ### dev
-# SEN3_source=./SEN3
-# proc_root=./out
-# mosaic_root=./mosaic
+SEN3_source=./SEN3
+proc_root=./out
+mosaic_root=./mosaic
 
 # Geographic area
-area=Greenland
+area=Svalbard
 # Svalbard...
 
 # Slope correction 
@@ -45,12 +45,12 @@ fi
 
 LD_LIBRARY_PATH=. # SNAP requirement
 
-for year in 2017 ; do
-  for doy in $(seq -w 91 276); do
+# for year in 2017 ; do
+#   for doy in $(seq -w 91 276); do
 
 ### DEBUG
-# for year in 2018; do
-#   for doy in 227; do  # 2017-08-15=227
+for year in 2019; do
+  for doy in 227; do  # 2017-08-15=227
 
     date=$(date -d "${year}-01-01 +$(( 10#${doy}-1 )) days" "+%Y-%m-%d")
     
@@ -61,11 +61,10 @@ for year in 2017 ; do
     
     ### Fetch one day of OLCI & SLSTR scenes over Greenland
     ## Use local files (PTEP, DIAS, etc.)
-    ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} \
-    			 -f ${area} -u usrname -p psswd $product_list || error=true
+    # ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} 
+    # 			 -f ${area} -u usrname -p psswd $product_list || error=true
     ## Download files
-    # ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
-    # 			 -f Svalbard -u <user> -p <password>
+    ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date}  -f Svalbard -u baptistevdx -p geus1234
     
     # SNAP: Reproject, calculate reflectance, extract bands, etc.
     ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X ${xml_file} || error=true -t
