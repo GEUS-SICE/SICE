@@ -64,7 +64,7 @@ for year in 2019; do
     # ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} 
     # 			 -f ${area} -u usrname -p psswd $product_list || error=true
     ## Download files
-    ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date}  -f Svalbard -u baptistevdx -p geus1234
+    ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date}  -f Svalbard -u baptistevdx -p geus1234 || error=true
     
     # SNAP: Reproject, calculate reflectance, extract bands, etc.
     ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X ${xml_file} || error=true -t
