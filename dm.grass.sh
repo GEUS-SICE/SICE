@@ -31,7 +31,7 @@ mkdir -p "${outfolder}/${date}"
 r.in.gdal input=mask.tif output=MASK --quiet
 g.region raster=MASK
 g.region zoom=MASK
-g.region res=1000 -a
+g.region res=500 -a
 g.region -s # save as default region
 
 # load all the data

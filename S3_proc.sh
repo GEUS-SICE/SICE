@@ -106,17 +106,17 @@ for folder in $(ls ${inpath} | grep S3._OL_1_EFR); do
 		 -POLCIsource="${inpath}/${olci_folder}" \
 		 -PSLSTRsource="${inpath}/${slstr_folder}" \
 		 -PtargetFolder="${dest}" \
-		 -Ds3tbx.reader.olci.pixelGeoCoding=true \
-		 -Ds3tbx.reader.slstrl1b.pixelGeoCodings=true \
 		 -Dsnap.log.level=ERROR \
 		 -e || (log_err "gpt error"; exit 1)
+#		 -Ds3tbx.reader.olci.pixelGeoCoding=true \
+#		 -Ds3tbx.reader.slstrl1b.pixelGeoCodings=true \
   log_info "gpt: Finished"
 
   # # Discard out bad folders (defined as size > 10 GB)
   # (cd ${dest}/../; du -sm * | awk '$1 > 10000 {print $2}' | xargs rm -fr)
   if [[ ! -d "${dest}" ]]; then continue; fi # if we removed the directory, break out of the loop
 
-  resize=1000
+  resize=500
   log_info "Resampling to ${resize} m resolution..."
   log_info "Aligning SLSTR to OLCI..."
   grass -c ./mask.tif ${dest}/G_align --exec ./G_align.sh ${dest} ./mask.tif ${resize}

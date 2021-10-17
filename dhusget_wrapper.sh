@@ -199,7 +199,7 @@ END`
 	         -m Sentinel-3 -l 100 \
 	         -i "(OLCI OR SLSTR)" \
 	         -S ${datestr0} -E ${datestr1} \
-	         -F 'filename:(S3A*EFR* OR S3A*RBT*) AND orbitdirection:descending AND ( '"${footprint_poly}"' )'
+	         -F 'filename:(S3*EFR* OR S3*RBT*) AND orbitdirection:(descending OR ascending) AND ( '"${footprint_poly}"' )'
     log_info "***********************************************************"
     log_info "***                                                     ***"
     log_info "***                DHUSGET.SH end                       ***"

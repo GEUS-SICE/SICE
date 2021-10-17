@@ -19,6 +19,7 @@ log_err() { echo -e "${red}[$(date --iso-8601=seconds)] [ERR] ${@}${nc}" 1>&2; }
 # mosaic_root=~/sice-data/SICE/mosaic
 ### dev
 SEN3_source=./SEN3
+SEN3_local=./SEN3
 proc_root=./out
 mosaic_root=./mosaic
 
@@ -36,11 +37,10 @@ error=false
 fast=false
 
 if [ "$fast" = true ] ; then
+  # so far the only speed up done is to not extract all bands
   xml_file=S3_fast.xml
-  product_list="-pl products-lists/${area}"
 else
-  xml_file=S3.xml
-  product_list=""
+  xml_file=S3_fast.xml
 fi
 
 LD_LIBRARY_PATH=. # SNAP requirement
@@ -49,8 +49,8 @@ LD_LIBRARY_PATH=. # SNAP requirement
 #   for doy in $(seq -w 91 276); do
 
 ### DEBUG
-for year in 2019; do
-  for doy in 227; do  # 2017-08-15=227
+for year in 2021; do
+  for doy in 246; do  # 2017-08-15=227
 
     date=$(date -d "${year}-01-01 +$(( 10#${doy}-1 )) days" "+%Y-%m-%d")
     
@@ -61,10 +61,9 @@ for year in 2019; do
     
     ### Fetch one day of OLCI & SLSTR scenes over Greenland
     ## Use local files (PTEP, DIAS, etc.)
-    # ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} 
-    # 			 -f ${area} -u usrname -p psswd $product_list || error=true
+    # ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} -f ${area} -u baptistevdx -p geus1234 || error=true
     ## Download files
-    ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date}  -f Svalbard -u baptistevdx -p geus1234 || error=true
+     ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date}  -f ${area} -u baptistevdx -p geus1234 || error=true
     
     # SNAP: Reproject, calculate reflectance, extract bands, etc.
     ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X ${xml_file} || error=true -t

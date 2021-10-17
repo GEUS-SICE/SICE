@@ -12,5 +12,8 @@ logs
 __pycache__
 OSquery-result.xml
 mask.tif
-product-lists
+product-list
+product-list.csv
 misc
+out
+mosaic

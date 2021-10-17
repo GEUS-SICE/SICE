@@ -84,18 +84,7 @@ import sys, inspect, os
 import pandas as pd
 from constants import w, bai, sol1_clean, sol2, sol3_clean, sol1_pol, sol3_pol, asol
 np.seterr(invalid='ignore')
-
-if __name__ == '__main__':
-    # if the script is called from the command line, then parsing the input path and 
-    # passing it to the main function
-    InputPath = sys.argv[1]
-    if len(sys.argv)>1:
-        OutputFolder = sys.argv[2]
-    else:
-        OutputFolder = os.path.dirname(InputPath) + '/'
-        
-    pySICE(InputPath,OutputFolder)
-    
+   
 def pySICE(InputPath, OutputFolder, olci_gains = False, slopey = False):
     os.makedirs(OutputFolder,exist_ok=True)
         
@@ -146,8 +135,9 @@ def pySICE(InputPath, OutputFolder, olci_gains = False, slopey = False):
         toa = np.tile(Oa01.read(1)*np.nan, (21,1,1))
         
         for i in range(21):
-            dat = rio.open((InputFolder+'r_TOA_'+str(i+1).zfill(2)+'.tif'))
-            toa[i,:,:] = dat.read(1)
+            if i in [0, 1, 5, 6, 10, 11, 16, 17, 20]:
+                dat = rio.open((InputFolder+'r_TOA_'+str(i+1).zfill(2)+'.tif'))
+                toa[i,:,:] = dat.read(1)
             
         ozone = rio.open(InputFolder+'O3.tif').read(1)
         # water = rio.open(InputFolder+'WV.tif').read(1)
@@ -420,3 +410,16 @@ def pySICE(InputPath, OutputFolder, olci_gains = False, slopey = False):
             WriteOutput(refl[i,:,:],   'rBRR_'+str(i+1).zfill(2), OutputFolder)
     
     print("End SICE.py %s --- %s CPU seconds ---" % (OutputFolder, time.process_time() - start_time))
+
+if __name__ == '__main__':
+    # if the script is called from the command line, then parsing the input path and 
+    # passing it to the main function
+    InputPath = sys.argv[1]
+    if len(sys.argv)>3:
+        OutputFolder = sys.argv[2]
+    else:
+        OutputFolder = sys.argv[1] + '/'
+    print(InputPath)
+    print(OutputFolder)
+    print('---')
+    pySICE(InputPath,OutputFolder)
