@@ -47,274 +47,317 @@
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa01">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa01">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa01_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa01_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
+    
   <node id="Write_OLCI_Oa01">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa01</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa01</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_01_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa02">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa02">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa02_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa02_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa02">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa02</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa02</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_02_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa03">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa03">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa03_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa03_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa03">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa03</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa03</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_03_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa04">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa04">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa04_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa04_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa04">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa04</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa04</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_04_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa05">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa05">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa05_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa05_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa05">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa05</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa05</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_05_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa06">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa06">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa06_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa06_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa06">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa06</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa06</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_06_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa07">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa07">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa07_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa07_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa07">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa07</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa07</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_07_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa08">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa08">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa08_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa08_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa08">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa08</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa08</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_08_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa09">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa09">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa09_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa09_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa09">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa09</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa09</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_09_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa10">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa10">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa10_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa10_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa10">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa10</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa10</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_10_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa11">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa11">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa11_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa11_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa11">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa11</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa11</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_11_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa12">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa12">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa12_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa12_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa12">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa12</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa12</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_12_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa13">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa13">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa13_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa13_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa13">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa13</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa13</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_13_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa14">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa14">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa14_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa14_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa14">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa14</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa14</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_14_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa15">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa15">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa15_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa15_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa15">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa15</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa15</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_15_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa16">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa16">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa16_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa16_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa16">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa16</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa16</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_16_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa17">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa17">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa17_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa17_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa17">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa17</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa17</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_17_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa18">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa18">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa18_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa18_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa18">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa18</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa18</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_18_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa19">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa19">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa19_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa19_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa19">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa19</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa19</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_19_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa20">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa20">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa20_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa20_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa20">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa20</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa20</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_20_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
 
-  <node id="BandSelect_OLCI_Oa21">
-    <operator>BandSelect</operator>
+  <node id="Subset_OLCI_Oa21">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>Oa21_reflectance</sourceBands></parameters>
+    <parameters><sourceBands>Oa21_reflectance</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OLCI_Oa21">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OLCI_Oa21</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OLCI_Oa21</sourceProduct></sources>
     <parameters>
       <file>${targetFolder}/r_TOA_21_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
@@ -337,69 +380,81 @@
     <parameters><file>${targetFolder}/SZA_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
-  <node id="BandSelect_OZA">
-    <operator>BandSelect</operator>
+  <node id="Subset_OZA">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>OZA</sourceBands></parameters>
+    <parameters><sourceBands>OZA</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OZA">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OZA</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OZA</sourceProduct></sources>
     <parameters><file>${targetFolder}/OZA_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
-  <node id="BandSelect_SAA">
-    <operator>BandSelect</operator>
+  <node id="Subset_SAA">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>SAA</sourceBands></parameters>
+    <parameters><sourceBands>SAA</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_SAA">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_SAA</sourceProduct></sources>
+    <sources><sourceProduct>Subset_SAA</sourceProduct></sources>
     <parameters><file>${targetFolder}/SAA_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
-  <node id="BandSelect_OAA">
-    <operator>BandSelect</operator>
+  <node id="Subset_OAA">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>OAA</sourceBands></parameters>
+    <parameters><sourceBands>OAA</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_OAA">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_OAA</sourceProduct></sources>
+    <sources><sourceProduct>Subset_OAA</sourceProduct></sources>
     <parameters><file>${targetFolder}/OAA_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
-  <node id="BandSelect_ozone">
-    <operator>BandSelect</operator>
+  <node id="Subset_ozone">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>total_ozone</sourceBands></parameters>
+    <parameters><sourceBands>total_ozone</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_ozone">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_ozone</sourceProduct></sources>
+    <sources><sourceProduct>Subset_ozone</sourceProduct></sources>
     <parameters><file>${targetFolder}/O3_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
-  <node id="BandSelect_water">
-    <operator>BandSelect</operator>
+  <node id="Subset_water">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>total_columnar_water_vapour</sourceBands></parameters>
+    <parameters><sourceBands>total_columnar_water_vapour</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_water">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_water</sourceProduct></sources>
+    <sources><sourceProduct>Subset_water</sourceProduct></sources>
     <parameters><file>${targetFolder}/WV_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
-  <node id="BandSelect_altitude">
-    <operator>BandSelect</operator>
+  <node id="Subset_altitude">
+    <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
-    <parameters><sourceBands>altitude</sourceBands></parameters>
+    <parameters><sourceBands>altitude</sourceBands>
+        <copyMetadata>false</copyMetadata>
+    </parameters>
   </node>
   <node id="Write_altitude">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_altitude</sourceProduct></sources>
+    <sources><sourceProduct>Subset_altitude</sourceProduct></sources>
     <parameters><file>${targetFolder}/height_x.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
@@ -487,8 +542,8 @@
       SLSTR bands selection and writing
   -->
 
-  <node id="BandSelect_01">
-    <operator>BandSelect</operator>
+  <node id="Subset_01">
+    <operator>Subset</operator>
     <sources>
       <source>Reproject_SLSTR_R</source>
     </sources>
@@ -499,12 +554,12 @@
 
   <node id="Write_01">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_01</sourceProduct></sources>
+    <sources><sourceProduct>Subset_01</sourceProduct></sources>
     <parameters><file>${targetFolder}/r_TOA_S1.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
-  <node id="BandSelect_05">
-    <operator>BandSelect</operator>
+  <node id="Subset_05">
+    <operator>Subset</operator>
     <sources>
       <source>Reproject_SLSTR_R</source>
     </sources>
@@ -515,12 +570,12 @@
 
   <node id="Write_05">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_05</sourceProduct></sources>
+    <sources><sourceProduct>Subset_05</sourceProduct></sources>
     <parameters><file>${targetFolder}/r_TOA_S5.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
-  <node id="BandSelect_07">
-    <operator>BandSelect</operator>
+  <node id="Subset_07">
+    <operator>Subset</operator>
     <sources>
       <source>Reproject_SLSTR_BT</source>
     </sources>
@@ -531,12 +586,12 @@
 
   <node id="Write_07">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_07</sourceProduct></sources>
+    <sources><sourceProduct>Subset_07</sourceProduct></sources>
     <parameters><file>${targetFolder}/BT_S7.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
-  <node id="BandSelect_08">
-    <operator>BandSelect</operator>
+  <node id="Subset_08">
+    <operator>Subset</operator>
     <sources>
       <source>Reproject_SLSTR_BT</source>
     </sources>
@@ -547,12 +602,12 @@
 
   <node id="Write_08">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_08</sourceProduct></sources>
+    <sources><sourceProduct>Subset_08</sourceProduct></sources>
     <parameters><file>${targetFolder}/BT_S8.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 
-  <node id="BandSelect_09">
-    <operator>BandSelect</operator>
+  <node id="Subset_09">
+    <operator>Subset</operator>
     <sources>
       <source>Reproject_SLSTR_BT</source>
     </sources>
@@ -563,7 +618,7 @@
 
   <node id="Write_09">
     <operator>Write</operator>
-    <sources><sourceProduct>BandSelect_09</sourceProduct></sources>
+    <sources><sourceProduct>Subset_09</sourceProduct></sources>
     <parameters><file>${targetFolder}/BT_S9.tif</file><formatName>GeoTIFF</formatName></parameters>
   </node>
 

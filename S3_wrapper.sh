@@ -33,11 +33,10 @@ slopey=false
 fast=true
 
 if [ "$fast" = true ] ; then
+  # so far the only speed up done is to not extract all bands
   xml_file=S3_fast.xml
-  product_list="-pl products-lists/${area}"
 else
   xml_file=S3.xml
-  product_list=""
 fi
 
 LD_LIBRARY_PATH=. # SNAP requirement
@@ -59,7 +58,7 @@ for year in 2020 ; do
     ### Fetch one day of OLCI & SLSTR scenes over Greenland
     ## Use local files (PTEP, DIAS, etc.)
     ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} \
-    			 -f ${area} -u usr -p psswd $product_list || error=true
+    			 -f ${area} -u usr -p psswd || error=true
     ## Download files
     # ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
     # 			 -f Svalbard -u <user> -p <password>
