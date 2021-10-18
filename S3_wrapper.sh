@@ -13,7 +13,8 @@ log_warn() { echo -e "${orange}[$(date --iso-8601=seconds)] [WARN] ${@}${nc}"; }
 log_err() { echo -e "${red}[$(date --iso-8601=seconds)] [ERR] ${@}${nc}" 1>&2; }
 
 # scihub login information
-IFS=' ' read -r username password < scihub_login_info.txt
+IFS=$' \t\r\n' read -r username password < scihub_login_info.txt
+password=${password%$'\r'}
 
 # source and destination folder
 SEN3_local=/eodata/Sentinel-3 # where the '.SEN3' files are
@@ -59,9 +60,9 @@ for year in 2021; do
     
     ### Fetch one day of OLCI & SLSTR scenes over Greenland
     ## Use local files (PTEP, DIAS, etc.)
-     ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} -f ${area} -u username -p password || error=true
+     ./dhusget_wrapper.sh -d ${date} -l ${SEN3_local} -o ${SEN3_source}/${year}/${date} -f ${area} -u $username -p $password || error=true
     ## Download files
-    # ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date}  -f ${area} -u username -p password || error=true
+    # ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date}  -f ${area} -u $username -p $password || error=true
     
     # SNAP: Reproject, calculate reflectance, extract bands, etc.
     ./S3_proc.sh -i ${SEN3_source}/${year}/${date} -o ${proc_root}/${date} -X ${xml_file} || error=true -t
