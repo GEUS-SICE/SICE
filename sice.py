@@ -204,7 +204,7 @@ def pySICE(InputPath, OutputFolder, olci_gains = False, slopey = False):
     #%% snow properties
     D, area, al, r0, bal = sl.snow_properties(toa_cor_o3, ak1, ak2)
     # filtering small D
-    D_thresh = 0.1
+    D_thresh = 0.01
     isnow[np.logical_and(D<D_thresh, np.isnan(isnow))] = 104
     
     for i in range(21):
