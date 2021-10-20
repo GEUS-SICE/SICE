@@ -19,9 +19,16 @@ from osgeo import gdal, gdalconst
 parser = argparse.ArgumentParser()
 parser.add_argument('inpath')
 parser.add_argument('inpath_adem')
-
+parser.add_argument('area')
+#
 args = parser.parse_args()
 
+# dev
+#class args:
+#    inpath='/home/ubuntu-bav/bav_win/test_SICE_500/2021-09-03_svalbard/'
+#    inpath_adem='./ArcticDEM/'
+#    area='Svalbard'
+    
 # slope threshold in degrees to create slope_flag
 # Default is set to 15° based on the "small slope approximation" 
 # (Picard et al, 2020)
@@ -64,8 +71,8 @@ def get_effective_angle(variable):
         return
     
     # load slope and aspect
-    slope = rasterio.open(args.inpath_adem + 'Greenland_S.tif').read(1)
-    aspect = rasterio.open(args.inpath_adem + 'Greenland_A.tif').read(1)
+    slope = rasterio.open(args.inpath_adem + args.area+'_S.tif').read(1)
+    aspect = rasterio.open(args.inpath_adem + args.area+'_A.tif').read(1)
     
     # create a flag based on the "small slope approximation" 
     slope_flag = slope.copy()
@@ -138,7 +145,7 @@ def get_ITOAR(slope, aspect):
     
     # load solar and viewing zenith angles (flat)
     sza = rasterio.open(args.inpath + 'SZA.tif').read(1)
-    oza = rasterio.open(args.inpath + 'OZA.tif').read(1)
+    #oza = rasterio.open(args.inpath + 'OZA.tif').read(1)
     
     # load solar azimuth angle (flat)
     saa = rasterio.open(args.inpath + 'SAA.tif').read(1)
@@ -153,7 +160,7 @@ def get_ITOAR(slope, aspect):
     def compute_ITOAR(toar):
         
         mu0 = np.cos(np.deg2rad(sza))
-        mu = np.cos(np.deg2rad(oza))
+        # mu = np.cos(np.deg2rad(oza))
         mu0_ov = mu0 * np.cos(np.deg2rad(slope)) + np.sin(np.deg2rad(sza))\
             * np.sin(np.deg2rad(slope)) * np.cos(np.deg2rad(saa) - np.deg2rad(aspect))
 
