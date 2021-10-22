@@ -79,7 +79,7 @@ for year in 2021; do
     fi
 
     # SICE
-    python ./sice.py ${mosaic_root}/${area}/${date} $slopey || error=true
+    python ./sice.py ${mosaic_root}/${area}/${date} || error=true
  
   done
 done
