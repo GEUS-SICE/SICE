@@ -25,10 +25,10 @@ args = parser.parse_args()
 dataverse_server = "https://dataverse01.geus.dk"
 
 # user API key
-api_key = "your_api_key"
+api_key = "my_api_key"
 
-# dataset DOI (here NRT dataset)
-persistentId = "doi:10.22008/FK2/SD56CB"
+# dataset DOI 
+persistentId = "doi:id/example/"
 
 # list files to upload from daily subfolders
 file_list = [
@@ -44,10 +44,9 @@ file_list = [
 ]
 
 # Add file description
-file_description = "SICE products"
+file_description = "my medata"
 
 # %% upload function
-
 
 def upload_files_to_dataverse(
     folder: str, file_list: list, file_description: str
