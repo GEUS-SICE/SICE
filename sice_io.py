@@ -289,12 +289,12 @@ class sice_io(object):
     #        data_out.to_csv(basename + '_out.csv')
 
 
-def write_output(OLCI_scene, snow, OutputFolder):
+def write_output(snow, OutputFolder):
     file_name_list = {'BXXX': 'O3_SICE',   'diameter': 'grain_diameter', 'area': 'snow_specific_area',
                       'al': 'al', 'r0': 'r0', 'isnow': 'diagnostic_retrieval', 'conc': 'conc',
                       'rp3': 'albedo_bb_planar_sw', 'rs3': 'albedo_bb_spherical_sw'}
-    for var in ['diameter', 'area', 'rp3', 'rs3']:
-        var = snow[var].unstack(dim='xy').transpose('y', 'x').rio.to_raster(os.path.join(OutputFolder, file_name_list[var] + '.tif'))
+    for var in ['diameter', 'area', 'rp3', 'rs3', 'isnow', 'r0', 'al']:
+        snow[var].unstack(dim='xy').transpose('y', 'x').rio.to_raster(os.path.join(OutputFolder, file_name_list[var] + '.tif'))
 
-    for var in ['BXXX', 'isnow']:
-        var = OLCI_scene[var].unstack(dim='xy').transpose('y', 'x').rio.to_raster(os.path.join(OutputFolder, file_name_list[var] + '.tif'))
+    # for var in ['BXXX', ]:
+    #     var = OLCI_scene[var].unstack(dim='xy').transpose('y', 'x').rio.to_raster(os.path.join(OutputFolder, file_name_list[var] + '.tif'))

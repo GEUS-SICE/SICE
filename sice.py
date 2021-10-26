@@ -75,8 +75,10 @@
 import numpy as np
 import sice_lib as sl
 import sys
-import os
 from sice_io import sice_io, write_output
+import xarray as xr
+import time
+
 np.seterr(invalid='ignore')
 
 if __name__ == '__main__':
@@ -94,5 +96,13 @@ if __name__ == '__main__':
     OLCI_reader = sice_io(InputPath)
     OLCI_reader.open()
     OLCI_scene = OLCI_reader.olci_scene
-    OLCI_scene, snow = sl.process(OLCI_scene)
-    write_output(OLCI_scene, snow, OutputFolder)
+
+    start_time = time.process_time()
+
+    # snow = sl.process(OLCI_scene)
+    snow = sl.process_by_chunk(OLCI_scene, chunk_size=500000)
+
+    duration = time.process_time() - start_time
+    print('Time elapsed: ', duration)
+
+    write_output(snow, OutputFolder)
