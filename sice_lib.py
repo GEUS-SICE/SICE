@@ -424,7 +424,11 @@ def clean_snow_albedo(OLCI_scene, angles, aerosol, atmosphere, snow):
 
 def polluted_snow_albedo(OLCI_scene, angles, aerosol, atmosphere, snow):
     if not np.any(snow.ind_pol):
-        return
+        impurities = xr.Dataset()
+        impurities['ntype'] = xr.full_like(OLCI_scene.sza, np.nan)
+        impurities['bf'] = xr.full_like(OLCI_scene.sza, np.nan)
+        impurities['conc'] = xr.full_like(OLCI_scene.sza, 0)
+        return OLCI_scene, snow, impurities
 
     snow.isnow[snow.ind_pol] = 1
     #  very dirty snow
