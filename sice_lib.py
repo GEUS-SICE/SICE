@@ -127,6 +127,8 @@ def process_by_chunk(OLCI_scene, chunk_size=150000, compute_polluted=True):
     rp3 = []
     rs3 = []
     isnow = []
+    r0 = []
+    al = []
     for i in range(len(xy_chunk_indexes)-1):
         print(f"{i+1} / {nchunks}")
         chunk = OLCI_scene.isel(xy=slice(xy_chunk_indexes[i], xy_chunk_indexes[i+1]))
@@ -136,6 +138,8 @@ def process_by_chunk(OLCI_scene, chunk_size=150000, compute_polluted=True):
         rp3.append(snow_chunk.rp3)
         rs3.append(snow_chunk.rs3)
         isnow.append(snow_chunk.isnow)
+        r0.append(snow_chunk.r0)
+        al.append(snow_chunk.r0)
         del snow_chunk
     snow = xr.Dataset()
     snow['diameter'] = xr.concat(diameter, dim='xy')
@@ -143,6 +147,8 @@ def process_by_chunk(OLCI_scene, chunk_size=150000, compute_polluted=True):
     snow['rp3'] = xr.concat(rp3, dim='xy')
     snow['rs3'] = xr.concat(rs3, dim='xy')
     snow['isnow'] = xr.concat(isnow, dim='xy')
+    snow['r0'] = xr.concat(r0, dim='xy')
+    snow['al'] = xr.concat(al, dim='xy')
     return snow
 
 

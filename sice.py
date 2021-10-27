@@ -76,7 +76,6 @@ import numpy as np
 import sice_lib as sl
 import sys
 from sice_io import sice_io, write_output
-import xarray as xr
 import time
 
 np.seterr(invalid='ignore')
