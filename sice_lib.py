@@ -236,6 +236,7 @@ def prepare_processing(OLCI_scene):
     OLCI_scene['sza'] = OLCI_scene.sza.where(mask)
     OLCI_scene['vza'] = OLCI_scene.vza.where(mask)
     OLCI_scene['elevation'] = OLCI_scene.elevation.where(mask)
+
     return OLCI_scene, snow
 
 
@@ -299,22 +300,19 @@ def snow_properties(OLCI_scene, angles, snow):
     # snow specific area ( dimension: m*m/kg)
     area = 6./D/0.917
 
-    snow['diameter'] = D
-    snow['area'] = area
-    snow['al'] = al
-    snow['r0'] = r0
-    snow['bal'] = bal
-
     # filtering small D
     diameter_thresh = 0.01
 
-    valid = snow.diameter >= diameter_thresh
-
+    valid = D >= diameter_thresh
     snow.isnow[~valid & np.isnan(snow.isnow)] = 104
     OLCI_scene['toa'] = OLCI_scene.toa.where(valid)
-    snow = snow.where(valid)
+    snow['diameter'] = D.where(valid)
+    snow['area'] = area.where(valid)
+    snow['al'] = al.where(valid)
+    snow['r0'] = r0.where(valid)
+    snow['bal'] = bal.where(valid)
     angles = angles.where(valid)
-    return OLCI_scene, angles, snow  
+    return OLCI_scene, angles, snow
 
 
 def prepare_coef(aerosol, angles):
@@ -326,8 +324,8 @@ def prepare_coef(aerosol, angles):
     args = aerosol.tau, aerosol.g, aerosol.p, angles.cos_sza, angles.cos_vza, angles.inv_cos_za
     t1, t2, ratm, r = xr.apply_ufunc(prepare_coef_numpy, *args, input_core_dims=inputdims, output_core_dims=outputdims)
 
-    atmosphere= xr.Dataset()
-    atmosphere['t1'] =t1
+    atmosphere = xr.Dataset()
+    atmosphere['t1'] = t1
     atmosphere['t2'] = t2
     atmosphere['ratm'] = ratm
     atmosphere['r'] = r
