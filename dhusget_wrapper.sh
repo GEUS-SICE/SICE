@@ -145,11 +145,18 @@ if [[ -z ${path_product_list:-} ]]; then
 
     #limit the number of scenes when footprint set to a
     #small high latitude region by searching around the local solar noon +-dt hours
-    if ! [[ ${footprint} == "Greenland" ]]; then
-      
-      y=${footprint_poly:22:-2}
-      dt=1  	
-      output=`python <<END
+    if ! [[ ${footprint} == "Greenland" ]] && ! [[ ${footprint} == "AlaskaYukon" ]]; then
+	
+	if [ ${footprint} == "NovayaZemlya" ] || [ ${footprint} == "SevernayaZemlya" ] || [ ${footprint} == "SouthernArcticCanada" ] || [ ${footprint} == "NorthernArcticCanada" ]; then
+	    dt=2
+	fi;
+    
+	if [ ${footprint} == "Iceland" ] || [ ${footprint} == "Svalbard" ] || [ ${footprint} == "FransJosefLand" ]; then	  
+	    dt=1
+	fi;
+
+    y=${footprint_poly:22:-2}
+    output=`python <<END
 
 import shapely.wkt
 from math import modf
