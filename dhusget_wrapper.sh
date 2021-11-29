@@ -151,7 +151,7 @@ if [[ -z ${path_product_list:-} ]]; then
 	    dt=2
 	fi;
     
-	if [ ${footprint} == "Iceland" ] || [ ${footprint} == "Svalbard" ] || [ ${footprint} == "FransJosefLand" ]; then	  
+	if [ ${footprint} == "Svalbard" ] || [ ${footprint} == "FransJosefLand" ]; then	  
 	    dt=1
 	fi;
 
