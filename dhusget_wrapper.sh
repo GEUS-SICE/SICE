@@ -192,7 +192,7 @@ END`
 
     log_warn "Setting mask.tif to masks/${footprint}.tif"
     rm -f mask.tif
-    ln -s ./masks/${footprint}.tif mask.tif 
+    ln -s ./masks/${footprint}_300m.tif mask.tif 
 
     log_info "***********************************************************"
     log_info "***                                                     ***"
@@ -214,7 +214,7 @@ END`
     log_info "***********************************************************"
 else
     rm -f mask.tif
-    ln -s ./masks/${footprint}.tif mask.tif 
+    ln -s ./masks/${footprint}_300m.tif mask.tif 
     log_info "Using input product list"
     cp "${path_product_list}/products-list_${year}-${month}-${day}.csv" "products-list.csv"
 fi
