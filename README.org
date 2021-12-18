@@ -18,6 +18,7 @@
 - [[#misc-notes--code-snippets][Misc Notes & Code Snippets]]
   - [[#generate-ice-mask][Generate ice mask]]
   - [[#footprint][Footprint]]
+  - [[#footprint][Regional masks]]
 
 * Sentinel-3 (S3) Albedo Processing Pipeline
 
@@ -268,3 +269,7 @@ Get GL outline by drawing in Google Earth, export KML, then:
 ogrinfo -al GL_outline.kml  | grep LINESTRING | sed s/\ 0//g
 #+END_SRC
 
+** Regional masks
+
+Regional masks stored in the [[https://github.com/GEUS-SICE/SICE/tree/master/masks][masks]] folder are clips from the 
+[[https://www.esa-landcover-cci.org/?q=node/197][ESA global Land Cover (ESALC) products]] (download [[https://cds.climate.copernicus.eu/cdsapp#!/dataset/satellite-land-cover?tab=form][here]]). A description of the 22 [[https://www.esa-landcover-cci.org/?q=node/197][ESA global Land Cover (ESALC) products]] can be found [[https://www.esa-landcover-cci.org/?q=webfm_send/84][here]].
