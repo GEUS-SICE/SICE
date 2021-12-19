@@ -51,7 +51,7 @@ if dataset_name == "SICE_BBA":
 # dataverse URL
 dataverse_server = "https://dataverse01.geus.dk"
 
-#  local folder to store files
+#  local folder to store data set
 folder_store = "/path/to/SICE/folder"
 
 # user API key
@@ -74,7 +74,7 @@ date_list = list(pd.date_range(date_range[0], date_range[1]).strftime("%Y-%m-%d"
 
 # %% the actual download
 
-#  local folder to store files
+#  local data set subfolder to store files
 destination_folder = f"{folder_store}/{dataset_name}"
 os.makedirs(destination_folder)
 
@@ -88,11 +88,11 @@ for file in dataverse_files:
     file_id = file["dataFile"]["id"]
 
     # extract SICE_NRT file date from subfolder name
-    if dataset_name == "SICE_NRT":
+    if dataset_name == 'SICE_NRT':
         file_date = file["directoryLabel"]
 
     # etract SICE_BBA file date from file name
-    if dataset_name == "SICE_BBA":
+    if dataset_name == 'SICE_BBA':
         file_date = file["directoryLabel"]
 
     if dataverse_filename in files_to_download and file_date in date_list:
@@ -103,8 +103,12 @@ for file in dataverse_files:
         except FileExistsError:
             pass
 
-        local_filename = f"{destination_folder}{file_date}/{dataverse_filename}"
-
+        if dataset_name == 'SICE_NRT':
+            local_filename = f"{destination_folder}{file_date}/{dataverse_filename}"
+        
+        if dataset_name == 'SICE_BBA':
+            local_filename = f"{destination_folder}{dataverse_filename}"
+            
         # download if file does not exist yet
         if bool(os.path.isfile(local_filename)) == False:
 
