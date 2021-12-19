@@ -7,19 +7,28 @@ A script for the download of SICE product files through the SICE dataverse at GE
 
 How to Get an API Token: https://guides.dataverse.org/en/latest/api/auth.html
 
+dataset_name is a flag to point to a given SICE data set:
+
+SICE_NRT: Wehrlé, Adrien; Box, Jason; Vandecrux, Baptiste; Mankoff, Ken, 2021, 
+          "Daily Near Real Time (NRT) Greenland snow and ice broadband albedo, SSA and cloud mask 
+          from Sentinel-3's OLCI", https://doi.org/10.22008/FK2/SD56CB, GEUS Dataverse, V21
+   
+SICE_BBA: Wehrlé, Adrien; Box, Jason; Vandecrux, Baptiste; Mankoff, Ken, 2021, 
+          "Gapless semi-empirical daily snow and ice albedo from Sentinel-3 OLCI", 
+          https://doi.org/10.22008/FK2/A5RXJ5, GEUS Dataverse, V1
 """
 
 import os
 import pandas as pd
 from pyDataverse.api import NativeApi, DataAccessApi
 
-#%% choose SICE dataset
-dataset_choice=0
+# choose SICE dataset
+dataset_name = 'SICE_NRT'
 
-if dataset_choice==0:
-    # Wehrlé, Adrien; Box, Jason; Vandecrux, Baptiste; Mankoff, Ken, 2021, "Daily Near Real Time (NRT) Greenland snow and ice broadband albedo, SSA and cloud mask from Sentinel-3's OLCI", https://doi.org/10.22008/FK2/SD56CB, GEUS Dataverse, V21
+if dataset_name == 'SICE_NRT':
+    # dataset DOI
     persistentId = "doi:10.22008/FK2/SD56CB"
-    dataset_name = "SICE_NRT"
+    
     # list of output files that needs to be downloaded from each dataverse subfolder
     files_to_download = [
         "r_TOA_01.tif",
@@ -31,10 +40,9 @@ if dataset_choice==0:
         "SCDA_final.tif",
     ]
 
-if dataset_choice==1:
-    # Wehrlé, Adrien; Box, Jason; Vandecrux, Baptiste; Mankoff, Ken, 2021, "Gapless semi-empirical daily snow and ice albedo from Sentinel-3 OLCI", https://doi.org/10.22008/FK2/A5RXJ5, GEUS Dataverse, V1
+if dataset_name = 'SICE_BBA':
+    # dataset DOI
     persistentId = "doi:10.22008/FK2/A5RXJ5"
-    dataset_name = "SICE_BBA"
 
 
 # %% prepare download information
@@ -43,7 +51,7 @@ if dataset_choice==1:
 dataverse_server = "https://dataverse01.geus.dk"
 
 #  local folder to store files
-destination_folder = "/path/to/SICE/folder"
+folder_store = "/path/to/SICE/folder"
 
 # user API key
 api_key = "your_api_key"
@@ -57,20 +65,17 @@ data_api = DataAccessApi(dataverse_server, api_key)
 # get dataverse metadata
 dataset = api.get_dataset(persistentId)
 
-
 # example of date range (all dates within the time window will be downloaded)
 date_range = ["2021-08-01", "2021-08-03"]
 
 # create list of dates from first to last date
 date_list = list(pd.date_range(date_range[0], date_range[1]).strftime("%Y-%m-%d"))
 
-# print(date_list)
-
-# %% the download cell
+# %% the actual download
 
 #  local folder to store files
-destination_folder = destination_folder+"/"+dataset_name
-os.makedirs(f"{destination_folder}")
+destination_folder = f'{folder_store}/{dataset_name}'
+os.makedirs(destination_folder)
 
 # access list of files to download from the dataverse
 dataverse_files = dataset.json()["data"]["latestVersion"]["files"]
@@ -82,9 +87,6 @@ for file in dataverse_files:
     file_id = file["dataFile"]["id"]
     if dataset_choice==0:
         file_directory = file["directoryLabel"]
-
-    print(file_directory,dataverse_filename)
-#%%
 
     # if dataverse_filename in files_to_download and file_directory in date_list:
     if dataverse_filename in files_to_download and file_directory in date_list:
