@@ -87,15 +87,24 @@ for file in dataverse_files:
     dataverse_filename = file["dataFile"]["filename"]
     file_id = file["dataFile"]["id"]
 
-    # extract SICE_NRT file date from subfolder name
+    
     if dataset_name == 'SICE_NRT':
+        # extract SICE_NRT file date from subfolder name
         file_date = file["directoryLabel"]
-
-    # etract SICE_BBA file date from file name
+        
+        # download file if file name in file list and date in date list
+        file_to_download = dataverse_filename in files_to_download\
+                and file_date in date_list
+            
+    
     if dataset_name == 'SICE_BBA':
+        # extract SICE_BBA file date from file name
         file_date = file["directoryLabel"]
-
-    if dataverse_filename in files_to_download and file_date in date_list:
+        
+        # download file if date in date list
+        file_to_download = file_date in date_list
+   
+    if file_to_download:
 
         # create the dataverse directory tree
         try:
@@ -104,9 +113,11 @@ for file in dataverse_files:
             pass
 
         if dataset_name == 'SICE_NRT':
+            # store file in date subfolder
             local_filename = f"{destination_folder}{file_date}/{dataverse_filename}"
         
         if dataset_name == 'SICE_BBA':
+            # store file directly in destination folder
             local_filename = f"{destination_folder}{dataverse_filename}"
             
         # download if file does not exist yet
