@@ -67,7 +67,7 @@ data_api = DataAccessApi(dataverse_server, api_key)
 dataset = api.get_dataset(persistentId)
 
 # example of date range (all dates within the time window will be downloaded)
-date_range = ["2021-08-01", "2021-08-03"]
+date_range = ["2019-08-01", "2019-08-03"]
 
 # create list of dates from first to last date
 date_list = list(pd.date_range(date_range[0], date_range[1]).strftime("%Y-%m-%d"))
@@ -76,7 +76,10 @@ date_list = list(pd.date_range(date_range[0], date_range[1]).strftime("%Y-%m-%d"
 
 #  local data set subfolder to store files
 destination_folder = f"{folder_store}/{dataset_name}"
-os.makedirs(destination_folder)
+
+# create folder if does not exist
+if not os.path.exists(destination_folder):
+    os.makedirs(destination_folder)
 
 # access list of files to download from the dataverse
 dataverse_files = dataset.json()["data"]["latestVersion"]["files"]
@@ -87,39 +90,36 @@ for file in dataverse_files:
     dataverse_filename = file["dataFile"]["filename"]
     file_id = file["dataFile"]["id"]
 
-    
-    if dataset_name == 'SICE_NRT':
+    if dataset_name == "SICE_NRT":
         # extract SICE_NRT file date from subfolder name
         file_date = file["directoryLabel"]
-        
+
         # download file if file name in file list and date in date list
-        file_to_download = dataverse_filename in files_to_download\
-                and file_date in date_list
-            
-    
-    if dataset_name == 'SICE_BBA':
+        file_to_download = (
+            dataverse_filename in files_to_download and file_date in date_list
+        )
+
+    if dataset_name == "SICE_BBA":
         # extract SICE_BBA file date from file name
-        file_date = file["directoryLabel"]
-        
+        file_date = dataverse_filename.split(".")[0]
+
         # download file if date in date list
         file_to_download = file_date in date_list
-   
+
     if file_to_download:
 
-        # create the dataverse directory tree
-        try:
-            os.makedirs(f"{destination_folder}/{file_date}")
-        except FileExistsError:
-            pass
+        if dataset_name == "SICE_NRT":
+            # create the dataverse directory tree (if it does not exist)
+            if not os.path.exists(f"{destination_folder}/{file_date}"):
+                os.makedirs(f"{destination_folder}/{file_date}")
 
-        if dataset_name == 'SICE_NRT':
             # store file in date subfolder
-            local_filename = f"{destination_folder}{file_date}/{dataverse_filename}"
-        
-        if dataset_name == 'SICE_BBA':
+            local_filename = f"{destination_folder}/{file_date}/{dataverse_filename}"
+
+        if dataset_name == "SICE_BBA":
             # store file directly in destination folder
-            local_filename = f"{destination_folder}{dataverse_filename}"
-            
+            local_filename = f"{destination_folder}/{dataverse_filename}"
+
         # download if file does not exist yet
         if bool(os.path.isfile(local_filename)) == False:
 
