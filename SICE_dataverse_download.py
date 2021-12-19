@@ -14,7 +14,7 @@ import pandas as pd
 from pyDataverse.api import NativeApi, DataAccessApi
 
 #%% choose SICE dataset
-dataset_choice=1
+dataset_choice=0
 
 if dataset_choice==0:
     # Wehrlé, Adrien; Box, Jason; Vandecrux, Baptiste; Mankoff, Ken, 2021, "Daily Near Real Time (NRT) Greenland snow and ice broadband albedo, SSA and cloud mask from Sentinel-3's OLCI", https://doi.org/10.22008/FK2/SD56CB, GEUS Dataverse, V21
