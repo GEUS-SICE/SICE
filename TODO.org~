@@ -1,0 +1,6 @@
+* sice_pp.py
+** TODO make it resolution agnostic
+resample regional mask based on input
+** TODO compute L3 product
+** TODO compute L4 products (temporal aggregations)
+** TODO visualisations
