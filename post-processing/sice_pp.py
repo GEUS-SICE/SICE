@@ -12,9 +12,11 @@ import glob
 from typing import Union, Tuple
 import pathlib
 import os
-from collecitons import Counter
+from collections import Counter
 from multiprocessing import Pool, freeze_support
 from functools import partial
+import time
+
 
 class SICEPostProcessing:
     def __init__(
@@ -101,56 +103,99 @@ class SICEPostProcessing:
 
         return multiprocessing_partitions
 
-
-    def compute_L2_products(
-        self, nb_cores: int = 4, L2_variables: Union[None, str] = None
+    def compute_Lx_products(
+        self, level: int = 2, nb_cores: int = 4, Lx_variables: Union[None, str] = None
     ):
 
-        if not L2_variables:
-            L2_variables = self.variables
+        if not Lx_variables:
+            Lx_variables = self.variables
 
-        def compute_L2_product_multiproc(files_to_process: list, variable: str) -> None:
+        def compute_L3_step(
+            data_stack: list,
+            i: int,
+            rolling_window: int = 10,
+            deviation_threshold: float = 0.15,
+            limit_valid_days: int = 4,
+        ):
 
-            ex_file = file_to_process[0]
+            low_boundary = i - int(rolling_window / 2)
+            high_boundary = i + int(rolling_window / 2 + 1)
+            # TODO: have to stack into an array
+            window_data = data_stack[low_boundary:high_boundary]
+
+            # load albedo raster at the center of rolling_window
+            BBA_center = window_data[:, :, int(rolling_window / 2)]
+
+            # compute median for each pixel time series
+            median_window = np.nanmedian(window_data, axis=2)
+
+            # per-pixel deviations within rolling_window
+            deviations = np.abs((BBA_center - median_window) / median_window)
+
+            window_data[deviations < deviation_threshold] = np.nanmean(
+                window_data, axis=2
+            )[deviations < deviation_threshold]
+
+            window_data[deviations >= deviation_threshold = np.nan
+                        
+            return window_data
+
+        def compute_Lx_product_multiproc(
+            self, files_to_process: list, variable: str
+        ) -> None:
+
+            # L3 step is a rolling window, therefore accessing several times the same matrix,
+            # so open the entire data set beforehand for efficiency
+            data_stack = [rasterio.open(file).read(1) for file in files_to_process]
+
+            ex_file = files_to_process[0]
             ex_reader = rasterio.open(ex_file)
             ex_data = ex_reader.read(1)
             output_meta = ex_reader.meta.copy()
-            
-            region = ex_file.split(os.sep)[-3]
-            regional_mask = rasterio.open(f"{self.working_directory}/masks/{region}_1km.tif"
 
-            output_path = f'{ex_file.rsplit(os.sep, 2)}/{region}/L2_product'
-                                          
+            region = ex_file.split(os.sep)[-3]
+            regional_mask = rasterio.open(
+                f"{self.working_directory}/masks/{region}_1km.tif"
+            ).read(1)
+
+            output_path = f"{ex_file.rsplit(os.sep, 2)}/{region}/L2_product/{variable}"
+            if not os.path.exists(output_path):
+                os.makedirs(output_path)
+
             L2_product = np.empty_like(ex_data)
             L2_product[:, :] = np.nan
 
-            for file in files_to_process:
+            for i, data in enumerate(data_stack):
 
                 date = file.split(os.sep)[-2]
-                                          
-                data = rasterio.open(file).read(1)
-                data[regional_mask != 220] = np.nan
-                                          
-                if ("albedo" or "BBA") in variable:
-                    valid = [(data > 0) & (data < 1)]
-                elif "ssa" in variable:
-                    valid = [(data > 0) & (data < 1)]
-                elif "diameter" in variable:
-                    valid = [(data > 0) & (data < 1)]
 
-                L2_product[valid] = data[valid]
+                data[regional_mask != 220] = np.nan
+
+                if level == 3:
+                    ldata = compute_L3_step(data_stack, data)
+                else:
+                    ldata = data.copy()
+                        
+                if ("albedo" or "BBA") in variable:
+                    valid = [(ldata > 0) & (ldata < 1)]
+                elif "ssa" in variable:
+                    valid = [(ldata > 0) & (ldata < 1)]
+                elif "diameter" in variable:
+                    valid = [(ldata > 0) & (ldata < 1)]
+
+                L2_product[valid] = ldata[valid]
 
                 with rasterio.open(
                     f"{output_path}/{date}.tif",
                     "w",
                     compress="deflate",
-                    **out_meta,
+                    **output_meta,
                 ) as dest:
                     dest.write(L2_product, 1)
 
             return None
 
-        for variable in L2_variables:
+        for variable in Lx_variables:
 
             multiprocessing_iterators = self.prepare_multiprocessing(variable)
 
@@ -158,9 +203,10 @@ class SICEPostProcessing:
             start_local_time = time.ctime(start_time)
 
             with Pool(nb_cores) as p:
-                p.map(partial(compute_L2_product_multiproc, b=variable),
-                      multiprocessing_iterators)
-
+                p.map(
+                    partial(compute_Lx_product_multiproc, b=variable),
+                    multiprocessing_iterators,
+                )
 
             end_time = time.time()
             end_local_time = time.ctime(end_time)
@@ -168,10 +214,8 @@ class SICEPostProcessing:
             print("--- Processing time: %s minutes ---" % processing_time)
             print("--- Start time: %s ---" % start_local_time)
             print("--- End time: %s ---" % end_local_time)
-                                          
 
         return None
-
 
     def compute_BBA_combination(self):
         return None
