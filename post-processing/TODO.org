@@ -1,0 +1,7 @@
+* TODO [#A] generate documentation
+* TODO make it resolution agnostic
+resample regional mask based on input
+* TODO method for L3 product computation
+* TODO method for L4 products computation (temporal aggregations)
+* TODO method for simple visualisations
+* TODO method for bare ice area computation

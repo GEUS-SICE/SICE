@@ -13,7 +13,8 @@ from typing import Union, Tuple
 import pathlib
 import os
 from collecitons import Counter
-
+from multiprocessing import Pool, freeze_support
+from functools import partial
 
 class SICEPostProcessing:
     def __init__(
@@ -23,6 +24,7 @@ class SICEPostProcessing:
         variables: list = ["albedo_planar_sw", "grain_diameter"],
     ) -> None:
 
+        self.working_directory = str(pathlib.Path().resolve())
         self.dataset_path = dataset_path
         self.variables = variables
         self.files = {}
@@ -40,9 +42,7 @@ class SICEPostProcessing:
 
     def get_SICE_region_names(self) -> list:
 
-        working_directory = str(pathlib.Path().resolve())
-
-        SICE_masks = glob.glob(f"{working_directory}/*_1km.tif")
+        SICE_masks = glob.glob(f"{self.working_directory}/*_1km.tif")
 
         self.SICE_region_names = [
             mask.split(os.sep)[-1].split("_")[0] for mask in SICE_masks
@@ -101,8 +101,6 @@ class SICEPostProcessing:
 
         return multiprocessing_partitions
 
-    def compute_BBA_combination(self):
-        return None
 
     def compute_L2_products(
         self, nb_cores: int = 4, L2_variables: Union[None, str] = None
@@ -114,24 +112,25 @@ class SICEPostProcessing:
         def compute_L2_product_multiproc(files_to_process: list, variable: str) -> None:
 
             ex_file = file_to_process[0]
-            ex_file_reader = rasterio.open(ex_file)
-            ex_data = ex_file_reader.read(1)
-
+            ex_reader = rasterio.open(ex_file)
+            ex_data = ex_reader.read(1)
+            output_meta = ex_reader.meta.copy()
             
             region = ex_file.split(os.sep)[-3]
-            
-            regional_mask = rasterio.open(f"{str(pathlib.Path().resolve())"
+            regional_mask = rasterio.open(f"{self.working_directory}/masks/{region}_1km.tif"
 
-            outpath = f'{ex_file.rsplit(os.sep, 2)}/{region}/L2_product'
+            output_path = f'{ex_file.rsplit(os.sep, 2)}/{region}/L2_product'
+                                          
             L2_product = np.empty_like(ex_data)
             L2_product[:, :] = np.nan
 
             for file in files_to_process:
 
                 date = file.split(os.sep)[-2]
+                                          
                 data = rasterio.open(file).read(1)
                 data[regional_mask != 220] = np.nan
-
+                                          
                 if ("albedo" or "BBA") in variable:
                     valid = [(data > 0) & (data < 1)]
                 elif "ssa" in variable:
@@ -142,18 +141,40 @@ class SICEPostProcessing:
                 L2_product[valid] = data[valid]
 
                 with rasterio.open(
-                    f"{}/Greenland/{date}.tif",
+                    f"{output_path}/{date}.tif",
                     "w",
                     compress="deflate",
                     **out_meta,
                 ) as dest:
-                    dest.write(cuml, 1)
+                    dest.write(L2_product, 1)
 
             return None
-
 
         for variable in L2_variables:
 
             multiprocessing_iterators = self.prepare_multiprocessing(variable)
 
-            
+            start_time = time.time()
+            start_local_time = time.ctime(start_time)
+
+            with Pool(nb_cores) as p:
+                p.map(partial(compute_L2_product_multiproc, b=variable),
+                      multiprocessing_iterators)
+
+
+            end_time = time.time()
+            end_local_time = time.ctime(end_time)
+            processing_time = (end_time - start_time) / 60
+            print("--- Processing time: %s minutes ---" % processing_time)
+            print("--- Start time: %s ---" % start_local_time)
+            print("--- End time: %s ---" % end_local_time)
+                                          
+
+        return None
+
+
+    def compute_BBA_combination(self):
+        return None
+
+    def compute_bare_ice_area(self):
+        return None
