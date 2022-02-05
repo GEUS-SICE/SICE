@@ -19,8 +19,8 @@ import pathlib
 import os
 from collections import Counter
 from multiprocessing import Pool, freeze_support
-from functools import partial
 import time
+import functools
 
 
 class SICEPostProcessing:
@@ -46,6 +46,20 @@ class SICEPostProcessing:
         self.get_files()
 
         return None
+
+    def timer(func):
+        """Print the runtime of the decorated function"""
+
+        @functools.wraps(func)
+        def wrapper_timer(*args, **kwargs):
+            start_time = time.perf_counter()  # 1
+            value = func(*args, **kwargs)
+            end_time = time.perf_counter()  # 2
+            run_time = end_time - start_time  # 3
+            print(f"Finished {func.__name__!r} in {run_time:.4f} secs")
+            return value
+
+    return wrapper_timer
 
     def get_SICE_region_names(self) -> list:
 
@@ -88,7 +102,42 @@ class SICEPostProcessing:
 
         return self.files
 
-    def prepare_multiprocessing(self, variable: str) -> dict:
+    def compute_BBA_combination(
+        self, albedo_file, bands: list = ["01", "06", "17", "21"]
+    ) -> None:
+        def load_rasters_as_list(files):
+            data = [rasterio.open(file).read(1) for file in files]
+            return data
+
+        folder = albedo_file.rsplit(os.sep, 1)[0]
+        r_TOA_files = [f"{folder}/r_TOA_{b}.tif" for b in bands]
+
+        # compute only if all variables are available
+        compute = np.prod([os.path.isfile(file) for file in r_TOA_files])
+
+        if not compute:
+            return None
+
+        r_TOAs = load_rasters_as_list(
+        return None
+
+    def get_BBA_files(self) -> list:
+        return None
+
+    @timer
+    def compute_BBA_combinations_multiprocessing(self, nb_cores: int = 4) -> None:
+
+        all_albedo_files = [
+            self.files[region]["albedo_bb_planar_sw"]
+            for region, values in self.files.items()
+        ][0]
+
+        with Pool(nb_cores) as p:
+            p.map(self.compute_BBA_combination, all_albedo_files)
+
+        return None
+
+    def prepare_Lx_multiprocessing(self, variable: str) -> dict:
 
         multiprocessing_partitions = {}
 
@@ -209,6 +258,7 @@ class SICEPostProcessing:
 
         return None
 
+    @timer
     def compute_Lx_products_multiprocessing(
         self, level: int = 2, nb_cores: int = 4, Lx_variables: Union[None, str] = None
     ):
@@ -219,26 +269,13 @@ class SICEPostProcessing:
 
         for variable in Lx_variables:
 
-            multiprocessing_iterators = self.prepare_multiprocessing(variable)
-
-            start_time = time.time()
-            start_local_time = time.ctime(start_time)
+            multiprocessing_iterators = self.prepare_Lx_multiprocessing(variable)
 
             for region, annual_iterators in multiprocessing_iterators.items():
 
                 with Pool(nb_cores) as p:
                     p.map(self.compute_Lx_product, annual_iterators)
 
-            end_time = time.time()
-            end_local_time = time.ctime(end_time)
-            processing_time = (end_time - start_time) / 60
-            print("--- Processing time: %s minutes ---" % processing_time)
-            print("--- Start time: %s ---" % start_local_time)
-            print("--- End time: %s ---" % end_local_time)
-
-        return None
-
-    def compute_BBA_combination(self):
         return None
 
     def compute_bare_ice_area(self):
