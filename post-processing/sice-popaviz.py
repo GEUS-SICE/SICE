@@ -4,7 +4,7 @@
 
 @author: Adrien Wehrlé, EO-IO
 
-POst Processing, Analysis and Vizualisation of SICE outputs (SICE-PoPAViz)
+POst Processing, Analysis and VIZualisation of SICE outputs (SICE-PoPAViz)
 
 TODOs:
   - comment and generate documentation
