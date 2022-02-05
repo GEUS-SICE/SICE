@@ -118,8 +118,8 @@ class SICEPostProcessing:
         ) -> Union[np.ndarray, None]:
 
             if (
-                i > rolling_window / 2
-                and i < np.shape(data_stack_arr)[-1] - rolling_window / 2
+                i < rolling_window / 2
+                and i > np.shape(data_stack_arr)[-1] - rolling_window / 2
             ):
                 return None
 
