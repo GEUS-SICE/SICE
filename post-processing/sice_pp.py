@@ -103,7 +103,7 @@ class SICEPostProcessing:
 
         return multiprocessing_partitions
 
-    def compute_Lx_product_(self, files_to_process: list, variable: str) -> None:
+    def compute_Lx_product(self, files_to_process: list) -> None:
         def compute_L3_step(
             data_stack: list,
             i: int,
@@ -134,8 +134,10 @@ class SICEPostProcessing:
 
             return window_data
 
+        variable = files_to_process[0].split(os.sep)[-1].split(".")[0]
+
         # L3 step is a rolling window, therefore accessing several times the same matrix,
-        # so open the entire data set beforehand for efficiency
+        # so let's open the entire data set beforehand for efficiency
         data_stack = [rasterio.open(file).read(1) for file in files_to_process]
 
         ex_file = files_to_process[0]
@@ -148,9 +150,8 @@ class SICEPostProcessing:
             f"{self.working_directory}/masks/{region}_1km.tif"
         ).read(1)
 
-        output_path = (
-            f"{ex_file.rsplit(os.sep, 2)}/{region}/L{self.level}_product_t/{variable}"
-        )
+        output_path = f"{ex_file.rsplit(os.sep, 2)[0]}/{region}/L{self.level}_product_t/{variable}"
+
         if not os.path.exists(output_path):
             os.makedirs(output_path)
 
@@ -202,13 +203,10 @@ class SICEPostProcessing:
             start_time = time.time()
             start_local_time = time.ctime(start_time)
 
-            for annual_iterators, key in multiprocessing_iterators.items():
+            for key, annual_iterators in multiprocessing_iterators.items():
 
                 with Pool(nb_cores) as p:
-                    p.map(
-                        partial(self.compute_Lx_product, variable=variable),
-                        files_to_process=annual_iterators,
-                    )
+                    p.map(self.compute_Lx_product, annual_iterators)
 
             end_time = time.time()
             end_local_time = time.ctime(end_time)
