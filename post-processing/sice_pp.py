@@ -83,9 +83,9 @@ class SICEPostProcessing:
 
         return self.files
 
-    def prepare_multiprocessing(self, variable: str) -> Tuple[list, list]:
+    def prepare_multiprocessing(self, variable: str) -> dict:
 
-        multiprocessing_partitions = []
+        multiprocessing_partitions = {}
 
         for region in self.regions:
 
@@ -99,17 +99,11 @@ class SICEPostProcessing:
             partitions = [
                 region_variable_files[region_years == year] for year in available_years
             ]
-            multiprocessing_partitions.append(partitions)
+            multiprocessing_partitions[region] = partitions
 
         return multiprocessing_partitions
 
-    def compute_Lx_products(
-        self, level: int = 2, nb_cores: int = 4, Lx_variables: Union[None, str] = None
-    ):
-
-        if not Lx_variables:
-            Lx_variables = self.variables
-
+    def compute_Lx_product_(self, files_to_process: list, variable: str) -> None:
         def compute_L3_step(
             data_stack: list,
             i: int,
@@ -126,7 +120,7 @@ class SICEPostProcessing:
             # load albedo raster at the center of rolling_window
             BBA_center = window_data[:, :, int(rolling_window / 2)]
 
-            # compute median for each pixel time series
+            # # commentmpute median for each pixel time series
             median_window = np.nanmedian(window_data, axis=2)
 
             # per-pixel deviations within rolling_window
@@ -140,65 +134,66 @@ class SICEPostProcessing:
 
             return window_data
 
-        def compute_Lx_product_multiproc(
-            self,
-            files_to_process: list,
-            variable: str,
-            level: int,
-        ) -> None:
+        # L3 step is a rolling window, therefore accessing several times the same matrix,
+        # so open the entire data set beforehand for efficiency
+        data_stack = [rasterio.open(file).read(1) for file in files_to_process]
 
-            # L3 step is a rolling window, therefore accessing several times the same matrix,
-            # so open the entire data set beforehand for efficiency
-            data_stack = [rasterio.open(file).read(1) for file in files_to_process]
+        ex_file = files_to_process[0]
+        ex_reader = rasterio.open(ex_file)
+        ex_data = ex_reader.read(1)
+        output_meta = ex_reader.meta.copy()
 
-            ex_file = files_to_process[0]
-            ex_reader = rasterio.open(ex_file)
-            ex_data = ex_reader.read(1)
-            output_meta = ex_reader.meta.copy()
+        region = ex_file.split(os.sep)[-3]
+        regional_mask = rasterio.open(
+            f"{self.working_directory}/masks/{region}_1km.tif"
+        ).read(1)
 
-            region = ex_file.split(os.sep)[-3]
-            regional_mask = rasterio.open(
-                f"{self.working_directory}/masks/{region}_1km.tif"
-            ).read(1)
+        output_path = (
+            f"{ex_file.rsplit(os.sep, 2)}/{region}/L{self.level}_product_t/{variable}"
+        )
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
 
-            output_path = (
-                f"{ex_file.rsplit(os.sep, 2)}/{region}/L{level}_product_t/{variable}"
-            )
-            if not os.path.exists(output_path):
-                os.makedirs(output_path)
+        L2_product = np.empty_like(ex_data)
+        L2_product[:, :] = np.nan
 
-            L2_product = np.empty_like(ex_data)
-            L2_product[:, :] = np.nan
+        for i, data in enumerate(data_stack):
 
-            for i, data in enumerate(data_stack):
+            date = file.split(os.sep)[-2]
 
-                date = file.split(os.sep)[-2]
+            data[regional_mask != 220] = np.nan
 
-                data[regional_mask != 220] = np.nan
+            if self.level == 3:
+                ldata = compute_L3_step(data_stack, data)
+            else:
+                ldata = data.copy()
 
-                if level == 3:
-                    ldata = compute_L3_step(data_stack, data)
-                else:
-                    ldata = data.copy()
+            if ("albedo" or "BBA") in variable:
+                valid = [(ldata > 0) & (ldata < 1)]
+            elif "ssa" in variable:
+                valid = [(ldata > 0) & (ldata < 1)]
+            elif "diameter" in variable:
+                valid = [(ldata > 0) & (ldata < 1)]
 
-                if ("albedo" or "BBA") in variable:
-                    valid = [(ldata > 0) & (ldata < 1)]
-                elif "ssa" in variable:
-                    valid = [(ldata > 0) & (ldata < 1)]
-                elif "diameter" in variable:
-                    valid = [(ldata > 0) & (ldata < 1)]
+            L2_product[valid] = ldata[valid]
 
-                L2_product[valid] = ldata[valid]
+            with rasterio.open(
+                f"{output_path}/{date}.tif",
+                "w",
+                compress="deflate",
+                **output_meta,
+            ) as dest:
+                dest.write(L2_product, 1)
 
-                with rasterio.open(
-                    f"{output_path}/{date}.tif",
-                    "w",
-                    compress="deflate",
-                    **output_meta,
-                ) as dest:
-                    dest.write(L2_product, 1)
+        return None
 
-            return None
+    def compute_Lx_products_multiprocessing(
+        self, level: int = 2, nb_cores: int = 4, Lx_variables: Union[None, str] = None
+    ):
+
+        if not Lx_variables:
+            Lx_variables = self.variables
+        self.level = level
 
         for variable in Lx_variables:
 
@@ -207,11 +202,13 @@ class SICEPostProcessing:
             start_time = time.time()
             start_local_time = time.ctime(start_time)
 
-            with Pool(nb_cores) as p:
-                p.map(
-                    partial(compute_Lx_product_multiproc, b=variable),
-                    multiprocessing_iterators,
-                )
+            for annual_iterators, key in multiprocessing_iterators.items():
+
+                with Pool(nb_cores) as p:
+                    p.map(
+                        partial(self.compute_Lx_product, variable=variable),
+                        files_to_process=annual_iterators,
+                    )
 
             end_time = time.time()
             end_local_time = time.ctime(end_time)

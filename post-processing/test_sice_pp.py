@@ -38,3 +38,6 @@ assert len(d3.files['NovayaZemlya']['snow_specific_surface_area']) > 2
 
 # %% check multiprocessing preparation with d1
 partitions = d1.prepare_multiprocessing('albedo_bb_planar_sw')
+assert partitions
+assert isinstance(partitions, dict)
+assert list(partitions.keys()) == ['Greenland']
