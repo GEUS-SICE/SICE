@@ -4,6 +4,11 @@
 
 @author: Adrien Wehrlé, EO-IO
 
+TODOs:
+  - generate documentation
+  - implement method for BBA combination
+  - implement method for bare ice area and AAR computation
+
 """
 
 import numpy as np
@@ -105,17 +110,23 @@ class SICEPostProcessing:
 
     def compute_Lx_product(self, files_to_process: list) -> None:
         def compute_L3_step(
-            data_stack: list,
+            data_stack_arr: list,
             i: int,
             rolling_window: int = 10,
             deviation_threshold: float = 0.15,
             limit_valid_days: int = 4,
-        ):
+        ) -> Union[np.ndarray, None]:
+
+            if (
+                i > rolling_window / 2
+                and i < np.shape(data_stack_arr)[-1] - rolling_window / 2
+            ):
+                return None
 
             low_boundary = i - int(rolling_window / 2)
             high_boundary = i + int(rolling_window / 2 + 1)
             # TODO: have to stack into an array
-            window_data = data_stack[low_boundary:high_boundary]
+            window_data = data_stack_arr[:, :, low_boundary:high_boundary]
 
             # load albedo raster at the center of rolling_window
             BBA_center = window_data[:, :, int(rolling_window / 2)]
@@ -126,19 +137,22 @@ class SICEPostProcessing:
             # per-pixel deviations within rolling_window
             deviations = np.abs((BBA_center - median_window) / median_window)
 
-            window_data[deviations < deviation_threshold] = np.nanmean(
-                window_data, axis=2
-            )[deviations < deviation_threshold]
+            ldata = np.full_like(BBA_center, np.nan)
 
-            window_data[deviations >= deviation_threshold] = np.nan
+            ldata[deviations < deviation_threshold] = np.nanmean(window_data, axis=2)[
+                deviations < deviation_threshold
+            ]
 
-            return window_data
+            ldata[deviations >= deviation_threshold] = np.nan
+
+            return ldata
 
         variable = files_to_process[0].split(os.sep)[-1].split(".")[0]
 
         # L3 step is a rolling window, therefore accessing several times the same matrix,
         # so let's open the entire data set beforehand for efficiency
         data_stack = [rasterio.open(file).read(1) for file in files_to_process]
+        data_stack_arr = np.dstack(data_stack)
 
         ex_file = files_to_process[0]
         ex_reader = rasterio.open(ex_file)
@@ -150,7 +164,10 @@ class SICEPostProcessing:
             f"{self.working_directory}/masks/{region}_1km.tif"
         ).read(1)
 
-        output_path = f"{ex_file.rsplit(os.sep, 2)[0]}/{region}/L{self.level}_product_t/{variable}"
+        output_path = (
+            f"{ex_file.rsplit(os.sep, 2)[0]}/L{self.level}_product_t/{variable}"
+        )
+        print(output_path)
 
         if not os.path.exists(output_path):
             os.makedirs(output_path)
@@ -160,18 +177,20 @@ class SICEPostProcessing:
 
         for i, data in enumerate(data_stack):
 
-            date = file.split(os.sep)[-2]
+            date = files_to_process[i].split(os.sep)[-2]
 
             data[regional_mask != 220] = np.nan
 
             if self.level == 3:
-                ldata = compute_L3_step(data_stack, data)
+                ldata = compute_L3_step(data_stack_arr, i)
+                if not ldata:
+                    continue
             else:
                 ldata = data.copy()
 
             if ("albedo" or "BBA") in variable:
                 valid = [(ldata > 0) & (ldata < 1)]
-            elif "ssa" in variable:
+            elif "area" in variable:
                 valid = [(ldata > 0) & (ldata < 1)]
             elif "diameter" in variable:
                 valid = [(ldata > 0) & (ldata < 1)]
@@ -203,7 +222,7 @@ class SICEPostProcessing:
             start_time = time.time()
             start_local_time = time.ctime(start_time)
 
-            for key, annual_iterators in multiprocessing_iterators.items():
+            for region, annual_iterators in multiprocessing_iterators.items():
 
                 with Pool(nb_cores) as p:
                     p.map(self.compute_Lx_product, annual_iterators)
