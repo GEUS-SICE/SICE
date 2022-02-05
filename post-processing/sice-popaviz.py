@@ -29,7 +29,7 @@ class PoPAViz:
     def __init__(
         self,
         dataset_path: str,
-        regions: Union[None, list] = ["Greenland"],
+        regions: Union[list, None] = ["Greenland"],
         variables: list = ["albedo_bb_planar_sw", "snow_specific_surface_area"],
     ) -> None:
 
@@ -46,7 +46,8 @@ class PoPAViz:
             self.regions = regions
 
         self.get_files()
-
+        self.get_generic_profiles()
+        
         return None
 
     def timer(func):
@@ -242,27 +243,22 @@ class PoPAViz:
         # so let's open the entire data set beforehand for efficiency
         data_stack = [rasterio.open(file).read(1) for file in files_to_process]
         data_stack_arr = np.dstack(data_stack)
-
-        ex_file = files_to_process[0]
-        ex_reader = rasterio.open(ex_file)
-        ex_data = ex_reader.read(1)
-        output_meta = ex_reader.meta.copy()
-
-        region = ex_file.split(os.sep)[-3]
+        
+        region = files_to_process[0].split(os.sep)[-3]
         regional_mask = rasterio.open(
             f"{self.working_directory}/masks/{region}_1km.tif"
         ).read(1)
 
         output_path = (
-            f"{ex_file.rsplit(os.sep, 2)[0]}/L{self.level}_product_t/{variable}"
+            f"{files_to_process[0].rsplit(os.sep, 2)[0]}/L{self.level}_product_t/{variable}"
         )
         print(output_path)
 
         if not os.path.exists(output_path):
             os.makedirs(output_path)
 
-        L2_product = np.empty_like(ex_data)
-        L2_product[:, :] = np.nan
+        Lx_product = np.empty_like(regional_mask)
+        Lx_product[:, :] = np.nan
 
         for i, data in enumerate(data_stack):
 
@@ -286,15 +282,15 @@ class PoPAViz:
             elif "diameter" in variable:
                 valid = [(ldata > 0) & (ldata < 1)]
 
-            L2_product[valid] = ldata[valid]
+            Lx_product[valid] = ldata[valid]
 
             with rasterio.open(
                 f"{output_path}/{date}.tif",
                 "w",
                 compress="deflate",
-                **output_meta,
+                **self.generic_profiles[region],
             ) as dest:
-                dest.write(L2_product, 1)
+                dest.write(Lx_product, 1)
 
         return None
 

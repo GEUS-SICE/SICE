@@ -4,8 +4,6 @@
 
 @author: Adrien Wehrlé, EO-IO
 
-POst Processing, Analysis and Vizualisation of SICE outputs (SICE-PoPAViz)
-
 TODOs:
   - comment and generate documentation
   - implement method for bare ice area and AAR computation
@@ -25,7 +23,7 @@ import time
 import functools
 
 
-class PoPAViz:
+class SICEPostProcessing:
     def __init__(
         self,
         dataset_path: str,
