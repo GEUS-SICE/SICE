@@ -119,7 +119,7 @@ class SICEPostProcessing:
 
             if (
                 i < rolling_window / 2
-                and i > np.shape(data_stack_arr)[-1] - rolling_window / 2
+                or i > np.shape(data_stack_arr)[-1] - rolling_window / 2
             ):
                 return None
 
@@ -183,10 +183,12 @@ class SICEPostProcessing:
 
             if self.level == 3:
                 ldata = compute_L3_step(data_stack_arr, i)
-                if not ldata:
+                if isinstance(ldata, type(None)):
                     continue
             else:
                 ldata = data.copy()
+
+            print(ldata)
 
             if ("albedo" or "BBA") in variable:
                 valid = [(ldata > 0) & (ldata < 1)]
