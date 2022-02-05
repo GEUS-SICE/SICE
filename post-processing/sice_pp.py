@@ -90,14 +90,14 @@ class SICEPostProcessing:
         for region in self.regions:
 
             region_variable_files = np.array(self.files[region][variable])
-            available_years = Counter(
-                [f.split(os.sep)[-2][-4:] for f in region_variable_files]
+            region_years = np.array(
+                [f.split(os.sep)[-2][:4] for f in region_variable_files]
             )
+            available_years = np.array(list(Counter(region_years).keys()))
 
             # split the list of files per year to get multiprocessing partitions
             partitions = [
-                region_variable_files[region_variable_files == year]
-                for year in available_years
+                region_variable_files[region_years == year] for year in available_years
             ]
             multiprocessing_partitions.append(partitions)
 
