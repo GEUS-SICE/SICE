@@ -22,8 +22,8 @@ class SICEPostProcessing:
     def __init__(
         self,
         dataset_path: str,
-        regions: Union[None, list] = None,
-        variables: list = ["albedo_planar_sw", "grain_diameter"],
+        regions: Union[None, list] = ["Greenland"],
+        variables: list = ["albedo_bb_planar_sw", "snow_specific_surface_area"],
     ) -> None:
 
         self.working_directory = str(pathlib.Path().resolve())
@@ -44,7 +44,7 @@ class SICEPostProcessing:
 
     def get_SICE_region_names(self) -> list:
 
-        SICE_masks = glob.glob(f"{self.working_directory}/*_1km.tif")
+        SICE_masks = glob.glob(f"{self.working_directory}/masks/*_1km.tif")
 
         self.SICE_region_names = [
             mask.split(os.sep)[-1].split("_")[0] for mask in SICE_masks
@@ -64,8 +64,8 @@ class SICEPostProcessing:
             self.regions = available_regions
         else:
             print(
-                "No region with processed SICE data detected, please provide a\
-                list of region names"
+                "No region with processed SICE data detected, please provide"
+                + "a list of region names"
             )
 
         return None
@@ -94,7 +94,7 @@ class SICEPostProcessing:
                 [f.split(os.sep)[-2][-4:] for f in region_variable_files]
             )
 
-            # split the list of files to get multiprocessing partitions
+            # split the list of files per year to get multiprocessing partitions
             partitions = [
                 region_variable_files[region_variable_files == year]
                 for year in available_years
@@ -136,12 +136,15 @@ class SICEPostProcessing:
                 window_data, axis=2
             )[deviations < deviation_threshold]
 
-            window_data[deviations >= deviation_threshold = np.nan
-                        
+            window_data[deviations >= deviation_threshold] = np.nan
+
             return window_data
 
         def compute_Lx_product_multiproc(
-            self, files_to_process: list, variable: str
+            self,
+            files_to_process: list,
+            variable: str,
+            level: int,
         ) -> None:
 
             # L3 step is a rolling window, therefore accessing several times the same matrix,
@@ -158,7 +161,9 @@ class SICEPostProcessing:
                 f"{self.working_directory}/masks/{region}_1km.tif"
             ).read(1)
 
-            output_path = f"{ex_file.rsplit(os.sep, 2)}/{region}/L2_product/{variable}"
+            output_path = (
+                f"{ex_file.rsplit(os.sep, 2)}/{region}/L{level}_product_t/{variable}"
+            )
             if not os.path.exists(output_path):
                 os.makedirs(output_path)
 
@@ -175,7 +180,7 @@ class SICEPostProcessing:
                     ldata = compute_L3_step(data_stack, data)
                 else:
                     ldata = data.copy()
-                        
+
                 if ("albedo" or "BBA") in variable:
                     valid = [(ldata > 0) & (ldata < 1)]
                 elif "ssa" in variable:
