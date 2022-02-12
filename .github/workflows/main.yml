@@ -1,22 +1,18 @@
-name: test-bash
+name: test-bash-on-commit
 on:
   push:
     branches:
       - master
 jobs:
-  sh-checker:
+  shellcheck:
+    name: Shellcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: Run the sh-checker
-        uses: luizm/action-sh-checker@master
+      - uses: actions/checkout@v2
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # exclude some shellcheck warnings.
-          SHELLCHECK_OPTS: -e SC1004 SC2068 SC2077 SC2078 SC2145 SC2242 
-          # arguments to shfmt.
-          SHFMT_OPTS: -s 
+          SHELLCHECK_OPTS: -e SC1004 -e SC2068 -e SC2077 -e SC2078 -e SC2145 -e SC2242 
         with:
-          sh_checker_comment: true
-          sh_checker_shfmt_disable: true
           severity: error
