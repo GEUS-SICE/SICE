@@ -4,7 +4,7 @@
 
 @author: Adrien Wehrlé, EO-IO
 
-POst Processing, Analysis and VIZualisation of SICE outputs (SICE-PoPAViz)
+Post processing, analysis and vizualisation of SICE outputs
 
 TODOs:
   - comment and generate documentation
@@ -25,7 +25,7 @@ import time
 import functools
 
 
-class PoPAViz:
+class PostSICE:
     def __init__(
         self,
         dataset_path: str,
