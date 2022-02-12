@@ -1,4 +1,4 @@
-name: test-bash-on-commit
+name: CI
 on:
   push:
     branches:
