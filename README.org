@@ -1,4 +1,4 @@
-
+[[https://github.com/GEUS-SICE/SICE/actions][file:https://github.com/GEUS-SICE/SICE/workflows/CI/badge.svg]]
 
 * Table of Contents                               :toc_2:noexport:
 - [[#sentinel-3-s3-albedo-processing-pipeline][Sentinel-3 (S3) Albedo Processing Pipeline]]
