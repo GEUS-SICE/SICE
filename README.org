@@ -21,7 +21,7 @@
   - [[#generate-ice-mask][Generate ice mask]]
   - [[#footprint][Footprint]]
   - [[#regional-masks][Regional masks]]
-- [[*Post-processing, analysis and visualisation][Post-processing, analysis and visualisation]]
+- [[#post-processing-analysis-and-visualisation][Post-processing, analysis and visualisation]]
 
 * Sentinel-3 (S3) Albedo Processing Pipeline
 
