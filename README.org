@@ -20,7 +20,8 @@
 - [[#misc-notes--code-snippets][Misc Notes & Code Snippets]]
   - [[#generate-ice-mask][Generate ice mask]]
   - [[#footprint][Footprint]]
-  - [[#footprint][Regional masks]]
+  - [[#regional-masks][Regional masks]]
+- [[*Post-processing, analysis and visualisation][Post-processing, analysis and visualisation]]
 
 * Sentinel-3 (S3) Albedo Processing Pipeline
 
@@ -276,3 +277,7 @@ ogrinfo -al GL_outline.kml  | grep LINESTRING | sed s/\ 0//g
 Regional masks stored in the [[https://github.com/GEUS-SICE/SICE/tree/master/masks][masks]] folder are clips from the 
 [[https://www.esa-landcover-cci.org/?q=node/197][ESA global Land Cover products]] (download [[https://cds.climate.copernicus.eu/cdsapp#!/dataset/satellite-land-cover?tab=form][here]]). Masks were downloaded for 2018 and are available
 at 300m and 1km resolutions ({region}_300m.tif and {region}_1km.tif, respectively). A description of the 22 [[https://www.esa-landcover-cci.org/?q=node/197][ESA global Land Cover products]] can be found [[https://www.esa-landcover-cci.org/?q=webfm_send/84][here]].
+
+* Post-processing, analysis and visualisation
+
+  Post-processing, analysis and visualisation tools have been implemented in the [[https://github.com/GEUS-SICE/SICE-toolbox][SICE toolbox]].
