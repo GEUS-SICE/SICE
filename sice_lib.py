@@ -404,6 +404,7 @@ def zbrent(f, x0, x1, max_iter=100, tolerance=1e-6):
  
     mflag = True
     steps_taken = 0
+    d = np.nan
  
     while steps_taken < max_iter and abs(x1 - x0) > tolerance:
         fx0 = f(x0)
