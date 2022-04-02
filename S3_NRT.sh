@@ -5,6 +5,18 @@
 # example of cron job:
 # m h  dom mon dow   command
 # 00 12 * * * /bin/bash -c "/path/to/wrapper/S3_NRT.sh" > /path/to/log/log_NRT.txt
+#
+# the cron fields below indicate how the above job is scheduled for 12h 00m each day.
+#
+# ┌───────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌───────────── day of the month (1 - 31)
+# │ │ │ ┌───────────── month (1 - 12)
+# │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday;
+# │ │ │ │ │                                   7 is also Sunday on some systems)
+# │ │ │ │ │
+# │ │ │ │ │
+# * * * * * <command to execute>
 
 # use SNAP gpt
 export PATH=/path/to/snap/bin:${PATH}
