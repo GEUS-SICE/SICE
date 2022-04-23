@@ -17,14 +17,9 @@ log_err() { echo -e "${red}[$(date --iso-8601=seconds)] [ERR] ${*}${nc}" 1>&2; }
 
 # CREODIAS
 SEN3_local=/eodata/Sentinel-3
-SEN3_source=~/sice-data/SICE/S3
-proc_root=~/sice-data/SICE/proc
-mosaic_root=~/sice-data/SICE/mosaic
-
-### dev
-# SEN3_source=./SEN3
-# proc_root=./out
-# mosaic_root=./mosaic
+SEN3_source=/sice-data/SICE/S3
+proc_root=/sice-data/SICE/proc
+mosaic_root=/sice-data/SICE/mosaic
 
 # Scihub credentials (from local auth.txt in SICE folder)
 username=$(sed -n '1p' auth.txt)
@@ -38,6 +33,9 @@ slopey=false
 
 # Fast processing
 fast=true
+
+# Error reporting
+error=false
 
 if [ "$fast" = true ]; then
 	# so far the only speed up done is to not extract all bands
@@ -79,7 +77,7 @@ for year in 2020; do
 		# Mosaic
 		./dm.sh "${date}" ${proc_root}/"${date}" ${mosaic_root} || error=true
 
-		if [ "$slopey" = true ]; then
+		if [ "${slopey}" = true ]; then
 			# Run the slopey correction
 			python ./get_ITOAR.py ${mosaic_root}/"${date}"/ "$(pwd)"/ArcticDEM/ || error=true
 		fi
@@ -87,7 +85,7 @@ for year in 2020; do
 		# SICE
 		python ./sice.py ${mosaic_root}/"${date}" || error=true
 
-		if [ "$error" = true ]; then
+		if [ "${error}" = true ]; then
 			echo "Processing of ${date} failed, please check logs."
 		fi
 	done
