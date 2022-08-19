@@ -32,7 +32,7 @@ area=Greenland
 slopey=false
 
 # Fast processing
-fast=true
+fast=false
 
 # Error reporting
 error=false
