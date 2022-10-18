@@ -219,7 +219,7 @@ if __name__ == "__main__":
     
     ##### Computing Angstrom Parameter #####
     
-    ang = -(np.log(aod550 / aod865) / np.log(550 * 10**-9 / 865 * 10**-9))
+    ang = -(np.log(aod550 / aod865) / np.log((550 * 10**-9) / (865 * 10**-9)))
     
     
     ##### Nearest Neighbour Weighted Interpolation #####
