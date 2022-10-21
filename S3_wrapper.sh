@@ -46,9 +46,9 @@ fi
 
 LD_LIBRARY_PATH=. # SNAP requirement
 
-for year in 2020; do
-	for doy in $(seq -w 91 276); do
-
+for year in 2022; do
+	for doy in $(seq -w 270 271); do
+		
 		### DEBUG
 		# for year in 2018; do
 		#   for doy in 227; do  # 2017-08-15=227
@@ -59,21 +59,22 @@ for year in 2020; do
 			log_warn "${mosaic_root}/${date} already exists, date skipped"
 			continue
 		fi
-
+		
 		### Fetch one day of OLCI & SLSTR scenes over Greenland
 		## Use local files (PTEP, DIAS, etc.)
-		./dhusget_wrapper.sh -d "${date}" -l ${SEN3_local} -o ${SEN3_source}/${year}/"${date}" \
-			-f ${area} -u "${username}" -p "${password}" || error=true
+		#./dhusget_wrapper.sh -d "${date}" -l ${SEN3_local} -o ${SEN3_source}/${year}/"${date}" \
+		#	-f ${area} -u "${username}" -p "${password}" || error=true
 		## Download files
-		# ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
-		# 			 -f Svalbard -u "${username}" -p "${password}"
-
+		./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
+					 -f ${area} -u "${username}" -p "${password}"
+		
+		
 		# SNAP: Reproject, calculate reflectance, extract bands, etc.
 		./S3_proc.sh -i ${SEN3_source}/${year}/"${date}" -o ${proc_root}/"${date}" -X ${xml_file} -t || error=true
-
+		
 		# Run the Simple Cloud Detection Algorithm (SCDA)
 		python ./SCDA.py ${proc_root}/"${date}" || error=true
-
+		
 		# Mosaic
 		./dm.sh "${date}" ${proc_root}/"${date}" ${mosaic_root} || error=true
 
@@ -81,7 +82,11 @@ for year in 2020; do
 			# Run the slopey correction
 			python ./get_ITOAR.py ${mosaic_root}/"${date}"/ "$(pwd)"/ArcticDEM/ || error=true
 		fi
-
+		
+		# Aerosol maps - AOD550 and Angstrom Parameter
+		python ./cams.py -g ${mosaic_root}/"${date}" -o ${mosaic_root}/"${date}" -d ${date}
+		
+		
 		# SICE
 		python ./sice.py ${mosaic_root}/"${date}" || error=true
 
