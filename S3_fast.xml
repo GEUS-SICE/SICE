@@ -92,6 +92,7 @@
       <file>${targetFolder}/r_TOA_03_x.tif</file><formatName>GeoTIFF</formatName>
     </parameters>
   </node>
+-->
 
   <node id="Subset_OLCI_Oa04">
     <operator>Subset</operator>
@@ -108,6 +109,7 @@
     </parameters>
   </node>
 
+<!--
   <node id="Subset_OLCI_Oa05">
     <operator>Subset</operator>
     <sources><source>Reproject_OLCI</source></sources>
