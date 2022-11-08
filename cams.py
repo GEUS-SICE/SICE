@@ -157,7 +157,7 @@ if __name__ == "__main__":
     
     
     
-    gridz[gridz < -10000] = np.nan
+    #gridz[gridz < -10000] = np.nan
     
     ##### Downloading Data from the CAMS Website #####
     
