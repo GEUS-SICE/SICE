@@ -1,0 +1,95 @@
+,names,long_names,units
+0,factor,Snow covered fraction within mixed pixels,
+1,O3_SICE,total ozone product (OLCI) corrected for ozone scattering,kg/m2
+2,r0,reflectance of a semi-infinite non-absorbing snow layer,unitless
+3,al,effective absorption length,mm
+"4,pol_type,""type of pollutant: 1(soot), 2( dust), 3 and 4 (other or mixture)"","
+5,impurity_load,pollutant load,ppm_weight
+6,isnow,Diagnostic code for surface type (see  https://doi.org/10.22008/FK2/FBIFOX),
+7,grain_diameter,Grain Diameter,mm
+8,snow_specific_surface_area,Snow Specific Surface Area,m2/kg
+9,albedo_bb_planar_sw,shortwave broadband planar albedo,unitless
+10,albedo_bb_spherical_sw,shortwave broadband spherical albedo,unitless
+11,rBRR_01,bottom of the atmosphere surface reflectance (OLCI Band 1),unitless
+12,rBRR_02,bottom of the atmosphere surface reflectance (OLCI Band 2),unitless
+13,rBRR_03,bottom of the atmosphere surface reflectance (OLCI Band 3),unitless
+14,rBRR_04,bottom of the atmosphere surface reflectance OLCI Band 4),unitless
+15,rBRR_05,bottom of the atmosphere surface reflectance (OLCI Band 5),unitless
+16,rBRR_06,bottom of the atmosphere surface reflectance (OLCI Band 6),unitless
+17,rBRR_07,bottom of the atmosphere surface reflectance OLCI Band 7),unitless
+18,rBRR_08,bottom of the atmosphere surface reflectance (OLCI Band 8),unitless
+19,rBRR_09,bottom of the atmosphere surface reflectance (OLCI Band 9),unitless
+20,rBRR_10,bottom of the atmosphere surface reflectance OLCI Band 10),unitless
+21,rBRR_11,bottom of the atmosphere surface reflectance (OLCI Band 11),unitless
+22,rBRR_12,bottom of the atmosphere surface reflectance (OLCI Band 12),unitless
+23,rBRR_13,bottom of the atmosphere surface reflectance OLCI Band 13),unitless
+24,rBRR_14,bottom of the atmosphere surface reflectance (OLCI Band 14),unitless
+25,rBRR_15,bottom of the atmosphere surface reflectance (OLCI Band 15),unitless
+26,rBRR_16,bottom of the atmosphere surface reflectance OLCI Band 16),unitless
+27,rBRR_17,bottom of the atmosphere surface reflectance (OLCI Band 17),unitless
+28,rBRR_18,bottom of the atmosphere surface reflectance (OLCI Band 18),unitless
+29,rBRR_19,bottom of the atmosphere surface reflectance OLCI Band 19),unitless
+30,rBRR_20,bottom of the atmosphere surface reflectance (OLCI Band 20),unitless
+31,rBRR_21,bottom of the atmosphere surface reflectance (OLCI Band 21),unitless
+32,albedo_spectral_planar_01,spectral planar albedo (OLCI bands 1),unitless
+33,albedo_spectral_planar_02,spectral planar albedo (OLCI bands 2),unitless
+34,albedo_spectral_planar_03,spectral planar albedo (OLCI bands 3),unitless
+35,albedo_spectral_planar_04,spectral planar albedo (OLCI bands 4),unitless
+36,albedo_spectral_planar_05,spectral planar albedo (OLCI bands 5),unitless
+37,albedo_spectral_planar_06,spectral planar albedo (OLCI bands 6),unitless
+38,albedo_spectral_planar_07,spectral planar albedo (OLCI bands 7),unitless
+39,albedo_spectral_planar_08,spectral planar albedo (OLCI bands 8),unitless
+40,albedo_spectral_planar_09,spectral planar albedo (OLCI bands 9),unitless
+41,albedo_spectral_planar_10,spectral planar albedo (OLCI bands 10),unitless
+42,albedo_spectral_planar_11,spectral planar albedo (OLCI bands 11),unitless
+43,albedo_spectral_planar_16,spectral planar albedo (OLCI bands 16),unitless
+44,albedo_spectral_planar_17,spectral planar albedo (OLCI bands 17),unitless
+45,albedo_spectral_planar_18,spectral planar albedo (OLCI bands 18),unitless
+46,albedo_spectral_planar_19,spectral planar albedo (OLCI bands 19),unitless
+47,albedo_spectral_planar_20,spectral planar albedo (OLCI bands 20),unitless
+48,albedo_spectral_planar_21,spectral planar albedo (OLCI bands 21),unitless
+49,albedo_spectral_spherical_01,spectral spherical albedo (OLCI bands 1),unitless
+50,albedo_spectral_spherical_02,spectral spherical albedo (OLCI bands 2),unitless
+51,albedo_spectral_spherical_03,spectral spherical albedo (OLCI bands 3),unitless
+52,albedo_spectral_spherical_04,spectral spherical albedo (OLCI bands 4),unitless
+53,albedo_spectral_spherical_05,spectral spherical albedo (OLCI bands 5),unitless
+54,albedo_spectral_spherical_06,spectral spherical albedo (OLCI bands 6),unitless
+55,albedo_spectral_spherical_07,spectral spherical albedo (OLCI bands 7),unitless
+56,albedo_spectral_spherical_08,spectral spherical albedo (OLCI bands 8),unitless
+57,albedo_spectral_spherical_09,spectral spherical albedo (OLCI bands 9),unitless
+58,albedo_spectral_spherical_10,spectral spherical albedo (OLCI bands 10),unitless
+59,albedo_spectral_spherical_11,spectral spherical albedo (OLCI bands 11),unitless
+60,albedo_spectral_spherical_16,spectral spherical albedo (OLCI bands 16),unitless
+61,albedo_spectral_spherical_17,spectral spherical albedo (OLCI bands 17),unitless
+62,albedo_spectral_spherical_18,spectral spherical albedo (OLCI bands 18),unitless
+63,albedo_spectral_spherical_19,spectral spherical albedo (OLCI bands 19),unitless
+64,albedo_spectral_spherical_20,spectral spherical albedo (OLCI bands 20),unitless
+65,albedo_spectral_spherical_21,spectral spherical albedo (OLCI bands 21),unitless
+66,r_TOA_01,Top of the atmosphere reflectance OLCI Band 1),unitless
+67,r_TOA_02,Top of the atmosphere reflectance (OLCI Band 2),unitless
+68,r_TOA_03,Top of the atmosphere reflectance (OLCI Band 3),unitless
+69,r_TOA_04,Top of the atmosphere reflectance OLCI Band 4),unitless
+70,r_TOA_05,Top of the atmosphere reflectance (OLCI Band 5),unitless
+71,r_TOA_06,Top of the atmosphere reflectance (OLCI Band 6),unitless
+72,r_TOA_07,Top of the atmosphere reflectance OLCI Band 7),unitless
+73,r_TOA_08,Top of the atmosphere reflectance (OLCI Band 8),unitless
+74,r_TOA_09,Top of the atmosphere reflectance (OLCI Band 9),unitless
+75,r_TOA_10,Top of the atmosphere reflectance OLCI Band 10),unitless
+76,r_TOA_11,Top of the atmosphere reflectance (OLCI Band 11),unitless
+77,r_TOA_12,Top of the atmosphere reflectance (OLCI Band 12),unitless
+78,r_TOA_13,Top of the atmosphere reflectance OLCI Band 13),unitless
+79,r_TOA_14,Top of the atmosphere reflectance (OLCI Band 14),unitless
+80,r_TOA_15,Top of the atmosphere reflectance (OLCI Band 15),unitless
+81,r_TOA_16,Top of the atmosphere reflectance OLCI Band 16),unitless
+82,r_TOA_17,Top of the atmosphere reflectance (OLCI Band 17),unitless
+83,r_TOA_18,Top of the atmosphere reflectance (OLCI Band 18),unitless
+84,r_TOA_19,Top of the atmosphere reflectance OLCI Band 19),unitless
+85,r_TOA_20,Top of the atmosphere reflectance (OLCI Band 20),unitless
+86,r_TOA_21,Top of the atmosphere reflectance (OLCI Band 21),unitless
+87,AOD_550,Aersol optical depth at 550 nm,m
+88,ANG,Ångström exponent at AOD550nm and AOD670 nm,unitless
+89,cloud_mask,Cloud Mask (0 is cloudy and 1 is clear sky), unitless
+90,sza,Sun zenith angle,degrees
+91,saa,Sun azimuth angle,degrees
+92,vza,Viewing zenith angle,degrees
+93,vaa,Viewing azimuth angle,degrees
