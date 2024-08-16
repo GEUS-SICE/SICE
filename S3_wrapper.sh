@@ -62,10 +62,10 @@ for year in 2020; do
 
 		### Fetch one day of OLCI & SLSTR scenes over Greenland
 		## Use local files (PTEP, DIAS, etc.)
-		./dhusget_wrapper.sh -d "${date}" -l ${SEN3_local} -o ${SEN3_source}/${year}/"${date}" \
+		./dsget_wrapper.sh -d "${date}" -l ${SEN3_local} -o ${SEN3_source}/${year}/"${date}" \
 			-f ${area} -u "${username}" -p "${password}" || error=true
 		## Download files
-		# ./dhusget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
+		# ./dsget_wrapper.sh -d ${date} -o ${SEN3_source}/${year}/${date} \
 		# 			 -f Svalbard -u "${username}" -p "${password}"
 
 		# SNAP: Reproject, calculate reflectance, extract bands, etc.
