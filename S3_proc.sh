@@ -84,7 +84,7 @@ while [[ $# -gt 0 ]]; do
 		shift
 		;;
 	*)                  # unknown option
-		positional+=("$1") # save it in an array for later. Pass on to dhusget.sh
+		positional+=("$1") # save it in an array for later. Pass on to dsget.sh
 		shift
 		;;
 	esac
