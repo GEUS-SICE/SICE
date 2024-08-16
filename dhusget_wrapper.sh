@@ -291,8 +291,8 @@ else
 
 	for product in $(cut -d, -f1 products-list.csv); do
 		local_subfolder="UNKNOWN_INSTRUMENT"
-		[[ ${product:4:8} == "OL_1_EFR" ]] && local_subfolder="OLCI/OL_1_EFR"
-		[[ ${product:4:8} == "SL_1_RBT" ]] && local_subfolder="SLSTR/SL_1_RBT"
+		[[ ${product:4:8} == "OL_1_EFR" ]] && local_subfolder="OLCI/OL_1_EFR___"
+		[[ ${product:4:8} == "SL_1_RBT" ]] && local_subfolder="SLSTR/SL_1_RBT___"
 
 		local_fullpath=${local_files}/${local_subfolder}/${year}/${month}/${day}/${product}.SEN3
 		(
